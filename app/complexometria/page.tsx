@@ -749,7 +749,7 @@ const diferencaSegundaDerivada =
       <div className="resultCard">
         <span>% complexado</span>
         <strong>
-          {formatarNumeroBR(equilibrioNoPE.percentualComplexado, 4)}%
+          {formatarNumeroBR(equilibrioNoPE.percentualComplexado, 2)}%
         </strong>
       </div>
 
@@ -757,7 +757,7 @@ const diferencaSegundaDerivada =
         <span>pM no PE</span>
         <strong>
           {equilibrioNoPE.pM !== null
-            ? formatarDecimal(equilibrioNoPE.pM, 4)
+            ? formatarDecimal(equilibrioNoPE.pM, 2)
             : "-"}
         </strong>
       </div>
@@ -819,9 +819,9 @@ const diferencaSegundaDerivada =
                 </div>
 
                 <div className="resultCard">
-                  <span>Passo</span>
-                  <strong>{curva.passo} mL</strong>
-                </div>
+  <span>Passo</span>
+  <strong>{formatarNumeroBR(curva.passo, 2)} mL</strong>
+</div>
               </div>
 
               <div className="explanationBox curveConsultBox">
@@ -835,7 +835,7 @@ const diferencaSegundaDerivada =
                       onChange={(event) =>
                         setVolumeConsulta(event.target.value)
                       }
-                      placeholder="Ex: 20"
+                      placeholder="Ex: 20,00"
                     />
                   </label>
 
@@ -860,7 +860,7 @@ const diferencaSegundaDerivada =
 
                   <div className="resultCard">
                     <span>pM</span>
-                    <strong>{formatarNumeroBR(pontoConsulta.pM, 4)}</strong>
+                    <strong>{formatarNumeroBR(pontoConsulta.pM, 2)}</strong>
                   </div>
 
                   <div className="resultCard">
@@ -1453,7 +1453,7 @@ const diferencaSegundaDerivada =
 
                   <div className="resultCard">
                     <span>pM</span>
-                    <strong>{formatarNumeroBR(pontoAtual.pM, 4)}</strong>
+                    <strong>{formatarNumeroBR(pontoAtual.pM, 2)}</strong>
                   </div>
 
                   <div className="resultCard">
@@ -1473,7 +1473,7 @@ const diferencaSegundaDerivada =
                     <strong>
                       {formatarNumeroBR(
                         pontoAtual.percentualComplexado,
-                        4
+                        2
                       )}
                       %
                     </strong>
@@ -1569,7 +1569,7 @@ const diferencaSegundaDerivada =
                   <span>Diferença 1ª derivada</span>
                   <strong>
                     {diferencaPrimeiraDerivada !== null
-                      ? `${formatarNumeroBR(diferencaPrimeiraDerivada, 4)} mL`
+                      ? `${formatarNumeroBR(diferencaPrimeiraDerivada, 2)} mL`
                       : "-"}
                   </strong>
                 </div>
@@ -1599,7 +1599,7 @@ const diferencaSegundaDerivada =
                   <span>Diferença 2ª derivada</span>
                   <strong>
                     {diferencaSegundaDerivada !== null
-                      ? `${formatarNumeroBR(diferencaSegundaDerivada, 4)} mL`
+                      ? `${formatarNumeroBR(diferencaSegundaDerivada, 2)} mL`
                       : "-"}
                   </strong>
                 </div>
@@ -1660,9 +1660,9 @@ const diferencaSegundaDerivada =
                   <tbody>
                     {primeiraDerivada.slice(0, 120).map((ponto) => (
                       <tr key={`${ponto.volumeInicial}-${ponto.volumeFinal}`}>
-                        <td>{formatarNumeroBR(ponto.volume, 3)} mL</td>
-                        <td>{formatarNumeroBR(ponto.volumeInicial, 3)} mL</td>
-                        <td>{formatarNumeroBR(ponto.volumeFinal, 3)} mL</td>
+                        <td>{formatarNumeroBR(ponto.volume, 2)} mL</td>
+<td>{formatarNumeroBR(ponto.volumeInicial, 2)} mL</td>
+<td>{formatarNumeroBR(ponto.volumeFinal, 2)} mL</td>
                         <td>
                           <strong>{formatarNumeroBR(ponto.derivada, 6)}</strong>
                         </td>
@@ -1694,7 +1694,7 @@ const diferencaSegundaDerivada =
                   <tbody>
                     {segundaDerivada.slice(0, 120).map((ponto) => (
                       <tr key={`${ponto.volumeInicial}-${ponto.volumeFinal}`}>
-                        <td>{formatarNumeroBR(ponto.volume, 3)} mL</td>
+                        <td>{formatarNumeroBR(ponto.volume, 2)} mL</td>
                         <td>
                           {formatarNumeroBR(ponto.derivadaAnterior, 6)}
                         </td>
