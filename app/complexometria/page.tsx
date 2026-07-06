@@ -204,6 +204,19 @@ setPontosTempoReal([]);
     setPontoConsulta(ponto);
   }
 
+  function formatarFormulaQuimica(valor: string) {
+    return valor
+      .replace(/4-/g, "⁴⁻")
+      .replace(/3-/g, "³⁻")
+      .replace(/2-/g, "²⁻")
+      .replace(/1-/g, "⁻")
+      .replace(/4\+/g, "⁴⁺")
+      .replace(/3\+/g, "³⁺")
+      .replace(/2\+/g, "²⁺")
+      .replace(/1\+/g, "⁺")
+      .replace(/([A-Z][a-z]?)\+/g, "$1⁺");
+  }
+
   const melhorIndicador =
   rankingIndicadores.find(
     (item) => item.classificacao === "recomendado"
@@ -536,7 +549,7 @@ const diferencaSegundaDerivada =
                     onChange={(event) =>
                       setConcComplexanteAuxiliar(event.target.value)
                     }
-                    placeholder="Ex: 0,1"
+                    placeholder="Ex: 0,10"
                   />
                   <small>mol/L</small>
                 </label>
@@ -576,23 +589,25 @@ const diferencaSegundaDerivada =
                 <div className="resultGrid">
                   <div className="resultCard">
                     <span>Metal</span>
-                    <strong>{resultado.metalPrincipal.metal}</strong>
+                    <strong>{formatarFormulaQuimica(resultado.metalPrincipal.metal)}</strong>
                   </div>
 
                   <div className="resultCard">
                     <span>Complexo</span>
-                    <strong>{resultado.metalPrincipal.complexo}</strong>
+                    <strong>{formatarFormulaQuimica(resultado.metalPrincipal.complexo)}</strong>
                   </div>
 
                   <div className="resultCard">
-                    <span>α(Y4-)</span>
+                  <span>α(Y⁴⁻)</span>
                     <strong>
                       {formatarCientifico(resultado.metalPrincipal.alpha)}
                     </strong>
                   </div>
 
                   <div className="resultCard">
-                    <span>Kf condicional</span>
+                  <span>
+  K<sub>f</sub> condicional
+</span>
                     <strong>
                       {formatarCientifico(
                         resultado.metalPrincipal.kfCondicional
@@ -601,7 +616,9 @@ const diferencaSegundaDerivada =
                   </div>
 
                   <div className="resultCard">
-                    <span>Kf efetivo</span>
+                  <span>
+  K<sub>f</sub> efetivo
+</span>
                     <strong>
                       {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
                     </strong>
@@ -618,8 +635,8 @@ const diferencaSegundaDerivada =
 
                 <div className="explanationBox">
                   <h3>Interpretação química</h3>
-                  <p>{resultado.resumo.texto}</p>
-                  <p>{resultado.metalPrincipal.mensagem}</p>
+                  <p>{formatarFormulaQuimica(resultado.resumo.texto)}</p>
+<p>{formatarFormulaQuimica(resultado.metalPrincipal.mensagem)}</p>
                 </div>
               </>
             )}
@@ -722,7 +739,9 @@ const diferencaSegundaDerivada =
               </div>
 
               <div className="explanationBox">
-                <p>{resultado.metalPrincipal.avaliacaoPH.mensagem}</p>
+              <p>
+  {formatarFormulaQuimica(resultado.metalPrincipal.avaliacaoPH.mensagem)}
+</p>
               </div>
             </div>
 
@@ -973,7 +992,7 @@ const diferencaSegundaDerivada =
               <div className="resultGrid">
                 <div className="resultCard">
                   <span>Metal analisado</span>
-                  <strong>{resultado.metalPrincipal.metal}</strong>
+                  <strong>{formatarFormulaQuimica(resultado.metalPrincipal.metal)}</strong>
                 </div>
 
                 <div className="resultCard">
@@ -1013,12 +1032,12 @@ const diferencaSegundaDerivada =
   <div className="indicatorMetaGrid">
     <div className="indicatorMetaItem">
       <span>Metais recomendados</span>
-      <strong>{indicador.metaisRecomendados}</strong>
+      <strong>{formatarFormulaQuimica(indicador.metaisRecomendados)}</strong>
     </div>
 
     <div className="indicatorMetaItem">
       <span>Metal preferencial</span>
-      <strong>{indicador.metalPreferencial}</strong>
+      <strong>{formatarFormulaQuimica(indicador.metalPreferencial)}</strong>
     </div>
 
     <div className="indicatorMetaItem">
@@ -1038,8 +1057,8 @@ const diferencaSegundaDerivada =
   </div>
 
   <p className="indicatorJustification">
-    {indicador.justificativa}
-  </p>
+  {formatarFormulaQuimica(indicador.justificativa)}
+</p>
 
   <div className="indicatorInfoGrid">
     {indicador.aplicacao && (
@@ -1100,9 +1119,9 @@ const diferencaSegundaDerivada =
                   onChange={() => alternarInterferente(metal.idMetal)}
                 />
 
-                <span>
-                  <strong>{metal.metal}</strong> — {metal.nome}
-                </span>
+<span>
+  <strong>{formatarFormulaQuimica(metal.metal)}</strong> — {metal.nome}
+</span>
               </label>
             ))}
         </div>
@@ -1135,9 +1154,10 @@ const diferencaSegundaDerivada =
           </h2>
 
           <p>
-  O sistema compara os Kf cadastrados dos metais presentes. A avaliação
-  considera a força relativa de complexação com EDTA, a separação entre os Kf e
-  o efeito do pH sobre o Kf condicional do metal analisado.
+  O sistema compara os K<sub>f</sub> cadastrados dos metais presentes. A
+  avaliação considera a força relativa de complexação com EDTA, a separação
+  entre os K<sub>f</sub> e o efeito do pH sobre o K<sub>f</sub> condicional do
+  metal analisado.
 </p>
         </div>
       </div>
@@ -1226,7 +1246,9 @@ const diferencaSegundaDerivada =
       </div>
 
       <div className="resultsPanel interferenceComparisonPanel">
-        <h2>Resultado da comparação dos Kf</h2>
+      <h2>
+  Resultado da comparação dos K<sub>f</sub>
+</h2>
 
         {resultado.interferentes.length === 0 ? (
           <div className="explanationBox">
@@ -1268,7 +1290,9 @@ const diferencaSegundaDerivada =
       </div>
 
       <div className="interferenceMiniCard">
-        <span>Razão Kf</span>
+      <span>
+  Razão K<sub>f</sub>
+</span>
         <strong>
           {item.razaoKf ? formatarCientificoBR(item.razaoKf) : "-"}
         </strong>
