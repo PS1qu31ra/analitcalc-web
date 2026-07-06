@@ -55,7 +55,7 @@ export default function ComplexometriaPage() {
   const [concMetal, setConcMetal] = useState("");
   const [volAmostra, setVolAmostra] = useState("");
   const [concEDTA, setConcEDTA] = useState("");
-  const [volBureta, setVolBureta] = useState("50");
+  const [volBureta, setVolBureta] = useState("");
 
   const [metalComplexado, setMetalComplexado] = useState<"nao" | "sim">("nao");
   const [complexanteAuxiliar, setComplexanteAuxiliar] = useState("");
@@ -469,7 +469,7 @@ const diferencaSegundaDerivada =
               <input
                 value={volAmostra}
                 onChange={(event) => setVolAmostra(event.target.value)}
-                placeholder="Ex: 50"
+                placeholder="Ex: 50,00"
               />
               <small>mL</small>
             </label>
@@ -489,7 +489,7 @@ const diferencaSegundaDerivada =
               <input
                 value={volBureta}
                 onChange={(event) => setVolBureta(event.target.value)}
-                placeholder="Ex: 50"
+                placeholder="Ex: 50,00"
               />
               <small>mL</small>
             </label>
@@ -1008,40 +1008,62 @@ const diferencaSegundaDerivada =
                       <div className="indicatorRankNumber">#{index + 1}</div>
 
                       <div className="indicatorRankMain">
-                        <strong>{indicador.indicador}</strong>
+  <strong>{indicador.indicador}</strong>
 
-                        <span>
-                          Metais recomendados: {indicador.metaisRecomendados}
-                        </span>
+  <div className="indicatorMetaGrid">
+    <div className="indicatorMetaItem">
+      <span>Metais recomendados</span>
+      <strong>{indicador.metaisRecomendados}</strong>
+    </div>
 
-                        <span>
-                          Metal preferencial: {indicador.metalPreferencial}
-                        </span>
+    <div className="indicatorMetaItem">
+      <span>Metal preferencial</span>
+      <strong>{indicador.metalPreferencial}</strong>
+    </div>
 
-                        <span>
-                          pH útil: {formatarNumeroBR(indicador.pHMin, 1)} –{" "}
-                          {formatarNumeroBR(indicador.pHMax, 1)}
-                        </span>
+    <div className="indicatorMetaItem">
+      <span>pH útil</span>
+      <strong>
+        {formatarNumeroBR(indicador.pHMin, 1)} –{" "}
+        {formatarNumeroBR(indicador.pHMax, 1)}
+      </strong>
+    </div>
 
-                        <span>
-                          Cores: {indicador.corLivre} →{" "}
-                          {indicador.corComplexado}
-                        </span>
+    <div className="indicatorMetaItem">
+      <span>Cores</span>
+      <strong>
+        {indicador.corLivre} → {indicador.corComplexado}
+      </strong>
+    </div>
+  </div>
 
-                        <p>{indicador.justificativa}</p>
+  <p className="indicatorJustification">
+    {indicador.justificativa}
+  </p>
 
-                        {indicador.aplicacao && (
-                          <small>Aplicação: {indicador.aplicacao}</small>
-                        )}
+  <div className="indicatorInfoGrid">
+    {indicador.aplicacao && (
+      <div>
+        <span>Aplicação</span>
+        <p>{indicador.aplicacao}</p>
+      </div>
+    )}
 
-                        {indicador.observacao && (
-                          <small>Observação: {indicador.observacao}</small>
-                        )}
+    {indicador.observacao && (
+      <div>
+        <span>Observação</span>
+        <p>{indicador.observacao}</p>
+      </div>
+    )}
 
-                        {indicador.referencia && (
-                          <small>Referência: {indicador.referencia}</small>
-                        )}
-                      </div>
+    {indicador.referencia && (
+      <div>
+        <span>Referência</span>
+        <p>{indicador.referencia}</p>
+      </div>
+    )}
+  </div>
+</div>
 
                       <div className="indicatorRankScore">
                         <strong>{indicador.score}%</strong>

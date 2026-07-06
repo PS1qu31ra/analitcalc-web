@@ -2460,3 +2460,105 @@ section.container.calculatorSection + section.container.calculatorSection {
   z-index: 1 !important;
   margin-top: 28px !important;
 }
+
+.indicatorRankingItem {
+  align-items: start;
+}
+
+.indicatorRankMain {
+  display: grid;
+  gap: 16px;
+}
+
+.indicatorRankMain > strong {
+  font-size: 1.45rem;
+  color: #111111;
+}
+
+.indicatorMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.indicatorMetaItem {
+  background: #fffafa;
+  border: 1px solid #f1d4d4;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+}
+
+.indicatorMetaItem span {
+  color: #7a0000;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.indicatorMetaItem strong {
+  color: #344054;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.indicatorJustification {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.indicatorInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.indicatorInfoGrid div {
+  background: #ffffff;
+  border: 1px solid #eadede;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.indicatorInfoGrid span {
+  display: block;
+  margin-bottom: 6px;
+  color: #7a0000;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.indicatorInfoGrid p {
+  margin: 0;
+  color: #475467;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.indicatorRankScore {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .indicatorMetaGrid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+
+  .indicatorInfoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .indicatorMetaGrid {
+    grid-template-columns: 1fr;
+  }
+}
