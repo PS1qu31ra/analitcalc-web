@@ -217,6 +217,35 @@ setPontosTempoReal([]);
       .replace(/([A-Z][a-z]?)\+/g, "$1⁺");
   }
 
+  function formatarTextoQuimico(texto: string) {
+    const textoFormatado = formatarFormulaQuimica(texto);
+    const partes = textoFormatado.split(/(Kf'|Kf)/g);
+  
+    return (
+      <>
+        {partes.map((parte, index) => {
+          if (parte === "Kf") {
+            return (
+              <span key={index}>
+                K<sub>f</sub>
+              </span>
+            );
+          }
+  
+          if (parte === "Kf'") {
+            return (
+              <span key={index}>
+                K<sub>f</sub>′
+              </span>
+            );
+          }
+  
+          return <span key={index}>{parte}</span>;
+        })}
+      </>
+    );
+  }
+
   const melhorIndicador =
   rankingIndicadores.find(
     (item) => item.classificacao === "recomendado"
@@ -265,15 +294,15 @@ const riscoGlobalInterferentes =
 const precisaMascarante = interferentesCriticos.length > 0;
 
 const nomesInterferentesCriticos = interferentesCriticos
-  .map((item) => item.metal)
+  .map((item) => formatarFormulaQuimica(item.metal))
   .join(", ");
 
 const nomesInterferentesModerados = interferentesModerados
-  .map((item) => item.metal)
+  .map((item) => formatarFormulaQuimica(item.metal))
   .join(", ");
 
 const nomesInterferentesBaixos = interferentesBaixos
-  .map((item) => item.metal)
+  .map((item) => formatarFormulaQuimica(item.metal))
   .join(", ");
 
 const mascaranteRecomendado = resultado?.mascaranteRecomendado ?? null;
@@ -460,10 +489,10 @@ const diferencaSegundaDerivada =
               <select value={pH} onChange={(event) => setPH(event.target.value)}>
                 <option value="">Selecione o pH...</option>
                 {alphaEdtaPh.map((item) => (
-                  <option key={item.ph} value={item.ph}>
-                    pH {item.ph} — {item.statusEdta}
-                  </option>
-                ))}
+  <option key={item.ph} value={item.ph}>
+    pH {item.ph}
+  </option>
+))}
               </select>
             </label>
 
@@ -635,8 +664,8 @@ const diferencaSegundaDerivada =
 
                 <div className="explanationBox">
                   <h3>Interpretação química</h3>
-                  <p>{formatarFormulaQuimica(resultado.resumo.texto)}</p>
-<p>{formatarFormulaQuimica(resultado.metalPrincipal.mensagem)}</p>
+                  <p>{formatarTextoQuimico(resultado.resumo.texto)}</p>
+<p>{formatarTextoQuimico(resultado.metalPrincipal.mensagem)}</p>
                 </div>
               </>
             )}
@@ -740,7 +769,7 @@ const diferencaSegundaDerivada =
 
               <div className="explanationBox">
               <p>
-  {formatarFormulaQuimica(resultado.metalPrincipal.avaliacaoPH.mensagem)}
+              {formatarTextoQuimico(resultado.metalPrincipal.avaliacaoPH.mensagem)}
 </p>
               </div>
             </div>
@@ -1051,8 +1080,9 @@ const diferencaSegundaDerivada =
     <div className="indicatorMetaItem">
       <span>Cores</span>
       <strong>
-        {indicador.corLivre} → {indicador.corComplexado}
-      </strong>
+  {formatarFormulaQuimica(indicador.corLivre)} →{" "}
+  {formatarFormulaQuimica(indicador.corComplexado)}
+</strong>
     </div>
   </div>
 
@@ -1061,26 +1091,26 @@ const diferencaSegundaDerivada =
 </p>
 
   <div className="indicatorInfoGrid">
-    {indicador.aplicacao && (
-      <div>
-        <span>Aplicação</span>
-        <p>{indicador.aplicacao}</p>
-      </div>
-    )}
+  {indicador.aplicacao && (
+  <div>
+    <span>Aplicação</span>
+    <p>{formatarFormulaQuimica(indicador.aplicacao)}</p>
+  </div>
+)}
 
-    {indicador.observacao && (
-      <div>
-        <span>Observação</span>
-        <p>{indicador.observacao}</p>
-      </div>
-    )}
+{indicador.observacao && (
+  <div>
+    <span>Observação</span>
+    <p>{formatarFormulaQuimica(indicador.observacao)}</p>
+  </div>
+)}
 
     {indicador.referencia && (
-      <div>
-        <span>Referência</span>
-        <p>{indicador.referencia}</p>
-      </div>
-    )}
+  <div>
+    <span>Referência</span>
+    <p>{formatarFormulaQuimica(indicador.referencia)}</p>
+  </div>
+)}
   </div>
 </div>
 
@@ -1282,11 +1312,11 @@ const diferencaSegundaDerivada =
       className={`interferenceResultCard ${classeRisco}`}
     >
       <div>
-        <h3>
-          {item.metal} — {item.nome}
-        </h3>
+      <h3>
+  {formatarFormulaQuimica(item.metal)} — {item.nome}
+</h3>
 
-        <p>{item.problema || item.acaoSistema || ""}</p>
+<p>{formatarTextoQuimico(item.problema || item.acaoSistema || "")}</p>
       </div>
 
       <div className="interferenceMiniCard">
@@ -1313,7 +1343,7 @@ const diferencaSegundaDerivada =
 
       <div className="resultsPanel">
   <h2>Conclusão didática</h2>
-  <p>{textoConclusaoInterferentes}</p>
+  <p>{formatarTextoQuimico(textoConclusaoInterferentes)}</p>
 </div>
     </div>
   </section>
@@ -1542,12 +1572,12 @@ const diferencaSegundaDerivada =
                     <td>{index + 1}</td>
                     <td>{formatarNumeroBR(ponto.volume, 2)} mL</td>
                     <td>
-                      <strong>{formatarNumeroBR(ponto.pM, 4)}</strong>
+                      <strong>{formatarNumeroBR(ponto.pM, 2)}</strong>
                     </td>
                     <td>{formatarCientificoBR(ponto.metalLivre)}</td>
                     <td>{formatarCientificoBR(ponto.MY)}</td>
                     <td>
-                      {formatarNumeroBR(ponto.percentualComplexado, 4)}%
+                      {formatarNumeroBR(ponto.percentualComplexado, 2)}%
                     </td>
                     <td>{ponto.regiao}</td>
                   </tr>
