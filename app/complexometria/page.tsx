@@ -908,7 +908,7 @@ const diferencaSegundaDerivada =
 
                   <div className="resultCard">
                     <span>pM</span>
-                    <strong>{formatarNumeroBR(pontoConsulta.pM, 2)}</strong>
+                    <strong>{formatarNumeroBR(pontoConsulta.pM, 4)}</strong>
                   </div>
 
                   <div className="resultCard">
