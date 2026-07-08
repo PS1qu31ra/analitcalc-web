@@ -2562,3 +2562,7 @@ section.container.calculatorSection + section.container.calculatorSection {
     grid-template-columns: 1fr;
   }
 }
+
+.chemSymbol {
+  text-transform: none !important;
+}

@@ -41,6 +41,7 @@ import { SimulacaoTempoRealEdtaChart } from "../../components/SimulacaoTempoReal
 
 type AbaAtiva =
   | "visao"
+  | "baseCalculo"
   | "curva"
   | "indicadores"
   | "interferentes"
@@ -218,7 +219,9 @@ setPontosTempoReal([]);
   }
 
   function formatarTextoQuimico(texto: string) {
-    const textoFormatado = formatarFormulaQuimica(texto);
+    const textoComNumerosBR = texto.replace(/(\d)\.(\d)/g, "$1,$2");
+  
+    const textoFormatado = formatarFormulaQuimica(textoComNumerosBR);
     const partes = textoFormatado.split(/(Kf'|Kf)/g);
   
     return (
@@ -357,21 +360,196 @@ const trocaSegundaDerivada =
       )
     : null;
 
-const diferencaPrimeiraDerivada =
-  picoPrimeiraDerivada && curva?.volumePE
-    ? Math.abs(picoPrimeiraDerivada.volumeEstimadoPE - curva.volumePE)
-    : null;
-
-const diferencaSegundaDerivada =
-  trocaSegundaDerivada && curva?.volumePE
-    ? Math.abs(trocaSegundaDerivada.volumeEstimado - curva.volumePE)
-    : null;
+    function calcularMediana(valores: number[]) {
+      const ordenados = valores
+        .filter((valor) => Number.isFinite(valor))
+        .map((valor) => Math.abs(valor))
+        .sort((a, b) => a - b);
+    
+      if (ordenados.length === 0) return 0;
+    
+      const meio = Math.floor(ordenados.length / 2);
+    
+      if (ordenados.length % 2 === 0) {
+        return (ordenados[meio - 1] + ordenados[meio]) / 2;
+      }
+    
+      return ordenados[meio];
+    }
+    
+    function variacaoEhSignificativa(
+      valores: number[],
+      limiarMinimo = 0.02,
+      fatorMinimo = 5
+    ) {
+      const absolutos = valores
+        .filter((valor) => Number.isFinite(valor))
+        .map((valor) => Math.abs(valor));
+    
+      if (absolutos.length === 0) return false;
+    
+      const maximo = Math.max(...absolutos);
+      const mediana = calcularMediana(absolutos);
+    
+      if (maximo < limiarMinimo) return false;
+    
+      if (mediana === 0) {
+        return maximo >= limiarMinimo;
+      }
+    
+      return maximo >= mediana * fatorMinimo;
+    }
+    
+    const primeiraDerivadaSignificativa =
+      picoPrimeiraDerivada !== null &&
+      variacaoEhSignificativa(
+        primeiraDerivada.map((ponto) => ponto.derivada),
+        0.02,
+        5
+      );
+    
+    const segundaDerivadaSignificativa =
+      trocaSegundaDerivada !== null &&
+      variacaoEhSignificativa(
+        segundaDerivada.map((ponto) => ponto.segundaDerivada),
+        0.02,
+        5
+      );
+    
+    const volumeDestaquePrimeiraDerivada =
+      primeiraDerivadaSignificativa && picoPrimeiraDerivada
+        ? picoPrimeiraDerivada.volumeEstimadoPE
+        : null;
+    
+    const volumeDestaqueSegundaDerivada =
+      segundaDerivadaSignificativa && trocaSegundaDerivada
+        ? trocaSegundaDerivada.volumeEstimado
+        : null;
+    
+    const diferencaPrimeiraDerivada =
+      primeiraDerivadaSignificativa && picoPrimeiraDerivada && curva?.volumePE
+        ? Math.abs(picoPrimeiraDerivada.volumeEstimadoPE - curva.volumePE)
+        : null;
+    
+    const diferencaSegundaDerivada =
+      segundaDerivadaSignificativa && trocaSegundaDerivada && curva?.volumePE
+        ? Math.abs(trocaSegundaDerivada.volumeEstimado - curva.volumePE)
+        : null;
 
     const equilibrioNoPE =
   curva?.pontoPE ??
   (resultado?.volumePE
     ? calcularPontoCurvaEDTA(resultado, resultado.volumePE)
     : null);
+
+    const kfAbsoluto =
+  resultado?.metalPrincipal.alpha &&
+  resultado.metalPrincipal.alpha > 0 &&
+  resultado.metalPrincipal.kfCondicional
+    ? resultado.metalPrincipal.kfCondicional / resultado.metalPrincipal.alpha
+    : null;
+
+const logKfAbsoluto =
+  kfAbsoluto && kfAbsoluto > 0 ? Math.log10(kfAbsoluto) : null;
+
+  const betaAuxiliar =
+  metalComplexado === "sim"
+    ? (betasComplexantes as any[]).find(
+        (beta) =>
+          beta.idMetal === metalPrincipal &&
+          beta.idComplexante === complexanteAuxiliar
+      )
+    : null;
+
+const concentracaoAuxiliarNumero = concComplexanteAuxiliar
+  ? Number(concComplexanteAuxiliar.replace(",", "."))
+  : null;
+
+  type BetaUsado = {
+    indice: number;
+    valor: number;
+  };
+  
+  function extrairBetasUsados(beta: any): BetaUsado[] {
+    if (!beta) return [];
+  
+    const candidatos = [
+      beta.beta1,
+      beta.beta2,
+      beta.beta3,
+      beta.beta4,
+      beta.beta5,
+      beta.beta6,
+    ];
+  
+    const betasPorIndice: BetaUsado[] = candidatos
+      .map((valor: unknown, index: number) => ({
+        indice: index + 1,
+        valor: Number(valor),
+      }))
+      .filter((item: BetaUsado) => Number.isFinite(item.valor) && item.valor > 0);
+  
+    if (betasPorIndice.length > 0) {
+      return betasPorIndice;
+    }
+  
+    if (Array.isArray(beta.betas)) {
+      return beta.betas
+        .map((valor: unknown, index: number) => ({
+          indice: index + 1,
+          valor: Number(valor),
+        }))
+        .filter(
+          (item: BetaUsado) => Number.isFinite(item.valor) && item.valor > 0
+        );
+    }
+  
+    const betaUnico =
+      beta.beta ??
+      beta.betaGlobal ??
+      beta.valorBeta ??
+      beta.valor ??
+      beta.Beta ??
+      null;
+  
+    const valorBetaUnico = Number(betaUnico);
+  
+    if (Number.isFinite(valorBetaUnico) && valorBetaUnico > 0) {
+      return [{ indice: 1, valor: valorBetaUnico }];
+    }
+  
+    return [];
+  }
+
+const betasUsados = extrairBetasUsados(betaAuxiliar);
+
+const denominadorBeta =
+  metalComplexado === "sim" &&
+  concentracaoAuxiliarNumero &&
+  concentracaoAuxiliarNumero > 0 &&
+  betasUsados.length > 0
+    ? 1 +
+    betasUsados.reduce(
+      (soma: number, beta: BetaUsado) =>
+        soma + beta.valor * concentracaoAuxiliarNumero ** beta.indice,
+      0
+    )
+    : null;
+
+const betaUsadoTexto =
+  betasUsados.length > 0
+    ? betasUsados
+    .map(
+      (beta: BetaUsado) =>
+        `β${beta.indice} = ${formatarCientificoBR(beta.valor)}`
+    )
+        .join(" | ")
+    : "-";
+
+const nomeComplexanteAuxiliar =
+  complexantesAuxiliares.find(
+    (item) => item.idComplexante === complexanteAuxiliar
+  )?.complexante ?? complexanteAuxiliar;
 
     function adicionarVolumeTempoReal(incremento: number) {
       if (!resultado) {
@@ -501,7 +679,7 @@ const diferencaSegundaDerivada =
               <input
                 value={concMetal}
                 onChange={(event) => setConcMetal(event.target.value)}
-                placeholder="Ex: 0,01"
+                placeholder="Ex: 0,010"
               />
               <small>mol/L</small>
             </label>
@@ -511,7 +689,7 @@ const diferencaSegundaDerivada =
               <input
                 value={volAmostra}
                 onChange={(event) => setVolAmostra(event.target.value)}
-                placeholder="Ex: 50,00"
+                placeholder="Ex: 25,00"
               />
               <small>mL</small>
             </label>
@@ -521,7 +699,7 @@ const diferencaSegundaDerivada =
               <input
                 value={concEDTA}
                 onChange={(event) => setConcEDTA(event.target.value)}
-                placeholder="Ex: 0,01"
+                placeholder="Ex: 0,010"
               />
               <small>mol/L</small>
             </label>
@@ -663,6 +841,26 @@ const diferencaSegundaDerivada =
                 </div>
 
                 <div className="explanationBox">
+  <h3>Legenda dos valores</h3>
+
+  <p>
+    <strong>
+      K<sub>f</sub> condicional:
+    </strong>{" "}
+    constante de formação corrigida pelo pH, considerando a fração de EDTA na
+    forma ativa Y⁴⁻.
+  </p>
+
+  <p>
+    <strong>
+      K<sub>f</sub> efetivo:
+    </strong>{" "}
+    constante realmente usada na avaliação, após considerar o pH e, quando
+    informado, a competição com complexantes auxiliares.
+  </p>
+</div>
+
+                <div className="explanationBox">
                   <h3>Interpretação química</h3>
                   <p>{formatarTextoQuimico(resultado.resumo.texto)}</p>
 <p>{formatarTextoQuimico(resultado.metalPrincipal.mensagem)}</p>
@@ -683,6 +881,14 @@ const diferencaSegundaDerivada =
             >
               Visão geral
             </button>
+
+            <button
+  type="button"
+  className={abaAtiva === "baseCalculo" ? "active" : ""}
+  onClick={() => setAbaAtiva("baseCalculo")}
+>
+  Base do cálculo
+</button>
 
             <button
               type="button"
@@ -829,6 +1035,268 @@ const diferencaSegundaDerivada =
         </section>
       )}
 
+{resultado && abaAtiva === "baseCalculo" && (
+  <section className="container calculatorSection">
+    <div className="curveDashboard">
+      <div className="resultsPanel">
+        <span className="eyebrow">Valores utilizados</span>
+        <h2>Base do cálculo</h2>
+        <p>
+          Constantes e parâmetros numéricos usados pelo AnalitCalc na avaliação
+          do sistema selecionado.
+        </p>
+      </div>
+
+      <div className="resultsPanel">
+        <h2>Metal principal</h2>
+
+        <div className="resultGrid">
+          <div className="resultCard">
+            <span>Metal</span>
+            <strong>
+              {formatarFormulaQuimica(resultado.metalPrincipal.metal)}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>Complexo</span>
+            <strong>
+              {formatarFormulaQuimica(resultado.metalPrincipal.complexo)}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>
+              log K<sub>f</sub>
+            </span>
+            <strong>
+              {logKfAbsoluto !== null
+                ? formatarNumeroBR(logKfAbsoluto, 2)
+                : "-"}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>
+              K<sub>f</sub> absoluto
+            </span>
+            <strong>
+              {kfAbsoluto !== null ? formatarCientifico(kfAbsoluto) : "-"}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>α(Y⁴⁻)</span>
+            <strong>
+              {formatarCientifico(resultado.metalPrincipal.alpha)}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>
+              K<sub>f</sub> condicional
+            </span>
+            <strong>
+              {formatarCientifico(resultado.metalPrincipal.kfCondicional)}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>
+              K<sub>f</sub> efetivo
+            </span>
+            <strong>
+              {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
+            </strong>
+          </div>
+
+          <div className="resultCard">
+            <span>Status</span>
+            <strong>
+              {resultado.metalPrincipal.sinalizacao}{" "}
+              {resultado.metalPrincipal.status}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="resultsPanel">
+        <h2>Complexante auxiliar</h2>
+
+        {metalComplexado === "sim" ? (
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>Complexante</span>
+              <strong>
+                {formatarFormulaQuimica(nomeComplexanteAuxiliar || "-")}
+              </strong>
+            </div>
+
+            <div className="resultCard">
+  <span>
+    <span className="chemSymbol">β</span> usados
+  </span>
+  <strong>{betaUsadoTexto}</strong>
+</div>
+
+            <div className="resultCard">
+              <span>Concentração</span>
+              <strong>
+                {concentracaoAuxiliarNumero !== null
+                  ? `${formatarCientificoBR(
+                      concentracaoAuxiliarNumero
+                    )} mol/L`
+                  : "-"}
+              </strong>
+            </div>
+
+            <div className="resultCard">
+  <span>
+    Denominador <span className="chemSymbol">β</span>
+  </span>
+  <strong>
+    {denominadorBeta !== null
+      ? formatarCientificoBR(denominadorBeta)
+      : "-"}
+  </strong>
+</div>
+
+            <div className="resultCard">
+              <span>
+                K<sub>f</sub> antes da correção
+              </span>
+              <strong>
+                {formatarCientifico(resultado.metalPrincipal.kfCondicional)}
+              </strong>
+            </div>
+
+            <div className="resultCard">
+              <span>
+                K<sub>f</sub> efetivo após correção
+              </span>
+              <strong>
+                {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
+              </strong>
+            </div>
+          </div>
+        ) : (
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>Complexante</span>
+              <strong>Não utilizado</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>β usado</span>
+              <strong>-</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Denominador β</span>
+              <strong>-</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>
+                K<sub>f</sub> efetivo
+              </span>
+              <strong>
+                {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
+              </strong>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="resultsPanel">
+        <h2>Interferentes e razões de K<sub>f</sub></h2>
+
+        {resultado.interferentes.length === 0 ? (
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>Interferentes avaliados</span>
+              <strong>Nenhum</strong>
+            </div>
+          </div>
+        ) : (
+          <div className="curveTableScroll">
+            <table className="curve-table">
+              <thead>
+                <tr>
+                  <th>Metal</th>
+                  <th>
+                    K<sub>f</sub> interferente
+                  </th>
+                  <th>
+                    Razão K<sub>f</sub>
+                  </th>
+                  <th>Risco</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {resultado.interferentes.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      {formatarFormulaQuimica(item.metal)} — {item.nome}
+                    </td>
+
+                    <td>
+                      {(item as any).kfInterferente
+                        ? formatarCientificoBR((item as any).kfInterferente)
+                        : (item as any).kf
+                          ? formatarCientificoBR((item as any).kf)
+                          : "-"}
+                    </td>
+
+                    <td>
+                      {item.razaoKf ? formatarCientificoBR(item.razaoKf) : "-"}
+                    </td>
+
+                    <td>{item.risco}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {curva && (
+        <div className="resultsPanel">
+          <h2>Parâmetros da curva</h2>
+
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>Volume de equivalência</span>
+              <strong>
+                {curva.volumePE
+                  ? `${formatarNumeroBR(curva.volumePE, 2)} mL`
+                  : "-"}
+              </strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Volume máximo</span>
+              <strong>{formatarNumeroBR(curva.volumeMaximo, 2)} mL</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Passo</span>
+              <strong>{formatarNumeroBR(curva.passo, 2)} mL</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Pontos calculados</span>
+              <strong>{curva.pontos.length}</strong>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
       {resultado && curva && abaAtiva === "curva" && (
         <section className="container calculatorSection">
           <div className="curveDashboard">
@@ -961,10 +1429,10 @@ const diferencaSegundaDerivada =
                       <tr key={ponto.volume}>
                         <td>{formatarNumeroBR(ponto.volume, 2)} mL</td>
                         <td>
-                          <strong>{formatarNumeroBR(ponto.pM, 4)}</strong>
+                          <strong>{formatarNumeroBR(ponto.pM, 2)}</strong>
                         </td>
                         <td>
-                          {formatarNumeroBR(ponto.percentualComplexado, 4)}%
+                          {formatarNumeroBR(ponto.percentualComplexado, 2)}%
                         </td>
                         <td>{ponto.regiao}</td>
                       </tr>
@@ -1610,12 +2078,9 @@ const diferencaSegundaDerivada =
                 <div className="resultCard">
                   <span>Pico da 1ª derivada</span>
                   <strong>
-                    {picoPrimeiraDerivada
-                      ? `${formatarNumeroBR(
-                          picoPrimeiraDerivada.volumeEstimadoPE,
-                          2
-                        )} mL`
-                      : "-"}
+                  {volumeDestaquePrimeiraDerivada !== null
+  ? `${formatarNumeroBR(volumeDestaquePrimeiraDerivada, 2)} mL`
+  : "-"}
                   </strong>
                 </div>
 
@@ -1631,21 +2096,18 @@ const diferencaSegundaDerivada =
                 <div className="resultCard">
                   <span>Troca de sinal 2ª derivada</span>
                   <strong>
-                    {trocaSegundaDerivada
-                      ? `${formatarNumeroBR(
-                          trocaSegundaDerivada.volumeEstimado,
-                          2
-                        )} mL`
-                      : "-"}
+                  {volumeDestaqueSegundaDerivada !== null
+  ? `${formatarNumeroBR(volumeDestaqueSegundaDerivada, 2)} mL`
+  : "-"}
                   </strong>
                 </div>
 
                 <div className="resultCard">
                   <span>Sinal da 2ª derivada</span>
                   <strong>
-                    {trocaSegundaDerivada
-                      ? `${trocaSegundaDerivada.sinalAntes} → ${trocaSegundaDerivada.sinalDepois}`
-                      : "-"}
+                  {segundaDerivadaSignificativa && trocaSegundaDerivada
+  ? `${trocaSegundaDerivada.sinalAntes} → ${trocaSegundaDerivada.sinalDepois}`
+  : "-"}
                   </strong>
                 </div>
 
@@ -1660,25 +2122,23 @@ const diferencaSegundaDerivada =
               </div>
 
               <div className="derivativeChartsGrid">
-                <DerivadaEdtaChart
-                  tipo="primeira"
-                  titulo="1ª derivada da curva"
-                  descricao="Variação de pM em relação ao volume de EDTA adicionado"
-                  pontos={primeiraDerivada}
-                  volumePE={curva.volumePE}
-                  volumeDestaque={
-                    picoPrimeiraDerivada?.volumeEstimadoPE ?? null
-                  }
-                />
+              <DerivadaEdtaChart
+  tipo="primeira"
+  titulo="1ª derivada da curva"
+  descricao="Variação de pM em relação ao volume de EDTA adicionado"
+  pontos={primeiraDerivada}
+  volumePE={curva.volumePE}
+  volumeDestaque={volumeDestaquePrimeiraDerivada}
+/>
 
-                <DerivadaEdtaChart
-                  tipo="segunda"
-                  titulo="2ª derivada da curva"
-                  descricao="Mudança da inclinação da curva pM × volume"
-                  pontos={segundaDerivada}
-                  volumePE={curva.volumePE}
-                  volumeDestaque={trocaSegundaDerivada?.volumeEstimado ?? null}
-                />
+<DerivadaEdtaChart
+  tipo="segunda"
+  titulo="2ª derivada da curva"
+  descricao="Mudança da inclinação da curva pM × volume"
+  pontos={segundaDerivada}
+  volumePE={curva.volumePE}
+  volumeDestaque={volumeDestaqueSegundaDerivada}
+/>
               </div>
 
               <div className="explanationBox">
