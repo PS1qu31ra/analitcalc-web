@@ -174,33 +174,37 @@ export function SimulacaoTempoRealEdtaChart({
           />
         )}
 
-        {pontosAdicionados.map((ponto, index) => {
-          if (ponto.pM === null) return null;
+{pontosAdicionados.map((ponto, index) => {
+  if (ponto.pM === null) return null;
 
-          return (
-            <g key={`${ponto.volume}-${index}`}>
-              <circle
-                cx={xScale(ponto.volume)}
-                cy={yScale(ponto.pM)}
-                r="10"
-                fill="#f43f5e"
-                stroke="#ffffff"
-                strokeWidth="4"
-              />
+  const ehUltimoPonto = index === pontosAdicionados.length - 1;
 
-              <text
-                x={xScale(ponto.volume)}
-                y={yScale(ponto.pM) - 16}
-                fill="#9f1239"
-                fontSize="13"
-                fontWeight="900"
-                textAnchor="middle"
-              >
-                {formatarNumeroBR(ponto.volume, 2)}
-              </text>
-            </g>
-          );
-        })}
+  return (
+    <g key={`${ponto.volume}-${index}`}>
+      <circle
+        cx={xScale(ponto.volume)}
+        cy={yScale(ponto.pM)}
+        r="10"
+        fill="#f43f5e"
+        stroke="#ffffff"
+        strokeWidth="4"
+      />
+
+      {ehUltimoPonto && (
+        <text
+          x={xScale(ponto.volume)}
+          y={yScale(ponto.pM) - 16}
+          fill="#9f1239"
+          fontSize="13"
+          fontWeight="900"
+          textAnchor="middle"
+        >
+          {formatarNumeroBR(ponto.volume, 2)}
+        </text>
+      )}
+    </g>
+  );
+})}
 
         <text
           x={largura / 2}

@@ -165,13 +165,19 @@ setPontosTempoReal([]);
       const ranking = montarRankingIndicadoresEDTA(avaliacao);
   
       setResultado(avaliacao);
-      setCurva(curvaGerada);
-      setRankingIndicadores(ranking);
-      setPontoConsulta(null);
-  
-      if (abaDepois) {
-        setAbaAtiva(abaDepois);
-      }
+setCurva(curvaGerada);
+setRankingIndicadores(ranking);
+
+setPontoConsulta(null);
+setVolumeConsulta("");
+
+setVolumeAtualTempoReal(0);
+setVolumeManualTempoReal("");
+setPontosTempoReal([]);
+
+if (abaDepois) {
+  setAbaAtiva(abaDepois);
+}
     } catch (error) {
       setErro(
         error instanceof Error
