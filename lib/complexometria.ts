@@ -61,7 +61,7 @@ export type InterferenciaEDTA = {
   fatorOrdemReacao: FatorInterferencia;
   fatorSeparacao: FatorInterferencia;
   fatorPH: FatorInterferencia;
-  risco: "Sem interferência" | "Baixa" | "Moderada" | "Significativa" | "Alta";
+  risco: "Sem interferência" | "Baixo" | "Moderado" | "Significativo" | "Alto";
   problema: string;
   mascaranteRecomendado: string;
   acaoSistema: string;
@@ -463,9 +463,9 @@ function avaliarInterferenciaTresFatores(
     ),
 
     mascaranteRecomendado:
-      risco === "Alta" || risco === "Significativa"
-        ? "Pode ser necessário usar mascarante."
-        : "Mascarante geralmente não necessário.",
+  risco === "Alto" || risco === "Significativo"
+    ? "Pode ser necessário usar mascarante."
+    : "Mascarante geralmente não necessário.",
 
     acaoSistema: montarAcaoTresFatores(risco, fatorPH),
   };
@@ -501,7 +501,7 @@ function avaliarSeparacaoPorRazaoKf(razaoKf: number): FatorInterferencia {
 
   if (razaoKf >= 1e7) {
     return {
-      status: "Baixa",
+      status: "BaixBaixo",
       descricao: "A diferença entre os Kf está próxima de 10^7.",
       pontuacao: 1,
     };
@@ -509,7 +509,7 @@ function avaliarSeparacaoPorRazaoKf(razaoKf: number): FatorInterferencia {
 
   if (razaoKf >= 1e6) {
     return {
-      status: "Moderada",
+      status: "ModeradModerado",
       descricao: "A diferença entre os Kf está próxima de 10^6.",
       pontuacao: 2,
     };
@@ -517,14 +517,14 @@ function avaliarSeparacaoPorRazaoKf(razaoKf: number): FatorInterferencia {
 
   if (razaoKf >= 1e5) {
     return {
-      status: "Significativa",
+      status: "SignificativSignificativo",
       descricao: "A diferença entre os Kf está próxima de 10^5.",
       pontuacao: 3,
     };
   }
 
   return {
-    status: "Alta",
+    status: "AltAlto",
     descricao:
       "A separação entre os Kf é menor que 10^5 ou o interferente possui Kf maior.",
     pontuacao: 4,
@@ -568,10 +568,10 @@ function classificarRiscoTresFatores(
     fatorSeparacao.pontuacao +
     fatorPH.pontuacao;
 
-  if (score >= 6) return "Alta";
-  if (score >= 4) return "Significativa";
-  if (score >= 2) return "Moderada";
-  if (score >= 1) return "Baixa";
+    if (score >= 6) return "Alto";
+    if (score >= 4) return "Significativo";
+    if (score >= 2) return "Moderado";
+    if (score >= 1) return "Baixo";
 
   return "Sem interferência";
 }
@@ -609,21 +609,18 @@ function montarAcaoTresFatores(
 ) {
   let texto = "";
 
-  if (risco === "Alta") {
+  if (risco === "Alto") {
     texto =
-      "Interferência alta: avaliar mascaramento, separação prévia ou mudança de condição experimental.";
-  } else if (risco === "Significativa") {
+      "Risco alto: avaliar mascaramento, separação prévia ou mudança de condição experimental.";
+  } else if (risco === "Significativo") {
     texto =
-      "Interferência significativa: o interferente pode afetar a titulação.";
-  } else if (risco === "Moderada") {
+      "Risco significativo: o interferente pode afetar a titulação.";
+  } else if (risco === "Moderado") {
     texto =
-      "Interferência moderada: avaliar a concentração real do interferente.";
-  } else if (risco === "Baixa") {
+      "Risco moderado: avaliar a concentração real do interferente.";
+  } else if (risco === "Baixo") {
     texto =
-      "Interferência baixa: geralmente aceitável, mas deve ser observada.";
-  } else {
-    texto =
-      "Interferência desprezível pela diferença de Kf e condição de pH.";
+      "Risco baixo: geralmente aceitável, mas deve ser observado.";
   }
 
   if (fatorPH.pontuacao > 0) {
@@ -680,7 +677,7 @@ function montarResumoEDTA(
   const totalInterferentes = interferentes.length;
 
   const interferenciasAltas = interferentes.filter(
-    (item) => item.risco === "Alta" || item.risco === "Significativa"
+    (item) => item.risco === "Alto" || item.risco === "Significativo"
   ).length;
 
   return {
@@ -716,7 +713,7 @@ function recomendarMascaranteEDTA(
   if (!interferentes || interferentes.length === 0) return null;
 
   const interferentesRelevantes = interferentes.filter(
-    (item) => item.risco === "Alta" || item.risco === "Significativa"
+    (item) => item.risco === "Alto" || item.risco === "Significativo"
   );
 
   if (!interferentesRelevantes.length) return null;

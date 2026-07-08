@@ -272,15 +272,15 @@ const curvasInterferentes =
 const interferentesAvaliados = resultado?.interferentes ?? [];
 
 const interferentesCriticos = interferentesAvaliados.filter(
-  (item) => item.risco === "Alta" || item.risco === "Significativa"
+  (item) => item.risco === "Alto" || item.risco === "Significativo"
 );
 
 const interferentesModerados = interferentesAvaliados.filter(
-  (item) => item.risco === "Moderada"
+  (item) => item.risco === "Moderado"
 );
 
 const interferentesBaixos = interferentesAvaliados.filter(
-  (item) => item.risco === "Baixa"
+  (item) => item.risco === "Baixo"
 );
 
 const interferentesSemInterferencia = interferentesAvaliados.filter(
@@ -542,15 +542,13 @@ const denominadorBeta =
     )
     : null;
 
-const betaUsadoTexto =
-  betasUsados.length > 0
-    ? betasUsados
-    .map(
-      (beta: BetaUsado) =>
-        `β${beta.indice} = ${formatarCientificoBR(beta.valor)}`
-    )
-        .join(" | ")
-    : "-";
+    const betaUsadoTexto =
+    betasUsados.length > 0
+      ? betasUsados.map((beta: BetaUsado) => ({
+          indice: beta.indice,
+          texto: `β${beta.indice} = ${formatarCientificoBR(beta.valor)}`,
+        }))
+      : [];
 
 const nomeComplexanteAuxiliar =
   complexantesAuxiliares.find(
@@ -811,11 +809,11 @@ const nomeComplexanteAuxiliar =
                   </div>
 
                   <div className="resultCard">
-                  <span>α(Y⁴⁻)</span>
-                    <strong>
-                      {formatarCientifico(resultado.metalPrincipal.alpha)}
-                    </strong>
-                  </div>
+  <span className="chemLabel">α(Y⁴⁻)</span>
+  <strong>
+    {formatarCientifico(resultado.metalPrincipal.alpha)}
+  </strong>
+</div>
 
                   <div className="resultCard">
                   <span>
@@ -960,23 +958,14 @@ const nomeComplexanteAuxiliar =
                   </strong>
                 </div>
 
-                <div className="resultCard">
-                  <span>pH ideal</span>
-                  <strong>
-                    {resultado.metalPrincipal.avaliacaoPH.encontrado
-                      ? resultado.metalPrincipal.avaliacaoPH.pHIdeal
-                      : "-"}
-                  </strong>
-                </div>
-
-                <div className="resultCard">
-                  <span>Tampão sugerido</span>
-                  <strong>
-                    {resultado.metalPrincipal.avaliacaoPH.encontrado
-                      ? resultado.metalPrincipal.avaliacaoPH.tampaoRecomendado
-                      : "-"}
-                  </strong>
-                </div>
+                <div className="resultCard phBufferCard">
+  <span>Tampão sugerido</span>
+  <strong>
+    {resultado.metalPrincipal.avaliacaoPH.encontrado
+      ? resultado.metalPrincipal.avaliacaoPH.tampaoRecomendado
+      : "-"}
+  </strong>
+</div>
               </div>
 
               <div className="explanationBox">
@@ -1092,11 +1081,11 @@ const nomeComplexanteAuxiliar =
           </div>
 
           <div className="resultCard">
-            <span>α(Y⁴⁻)</span>
-            <strong>
-              {formatarCientifico(resultado.metalPrincipal.alpha)}
-            </strong>
-          </div>
+  <span className="chemLabel">α(Y⁴⁻)</span>
+  <strong>
+    {formatarCientifico(resultado.metalPrincipal.alpha)}
+  </strong>
+</div>
 
           <div className="resultCard">
             <span>
@@ -1138,11 +1127,18 @@ const nomeComplexanteAuxiliar =
               </strong>
             </div>
 
-            <div className="resultCard">
-  <span>
-    <span className="chemSymbol">β</span> usados
-  </span>
-  <strong>{betaUsadoTexto}</strong>
+            <div className="resultCard betaValuesCard">
+  <span className="chemLabel">β usados</span>
+
+  {betaUsadoTexto.length > 0 ? (
+    <div className="betaValuesList">
+      {betaUsadoTexto.map((beta) => (
+        <strong key={beta.indice}>{beta.texto}</strong>
+      ))}
+    </div>
+  ) : (
+    <strong>-</strong>
+  )}
 </div>
 
             <div className="resultCard">
@@ -1157,9 +1153,7 @@ const nomeComplexanteAuxiliar =
             </div>
 
             <div className="resultCard">
-  <span>
-    Denominador <span className="chemSymbol">β</span>
-  </span>
+            <span className="chemLabel">Denominador β</span>
   <strong>
     {denominadorBeta !== null
       ? formatarCientificoBR(denominadorBeta)
@@ -1330,7 +1324,7 @@ const nomeComplexanteAuxiliar =
                   <strong>
                     {curva.pontoPE?.pM !== null &&
                     curva.pontoPE?.pM !== undefined
-                      ? formatarNumeroBR(curva.pontoPE.pM, 4)
+                      ? formatarNumeroBR(curva.pontoPE.pM, 2)
                       : "-"}
                   </strong>
                 </div>
@@ -1765,20 +1759,20 @@ const nomeComplexanteAuxiliar =
           <div className="interferenceCardsList">
             {resultado.interferentes.map((item) => {
   const classeRisco =
-    item.risco === "Alta" || item.risco === "Significativa"
-      ? "high"
-      : item.risco === "Moderada"
-        ? "medium"
-        : "low";
+  item.risco === "Alto" || item.risco === "Significativo"
+    ? "high"
+    : item.risco === "Moderado"
+      ? "medium"
+      : "low";
 
-  const textoStatus =
-    item.risco === "Sem interferência"
-      ? "Não interfere"
-      : item.risco === "Baixa"
-        ? "Interferência baixa"
-        : item.risco === "Moderada"
-          ? "Observar"
-          : "Pode interferir";
+const textoStatus =
+  item.risco === "Sem interferência"
+    ? "Não interfere"
+    : item.risco === "Baixo"
+      ? "Interferência baixa"
+      : item.risco === "Moderado"
+        ? "Observar"
+        : "Pode interferir";
 
   return (
     <div

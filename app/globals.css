@@ -2566,3 +2566,61 @@ section.container.calculatorSection + section.container.calculatorSection {
 .chemSymbol {
   text-transform: none !important;
 }
+
+.chemSymbol {
+  text-transform: none !important;
+}
+
+.chemLabel {
+  text-transform: none !important;
+  display: block;
+}
+
+.phBufferCard {
+  grid-column: span 2;
+}
+
+@media (max-width: 700px) {
+  .phBufferCard {
+    grid-column: span 1;
+  }
+}
+
+.betaValuesCard {
+  min-height: 190px;
+}
+
+.betaValuesList {
+  display: grid;
+  gap: 6px;
+}
+
+.betaValuesList strong {
+  display: block;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.interferenceMiniCard strong {
+  font-size: clamp(1.05rem, 1.45vw, 1.65rem) !important;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.interferenceMiniCard {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.interferenceDecision {
+  font-size: clamp(1.05rem, 1.7vw, 1.75rem) !important;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
