@@ -1748,68 +1748,59 @@ const nomeComplexanteAuxiliar =
   Resultado da comparação dos K<sub>f</sub>
 </h2>
 
-        {resultado.interferentes.length === 0 ? (
-          <div className="explanationBox">
+{resultado.interferentes.length === 0 ? (
+  <div className="explanationBox">
+    <p>
+      Nenhum interferente selecionado. Marque um ou mais metais para
+      avaliar a competição pelo EDTA.
+    </p>
+  </div>
+) : (
+  <div className="interferenceCardsList">
+    {resultado.interferentes.map((item) => {
+      const classeRisco =
+        item.risco === "Alto" || item.risco === "Significativo"
+          ? "high"
+          : item.risco === "Moderado"
+            ? "medium"
+            : "low";
+
+      return (
+        <div
+          key={item.id}
+          className={`interferenceResultCard ${classeRisco}`}
+        >
+          <div>
+            <h3>
+              {formatarFormulaQuimica(item.metal)} — {item.nome}
+            </h3>
+
             <p>
-              Nenhum interferente selecionado. Marque um ou mais metais para
-              avaliar a competição pelo EDTA.
+              {formatarTextoQuimico(item.problema || item.acaoSistema || "")}
             </p>
           </div>
-        ) : (
-          <div className="interferenceCardsList">
-            {resultado.interferentes.map((item) => {
-  const classeRisco =
-  item.risco === "Alto" || item.risco === "Significativo"
-    ? "high"
-    : item.risco === "Moderado"
-      ? "medium"
-      : "low";
 
-const textoStatus =
-  item.risco === "Sem interferência"
-    ? "Não interfere"
-    : item.risco === "Baixo"
-      ? "Interferência baixa"
-      : item.risco === "Moderado"
-        ? "Observar"
-        : "Pode interferir";
-
-  return (
-    <div
-      key={item.id}
-      className={`interferenceResultCard ${classeRisco}`}
-    >
-      <div>
-      <h3>
-  {formatarFormulaQuimica(item.metal)} — {item.nome}
-</h3>
-
-<p>{formatarTextoQuimico(item.problema || item.acaoSistema || "")}</p>
-      </div>
-
-      <div className="interferenceMiniCard">
-      <span>
-  Razão K<sub>f</sub>
-</span>
-        <strong>
-          {item.razaoKf ? formatarCientificoBR(item.razaoKf) : "-"}
-        </strong>
-      </div>
-
-      <div className="interferenceMiniCard">
-        <span>Risco</span>
-        <strong>{item.risco}</strong>
-      </div>
-
-      <div className="interferenceDecision">{textoStatus}</div>
-    </div>
-  );
-})}
+          <div className="interferenceMiniCard">
+            <span>
+              Razão K<sub>f</sub>
+            </span>
+            <strong>
+              {item.razaoKf ? formatarCientificoBR(item.razaoKf) : "-"}
+            </strong>
           </div>
-        )}
-      </div>
 
-      <div className="resultsPanel">
+          <div className="interferenceMiniCard">
+            <span>Risco</span>
+            <strong>{item.risco}</strong>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+</div>
+
+<div className="resultsPanel">
   <h2>Conclusão didática</h2>
   <p>{formatarTextoQuimico(textoConclusaoInterferentes)}</p>
 </div>

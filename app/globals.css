@@ -2027,7 +2027,7 @@ section.container.calculatorSection + section.container.calculatorSection {
 }
 
 .interferenceResultCard {
-  grid-template-columns: 1.4fr 170px 170px 180px;
+  grid-template-columns: 1.4fr 170px 170px;
 }
 
 .riskBadge.medium {
@@ -2623,4 +2623,71 @@ section.container.calculatorSection + section.container.calculatorSection {
   text-overflow: ellipsis;
   max-width: 100%;
   text-align: center;
+}
+
+.acidBaseSelectorPanel {
+  background:
+    radial-gradient(circle at top right, rgba(168, 0, 0, 0.1), transparent 32%),
+    linear-gradient(135deg, #ffffff 0%, #fffafa 100%);
+}
+
+.acidBaseSelectorPanel p {
+  color: #475467;
+  line-height: 1.65;
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+
+.acidBaseModeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.acidBaseModeCard {
+  border: 1px solid #eadede;
+  border-radius: 24px;
+  padding: 26px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.18s ease;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.045);
+}
+
+.acidBaseModeCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(168, 0, 0, 0.35);
+  box-shadow: 0 22px 48px rgba(168, 0, 0, 0.08);
+}
+
+.acidBaseModeCard.active {
+  background: linear-gradient(135deg, #c00000, #850000);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 22px 48px rgba(168, 0, 0, 0.22);
+}
+
+.acidBaseModeCard strong {
+  display: block;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+}
+
+.acidBaseModeCard span {
+  display: block;
+  line-height: 1.55;
+  font-weight: 700;
+  color: #475467;
+}
+
+.acidBaseModeCard.active span {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+@media (max-width: 750px) {
+  .acidBaseModeGrid {
+    grid-template-columns: 1fr;
+  }
 }
