@@ -434,6 +434,128 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
     setPontoConsulta(ponto);
   }
 
+  function avaliarDetectabilidadePE(volumePE: number) {
+    if (!resultadoPoli) {
+      return null;
+    }
+  
+    const intervalo = Math.max(resultadoPoli.volumePE1 * 0.02, 0.5);
+  
+    const volumeAntes = Math.max(0, volumePE - intervalo);
+    const volumeDepois = volumePE + intervalo;
+  
+    const pontoAntes = calcularPhPorVolumePoliprotico(resultadoPoli, volumeAntes);
+    const pontoDepois = calcularPhPorVolumePoliprotico(resultadoPoli, volumeDepois);
+  
+    if (
+      pontoAntes.ph === null ||
+      pontoDepois.ph === null ||
+      !Number.isFinite(pontoAntes.ph) ||
+      !Number.isFinite(pontoDepois.ph)
+    ) {
+      return {
+        nivel: "Não calculado",
+        classe: "neutral",
+        deltaPH: null,
+        texto:
+          "Não foi possível calcular a variação de pH ao redor deste ponto de equivalência.",
+      };
+    }
+  
+    const deltaPH = Math.abs(pontoDepois.ph - pontoAntes.ph);
+  
+    if (deltaPH >= 3) {
+      return {
+        nivel: "Alta detectabilidade",
+        classe: "high",
+        deltaPH,
+        texto:
+          "Este PE apresenta variação brusca de pH ao redor do ponto de equivalência, sendo bem visível na curva.",
+      };
+    }
+  
+    if (deltaPH >= 1) {
+      return {
+        nivel: "Detectabilidade moderada",
+        classe: "medium",
+        deltaPH,
+        texto:
+          "Este PE apresenta uma variação perceptível de pH, mas pode não formar um salto tão acentuado na curva.",
+      };
+    }
+  
+    if (deltaPH >= 0.3) {
+      return {
+        nivel: "Baixa detectabilidade",
+        classe: "low",
+        deltaPH,
+        texto:
+          "Este PE existe pelo cálculo estequiométrico, mas a mudança de pH ao redor dele é pequena e pode ser difícil de observar visualmente.",
+      };
+    }
+  
+    return {
+      nivel: "Muito baixa / pouco detectável",
+      classe: "veryLow",
+      deltaPH,
+      texto:
+        "Este PE é calculado estequiometricamente, porém praticamente não aparece como salto claro na curva. A identificação deve ser feita por cálculo ou derivadas.",
+    };
+  }
+
+  function baixarGraficoCurvaPoliprotica() {
+    const svgOriginal = document.querySelector(
+      ".acidBaseCurveSvg"
+    ) as SVGSVGElement | null;
+  
+    if (!svgOriginal) {
+      return;
+    }
+  
+    const svgClone = svgOriginal.cloneNode(true) as SVGSVGElement;
+  
+    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgClone.setAttribute("width", "1960");
+    svgClone.setAttribute("height", "1120");
+  
+    const svgTexto = new XMLSerializer().serializeToString(svgClone);
+  
+    const svgBlob = new Blob([svgTexto], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+  
+    const url = URL.createObjectURL(svgBlob);
+    const imagem = new Image();
+  
+    imagem.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1960;
+      canvas.height = 1120;
+  
+      const contexto = canvas.getContext("2d");
+  
+      if (!contexto) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+  
+      contexto.fillStyle = "#ffffff";
+      contexto.fillRect(0, 0, canvas.width, canvas.height);
+      contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+  
+      const pngUrl = canvas.toDataURL("image/png");
+  
+      const link = document.createElement("a");
+      link.href = pngUrl;
+      link.download = "curva-titulacao-acido-base.png";
+      link.click();
+  
+      URL.revokeObjectURL(url);
+    };
+  
+    imagem.src = url;
+  }
+
   function montarAvisoVolumeBureta() {
     if (!resultadoPoli) return null;
   
@@ -494,7 +616,7 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
               localização do ponto na titulação.
             </p>
 
-            <div className="formGrid">
+            <div className="acidBaseFormGrid">
               <label>
                 Titulante
                 <select
@@ -763,70 +885,188 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
           </div>
         )}
 
-        {abaAtiva === "curva" && (
-          <div className="resultsPanel">
-            <h2>Curva de titulação</h2>
+{abaAtiva === "curva" && (
+  <div className="resultsPanel curveMainPanel">
+    <h2>Curva de titulação</h2>
 
-            {!curvaPoli ? (
-              <p>Avalie o sistema primeiro na aba Visão geral.</p>
-            ) : (
-              <>
-                <p>
-                  Curva gerada com {curvaPoli.pontos.length} pontos, passo de{" "}
-                  {formatarNumeroBR(curvaPoli.passo, 2)} mL e volume máximo de{" "}
-                  {formatarNumeroBR(curvaPoli.volumeMaximo, 2)} mL.
-                </p>
+    {!curvaPoli || !resultadoPoli ? (
+      <p>Avalie o sistema primeiro na aba Visão geral.</p>
+    ) : (
+      <>
+        <p>
+          Curva gerada com {curvaPoli.pontos.length} pontos, passo de{" "}
+          {formatarNumeroBR(curvaPoli.passo, 2)} mL e volume máximo de{" "}
+          {formatarNumeroBR(curvaPoli.volumeMaximo, 2)} mL.
+        </p>
 
-                <div className="acidBaseFormGrid">
-                  <label>
-                    Consultar volume mL
-                    <input
-                      value={volumeConsulta}
-                      onChange={(event) =>
-                        setVolumeConsulta(event.target.value)
-                      }
-                      placeholder="Ex.: 12,50"
-                    />
-                  </label>
-                </div>
+        <div className="resultGrid curveSummaryGrid">
+  <div className="resultCard">
+    <span>Titulado</span>
+    <strong>{resultadoPoli.titulado.nome}</strong>
+  </div>
 
-                <button
-                  className="secondaryButton"
-                  onClick={consultarVolumePoliprotico}
-                >
-                  Consultar pH
-                </button>
+  <div className="resultCard">
+    <span>Titulante</span>
+    <strong>{resultadoPoli.titulante.nome}</strong>
+  </div>
 
-                {pontoConsulta && (
-                  <>
-                    <div className="resultGrid">
-                      <div className="resultCard">
-                        <span>Volume consultado</span>
-                        <strong>
-                          {formatarNumeroBR(pontoConsulta.volume, 2)} mL
-                        </strong>
-                      </div>
+  <div className="resultCard">
+    <span>Nº de equivalências</span>
+    <strong>{resultadoPoli.numeroEquivalencias}</strong>
+  </div>
 
-                      <div className="resultCard">
-                        <span>pH calculado</span>
-                        <strong>{formatarNumeroBR(pontoConsulta.ph, 2)}</strong>
-                      </div>
+  <div className="resultCard">
+    <span>Volume máximo</span>
+    <strong>{formatarNumeroBR(curvaPoli.volumeMaximo, 2)} mL</strong>
+  </div>
+</div>
 
-                      <div className="resultCard">
-                        <span>Região</span>
-                        <strong>{pontoConsulta.regiao}</strong>
-                      </div>
-                    </div>
+<div className="equivalenceVolumePanel">
+  <span className="eyebrow">Pontos de equivalência</span>
+  <h3>Volumes e pH calculados dos PEs</h3>
 
-                    <div className="explanationBox">
-                      <p>{pontoConsulta.explicacao}</p>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+  <div className="equivalenceVolumeGrid">
+  {resultadoPoli.volumesPE.map((volume, index) => {
+    const pontoPE = calcularPhPorVolumePoliprotico(resultadoPoli, volume);
+    const detectabilidade = avaliarDetectabilidadePE(volume);
+
+    return (
+      <div className="equivalenceVolumeCard" key={`curva-pe-${index + 1}`}>
+        <span>PE{index + 1}</span>
+
+        <div className="equivalenceVolumeValues">
+          <div>
+            <small>Volume</small>
+            <strong>{formatarNumeroBR(volume, 2)} mL</strong>
+          </div>
+
+          <div>
+            <small>pH</small>
+            <strong>{formatarNumeroBR(pontoPE.ph, 2)}</strong>
+          </div>
+        </div>
+
+        {detectabilidade && (
+          <div className={`detectabilityBox ${detectabilidade.classe}`}>
+            <strong>{detectabilidade.nivel}</strong>
+
+            <small>
+              ΔpH ao redor do PE:{" "}
+              {detectabilidade.deltaPH === null
+                ? "-"
+                : formatarNumeroBR(detectabilidade.deltaPH, 2)}
+            </small>
+
+            <p>{detectabilidade.texto}</p>
           </div>
         )}
+      </div>
+    );
+  })}
+</div>
+</div>
+
+        <div className="chartBox acidBaseChartBox">
+        <div className="chartHeader">
+  <div>
+    <strong>Curva pH × volume</strong>
+    <span>
+      A curva é calculada por balanço de massa, balanço de carga e
+      resolução numérica por bisseção.
+    </span>
+  </div>
+
+  <button
+    type="button"
+    className="downloadChartButton"
+    onClick={baixarGraficoCurvaPoliprotica}
+  >
+    Baixar gráfico PNG
+  </button>
+</div>
+
+          <GraficoCurvaPoliprotica
+            curva={curvaPoli}
+            resultado={resultadoPoli}
+            pontoConsulta={pontoConsulta}
+          />
+
+          <div className="chartLegend">
+            <span>
+              <i className="legendLine curve"></i>
+              Curva de titulação
+            </span>
+
+            <span>
+              <i className="legendLine pe"></i>
+              Pontos de equivalência
+            </span>
+
+            <span>
+              <i className="legendLine consult"></i>
+              Volume consultado
+            </span>
+          </div>
+        </div>
+
+        <div className="curveConsultBox acidBaseConsultBox">
+  <div className="acidBaseConsultHeader">
+    <span className="eyebrow">Consulta pontual</span>
+    <h3>Consultar ponto na curva</h3>
+    <p>
+      Informe um volume de titulante adicionado para calcular o pH, localizar a
+      região da titulação e destacar o ponto diretamente no gráfico.
+    </p>
+  </div>
+
+  <div className="acidBaseConsultGrid">
+    <label>
+      Volume adicionado de titulante mL
+      <input
+        value={volumeConsulta}
+        onChange={(event) => setVolumeConsulta(event.target.value)}
+        placeholder="Ex.: 12,50"
+      />
+    </label>
+
+    <button
+      className="primaryButton"
+      onClick={consultarVolumePoliprotico}
+    >
+      Consultar pH
+    </button>
+  </div>
+</div>
+
+        {pontoConsulta && (
+          <>
+            <div className="resultGrid curvePointGrid">
+              <div className="resultCard">
+                <span>Volume consultado</span>
+                <strong>{formatarNumeroBR(pontoConsulta.volume, 2)} mL</strong>
+              </div>
+
+              <div className="resultCard">
+                <span>pH calculado</span>
+                <strong>{formatarNumeroBR(pontoConsulta.ph, 2)}</strong>
+              </div>
+
+              <div className="resultCard">
+                <span>Região</span>
+                <strong>{pontoConsulta.regiao}</strong>
+              </div>
+            </div>
+
+            <div className="explanationBox">
+              <h3>Interpretação do ponto consultado</h3>
+              <p>{pontoConsulta.explicacao}</p>
+            </div>
+          </>
+        )}
+      </>
+    )}
+  </div>
+)}
 
         {abaAtiva === "indicadores" && (
           <div className="resultsPanel">
@@ -859,5 +1099,441 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
         )}
       </div>
     </section>
+  );
+}
+
+function GraficoCurvaPoliprotica({
+  curva,
+  resultado,
+  pontoConsulta,
+}: {
+  curva: CurvaAcidoBasePoliprotica;
+  resultado: ResultadoSistemaPoliprotico;
+  pontoConsulta: PontoCurvaAcidoBase | null;
+}) {
+  const largura = 980;
+  const altura = 560;
+
+  const margem = {
+    top: 36,
+    right: 36,
+    bottom: 64,
+    left: 72,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximo = curva.volumeMaximo || 1;
+  const phMin = 0;
+  const phMax = 14;
+
+  function xScale(volume: number) {
+    return margem.left + (volume / volumeMaximo) * larguraGrafico;
+  }
+
+  function yScale(ph: number) {
+    return margem.top + ((phMax - ph) / (phMax - phMin)) * alturaGrafico;
+  }
+
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const pathCurva = pontosValidos
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pontosPE = resultado.volumesPE
+    .map((volume, index) => {
+      const pontoPE = curva.pontos.reduce((maisProximo, atual) => {
+        const distAtual = Math.abs(atual.volume - volume);
+        const distMelhor = Math.abs(maisProximo.volume - volume);
+
+        return distAtual < distMelhor ? atual : maisProximo;
+      }, curva.pontos[0]);
+
+      return {
+        volume,
+        ph: pontoPE?.ph,
+        label: `PE${index + 1}`,
+      };
+    })
+    .filter((ponto) => ponto.ph !== null && ponto.ph !== undefined);
+
+  const linhasPH = [0, 2, 4, 6, 8, 10, 12, 14];
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return (volumeMaximo / 5) * index;
+  });
+
+  return (
+    <svg
+      className="acidBaseCurveSvg"
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label="Curva de titulação ácido-base"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        x="0"
+        y="0"
+        width={largura}
+        height={altura}
+        fill="#ffffff"
+      />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasPH.map((ph) => (
+        <g key={`ph-${ph}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(ph)}
+            y2={yScale(ph)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={margem.left - 12}
+            y={yScale(ph) + 5}
+            fill="#667085"
+            fontSize="15"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {ph}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`volume-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="15"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+<path
+  d={pathCurva}
+  fill="none"
+  stroke="#a80000"
+  strokeWidth="4"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+/>
+
+{pontosPE.map((ponto) => {
+  const cx = xScale(ponto.volume);
+  const cy = yScale(ponto.ph ?? 0);
+
+  const larguraBox = 58;
+const alturaBox = 28;
+
+  const pontoAntes = pontosValidos.reduce((maisProximo, atual) => {
+    const distAtual = Math.abs(atual.volume - (ponto.volume - 1));
+    const distMelhor = Math.abs(maisProximo.volume - (ponto.volume - 1));
+    return distAtual < distMelhor ? atual : maisProximo;
+  }, pontosValidos[0]);
+
+  const pontoDepois = pontosValidos.reduce((maisProximo, atual) => {
+    const distAtual = Math.abs(atual.volume - (ponto.volume + 1));
+    const distMelhor = Math.abs(maisProximo.volume - (ponto.volume + 1));
+    return distAtual < distMelhor ? atual : maisProximo;
+  }, pontosValidos[0]);
+
+  const phAntes = pontoAntes?.ph ?? ponto.ph ?? 0;
+  const phDepois = pontoDepois?.ph ?? ponto.ph ?? 0;
+
+  const curvaSobe = phDepois > phAntes;
+  const curvaDesce = phDepois < phAntes;
+
+  let boxX = cx + 52;
+let boxY = curvaSobe ? cy - 52 : cy + 32;
+
+if (curvaDesce) {
+  boxY = cy - 52;
+}
+
+if (cy < margem.top + 70) {
+  boxY = cy + 32;
+}
+
+if (cy > margem.top + alturaGrafico - 70) {
+  boxY = cy - 52;
+}
+
+if (boxX + larguraBox > largura - margem.right - 8) {
+  boxX = cx - larguraBox - 52;
+}
+
+if (boxX < margem.left + 8) {
+  boxX = cx + 52;
+}
+
+  if (boxY < margem.top + 8) {
+    boxY = margem.top + 8;
+  }
+
+  if (boxY + alturaBox > margem.top + alturaGrafico - 8) {
+    boxY = margem.top + alturaGrafico - alturaBox - 8;
+  }
+
+  const textX = boxX + larguraBox / 2;
+  const textY = boxY + 19;
+
+  const anchorX = boxX > cx ? boxX : boxX + larguraBox;
+  const anchorY = boxY + alturaBox / 2;
+
+  return (
+    <g key={ponto.label}>
+      <line
+        x1={cx}
+        x2={cx}
+        y1={margem.top}
+        y2={margem.top + alturaGrafico}
+        stroke="#111111"
+        strokeWidth="2"
+        strokeDasharray="8 6"
+      />
+
+      <line
+        x1={cx}
+        y1={cy}
+        x2={anchorX}
+        y2={anchorY}
+        stroke="#111111"
+        strokeWidth="1.5"
+      />
+
+      <rect
+        x={boxX}
+        y={boxY}
+        width={larguraBox}
+        height={alturaBox}
+        rx="9"
+ry="9"
+        fill="#ffffff"
+        stroke="#111111"
+        strokeWidth="1.6"
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r="8.5"
+        fill="#111111"
+        stroke="#ffffff"
+        strokeWidth="3.5"
+      />
+
+      <text
+        x={textX}
+        y={textY}
+        fill="#111111"
+        fontSize="17"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        {ponto.label}
+      </text>
+    </g>
+  );
+})}
+
+{pontoConsulta && pontoConsulta.ph !== null && (() => {
+  const cx = xScale(pontoConsulta.volume);
+  const cy = yScale(pontoConsulta.ph);
+
+  const larguraBox = 88;
+  const alturaBox = 28;
+
+  function limitarCaixa(x: number, y: number) {
+    let novoX = x;
+    let novoY = y;
+
+    if (novoX < margem.left + 8) {
+      novoX = margem.left + 8;
+    }
+
+    if (novoX + larguraBox > largura - margem.right - 8) {
+      novoX = largura - margem.right - larguraBox - 8;
+    }
+
+    if (novoY < margem.top + 8) {
+      novoY = margem.top + 8;
+    }
+
+    if (novoY + alturaBox > margem.top + alturaGrafico - 8) {
+      novoY = margem.top + alturaGrafico - alturaBox - 8;
+    }
+
+    return { x: novoX, y: novoY };
+  }
+
+  function distanciaPontoCaixa(
+    px: number,
+    py: number,
+    caixa: { x: number; y: number }
+  ) {
+    const dx = Math.max(
+      caixa.x - px,
+      0,
+      px - (caixa.x + larguraBox)
+    );
+
+    const dy = Math.max(
+      caixa.y - py,
+      0,
+      py - (caixa.y + alturaBox)
+    );
+
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  const candidatos = [
+    limitarCaixa(cx + 58, cy - 76), // direita acima
+    limitarCaixa(cx + 58, cy + 44), // direita abaixo
+    limitarCaixa(cx - larguraBox - 58, cy - 76), // esquerda acima
+    limitarCaixa(cx - larguraBox - 58, cy + 44), // esquerda abaixo
+  ];
+
+  const pontosCurvaEmPixel = pontosValidos.map((ponto) => ({
+    x: xScale(ponto.volume),
+    y: yScale(ponto.ph ?? 0),
+  }));
+
+  const melhorCaixa = candidatos.reduce((melhor, atual) => {
+    const menorDistanciaAtual = Math.min(
+      ...pontosCurvaEmPixel.map((ponto) =>
+        distanciaPontoCaixa(ponto.x, ponto.y, atual)
+      )
+    );
+
+    const menorDistanciaMelhor = Math.min(
+      ...pontosCurvaEmPixel.map((ponto) =>
+        distanciaPontoCaixa(ponto.x, ponto.y, melhor)
+      )
+    );
+
+    return menorDistanciaAtual > menorDistanciaMelhor ? atual : melhor;
+  }, candidatos[0]);
+
+  const boxX = melhorCaixa.x;
+  const boxY = melhorCaixa.y;
+
+  const textX = boxX + larguraBox / 2;
+  const textY = boxY + 19;
+
+  const anchorX = boxX > cx ? boxX : boxX + larguraBox;
+  const anchorY = boxY + alturaBox / 2;
+
+  return (
+    <g>
+      <line
+        x1={cx}
+        y1={cy}
+        x2={anchorX}
+        y2={anchorY}
+        stroke="#a80000"
+        strokeWidth="1.5"
+      />
+
+      <rect
+        x={boxX}
+        y={boxY}
+        width={larguraBox}
+        height={alturaBox}
+        rx="9"
+        ry="9"
+        fill="#fff5f5"
+        stroke="#a80000"
+        strokeWidth="1.5"
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r="9"
+        fill="#a80000"
+        stroke="#ffffff"
+        strokeWidth="4"
+      />
+
+      <text
+        x={textX}
+        y={textY}
+        fill="#a80000"
+        fontSize="14"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        {formatarNumeroBR(pontoConsulta.volume, 2)} mL
+      </text>
+    </g>
+  );
+})()}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={18}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
+      >
+        pH
+      </text>
+    </svg>
   );
 }

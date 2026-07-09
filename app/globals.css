@@ -2976,3 +2976,417 @@ section.container.calculatorSection + section.container.calculatorSection {
   color: #027a48;
   border: 1px solid #abefc6;
 }
+
+.acidBaseChartBox {
+  margin-top: 28px;
+  margin-bottom: 28px;
+}
+
+.acidBaseCurveSvg {
+  width: 100%;
+  min-height: 560px;
+  display: block;
+}
+
+.acidBaseCurveSvg .curveLine {
+  fill: none;
+  stroke: #a80000;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.acidBaseCurveSvg .peLine {
+  stroke: #111111;
+  stroke-width: 2;
+  stroke-dasharray: 8 6;
+}
+
+.acidBaseCurveSvg .pePoint {
+  fill: #111111;
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.acidBaseCurveSvg .peText {
+  fill: #111111;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.acidBaseCurveSvg .consultPoint {
+  fill: #a80000;
+  stroke: #ffffff;
+  stroke-width: 4;
+}
+
+.acidBaseCurveSvg .consultText {
+  fill: #a80000;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .acidBaseCurveSvg {
+    min-height: 460px;
+  }
+}
+
+@media (max-width: 600px) {
+  .acidBaseCurveSvg {
+    min-height: 360px;
+  }
+}
+
+.acidBaseChartBox {
+  padding-bottom: 30px !important;
+}
+
+.acidBaseChartBox .chartLegend {
+  margin-top: 30px !important;
+  padding-top: 22px !important;
+  border-top: 1px solid #f0e0e0 !important;
+}
+
+.acidBaseChartBox .curveSvg {
+  margin-bottom: 18px !important;
+}
+
+.acidBaseConsultBox {
+  margin-top: 34px;
+  border: 1px solid #eadede;
+  border-radius: 26px;
+  padding: 26px;
+  background:
+    radial-gradient(circle at top right, rgba(176, 0, 0, 0.08), transparent 35%),
+    linear-gradient(180deg, #ffffff 0%, #fffafa 100%);
+  box-shadow: 0 14px 32px rgba(16, 24, 40, 0.04);
+}
+
+.acidBaseConsultHeader {
+  margin-bottom: 22px;
+}
+
+.acidBaseConsultHeader h3 {
+  margin: 0 0 10px;
+  color: #101828;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+}
+
+.acidBaseConsultHeader p {
+  margin: 0;
+  color: #475467;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.acidBaseConsultGrid {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 20px;
+  align-items: end;
+}
+
+.acidBaseConsultGrid label {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  color: #344054;
+  font-weight: 900;
+}
+
+.acidBaseConsultGrid input {
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid #d0d5dd;
+  border-radius: 18px;
+  padding: 0 18px;
+  background: #ffffff;
+  color: #101828;
+  font-size: 1rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.acidBaseConsultGrid input::placeholder {
+  color: #98a2b3;
+}
+
+.acidBaseConsultGrid input:focus {
+  border-color: #b00000;
+  box-shadow: 0 0 0 4px rgba(176, 0, 0, 0.08);
+}
+
+.acidBaseConsultGrid .primaryButton {
+  width: 100%;
+  min-height: 56px;
+}
+
+@media (max-width: 800px) {
+  .acidBaseConsultGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.acidBaseChartBox {
+  margin-top: 32px !important;
+  margin-bottom: 36px !important;
+  padding: 30px !important;
+  padding-bottom: 34px !important;
+}
+
+.acidBaseCurveSvg {
+  width: 100% !important;
+  min-height: 560px !important;
+  display: block !important;
+  margin-bottom: 26px !important;
+}
+
+.acidBaseChartBox .chartLegend {
+  margin-top: 28px !important;
+  padding-top: 24px !important;
+  border-top: 1px solid #f0e0e0 !important;
+}
+
+.acidBaseConsultBox {
+  margin-top: 36px !important;
+  border: 1px solid #eadede !important;
+  border-radius: 26px !important;
+  padding: 28px !important;
+  background:
+    radial-gradient(circle at top right, rgba(176, 0, 0, 0.08), transparent 35%),
+    linear-gradient(180deg, #ffffff 0%, #fffafa 100%) !important;
+  box-shadow: 0 14px 32px rgba(16, 24, 40, 0.04) !important;
+}
+
+.acidBaseConsultHeader {
+  margin-bottom: 24px !important;
+}
+
+.acidBaseConsultHeader h3 {
+  margin: 0 0 10px !important;
+  color: #101828 !important;
+  font-size: 1.45rem !important;
+  letter-spacing: -0.03em !important;
+}
+
+.acidBaseConsultHeader p {
+  margin: 0 !important;
+  color: #475467 !important;
+  line-height: 1.6 !important;
+  font-weight: 700 !important;
+}
+
+.acidBaseConsultGrid {
+  display: grid !important;
+  grid-template-columns: 1fr 240px !important;
+  gap: 22px !important;
+  align-items: end !important;
+}
+
+.acidBaseConsultGrid label {
+  display: grid !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  color: #344054 !important;
+  font-weight: 900 !important;
+}
+
+.acidBaseConsultGrid input {
+  width: 100% !important;
+  min-height: 56px !important;
+  border: 1px solid #d0d5dd !important;
+  border-radius: 18px !important;
+  padding: 0 18px !important;
+  background: #ffffff !important;
+  color: #101828 !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  outline: none !important;
+}
+
+.acidBaseConsultGrid input::placeholder {
+  color: #98a2b3 !important;
+}
+
+.acidBaseConsultGrid input:focus {
+  border-color: #b00000 !important;
+  box-shadow: 0 0 0 4px rgba(176, 0, 0, 0.08) !important;
+}
+
+.acidBaseConsultGrid .primaryButton {
+  width: 100% !important;
+  min-height: 56px !important;
+}
+
+@media (max-width: 800px) {
+  .acidBaseConsultGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.equivalenceVolumePanel {
+  margin-top: 24px;
+  margin-bottom: 28px;
+  border: 1px solid #eadede;
+  border-radius: 26px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(176, 0, 0, 0.08), transparent 35%),
+    linear-gradient(180deg, #ffffff 0%, #fffafa 100%);
+}
+
+.equivalenceVolumePanel h3 {
+  margin: 0 0 18px;
+  color: #101828;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+.equivalenceVolumeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.equivalenceVolumeCard {
+  border: 1px solid #eadede;
+  border-radius: 20px;
+  padding: 20px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.04);
+}
+
+.equivalenceVolumeCard span {
+  display: block;
+  margin-bottom: 8px;
+  color: #8b0000;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.equivalenceVolumeCard strong {
+  display: block;
+  color: #101828;
+  font-size: 1.55rem;
+  letter-spacing: -0.03em;
+}
+
+.equivalenceVolumeValues {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.equivalenceVolumeValues div {
+  border: 1px solid #f1d4d4;
+  border-radius: 16px;
+  padding: 14px;
+  background: #fffafa;
+}
+
+.equivalenceVolumeValues small {
+  display: block;
+  margin-bottom: 6px;
+  color: #8b0000;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.equivalenceVolumeValues strong {
+  display: block;
+  color: #101828;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+.equivalenceVolumeCard p {
+  margin: 14px 0 0;
+  color: #475467;
+  font-weight: 800;
+  text-align: center;
+}
+
+.detectabilityBox {
+  margin-top: 18px;
+  border-radius: 18px;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid #eadede;
+  background: #ffffff;
+}
+
+.detectabilityBox strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.detectabilityBox small {
+  display: block;
+  margin-bottom: 8px;
+  color: #475467;
+  font-weight: 800;
+}
+
+.detectabilityBox p {
+  margin: 0;
+  color: #344054;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.detectabilityBox.high {
+  background: #ecfdf3;
+  border-color: #abefc6;
+}
+
+.detectabilityBox.high strong {
+  color: #027a48;
+}
+
+.detectabilityBox.medium {
+  background: #fffbeb;
+  border-color: #fedf89;
+}
+
+.detectabilityBox.medium strong {
+  color: #b54708;
+}
+
+.detectabilityBox.low {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.detectabilityBox.low strong {
+  color: #c2410c;
+}
+
+.detectabilityBox.veryLow {
+  background: #fff1f1;
+  border-color: #f5b5b5;
+}
+
+.detectabilityBox.veryLow strong {
+  color: #a80000;
+}
+
+.detectabilityBox.neutral {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.detectabilityBox.neutral strong {
+  color: #344054;
+}
