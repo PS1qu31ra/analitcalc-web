@@ -3595,3 +3595,214 @@ section.container.calculatorSection + section.container.calculatorSection {
 .derivativeTable tbody tr:hover {
   background: #fffafa;
 }
+
+.realTimeSimulationGrid {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.realTimeSimulationGrid > .resultsPanel:last-child {
+  min-width: 0;
+}
+
+.realTimeAcidBaseCurveSvg {
+  width: 100% !important;
+  min-height: 620px !important;
+  display: block !important;
+}
+
+.realTimeSimulationGrid .acidBaseCurveSvg {
+  width: 100% !important;
+  min-height: 620px !important;
+}
+
+.currentVolumeBox {
+  border: 1px solid #f1d4d4;
+  border-radius: 24px;
+  padding: 34px;
+  background: #fffafa;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.currentVolumeBox span {
+  display: block;
+  color: #7a0000;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+.currentVolumeBox strong {
+  display: block;
+  color: #a80000;
+  font-size: clamp(2.8rem, 6vw, 5.2rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.volumeButtonGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.volumeButtonGrid .primaryButton {
+  min-height: 74px;
+  font-size: 1.15rem;
+}
+
+.manualVolumeBox {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #f1d4d4;
+  border-radius: 24px;
+  padding: 24px;
+  background: #fffafa;
+}
+
+.manualVolumeBox label {
+  display: grid;
+  gap: 8px;
+  font-weight: 900;
+  color: #7a0000;
+}
+
+.manualVolumeBox input {
+  width: 100%;
+  border: 1px solid #f1d4d4;
+  border-radius: 18px;
+  padding: 18px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.secondaryButton {
+  border: 1px solid #f1d4d4;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 18px;
+  padding: 16px 20px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.secondaryButton:hover {
+  border-color: #a80000;
+  color: #a80000;
+}
+
+@media (max-width: 1000px) {
+  .realTimeSimulationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .volumeButtonGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .realTimeAcidBaseCurveSvg {
+    min-height: 480px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .realTimeAcidBaseCurveSvg {
+    min-height: 360px !important;
+  }
+}
+
+/* AJUSTE FINAL — TEMPO REAL ÁCIDO-BASE */
+
+.realTimeSimulationGrid {
+  grid-template-columns: 430px minmax(0, 1fr) !important;
+  gap: 28px !important;
+  align-items: start !important;
+}
+
+.realTimeSimulationGrid > .resultsPanel {
+  min-width: 0 !important;
+}
+
+.realTimeSimulationGrid > .resultsPanel:last-child {
+  overflow: hidden !important;
+}
+
+.realTimeAcidBaseCurveSvg {
+  width: 100% !important;
+  height: auto !important;
+  min-height: unset !important;
+  display: block !important;
+  margin-top: 18px !important;
+}
+
+.volumeButtonGrid {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.volumeButtonGrid .primaryButton {
+  min-height: 74px !important;
+  font-size: 1.05rem !important;
+  padding: 14px 10px !important;
+}
+
+.currentVolumeBox strong {
+  font-size: clamp(3.4rem, 5vw, 4.8rem) !important;
+}
+
+@media (max-width: 1100px) {
+  .realTimeSimulationGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .realTimeAcidBaseCurveSvg {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .volumeButtonGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ALTURA DO GRÁFICO TEMPO REAL ÁCIDO-BASE */
+
+.realTimeAcidBaseCurveSvg {
+  width: 100% !important;
+  height: auto !important;
+  min-height: unset !important;
+  display: block !important;
+  margin-top: 10px !important;
+}
+
+.realTimeSimulationGrid > .resultsPanel:last-child {
+  align-self: start !important;
+}
+
+/* LEGENDA DO GRÁFICO TEMPO REAL ÁCIDO-BASE */
+
+.realTimeChartLegend {
+  margin-top: 18px !important;
+  padding-top: 18px !important;
+  border-top: 1px solid #f0e0e0 !important;
+  font-size: 1rem !important;
+}
+
+.legendLine.idealAcidBaseCurve {
+  background: #a80000 !important;
+  opacity: 0.35;
+}
+
+.legendLine.liveAcidBasePoints {
+  background: #f43f5e !important;
+  height: 6px !important;
+  border-top: 3px dashed #f43f5e !important;
+}
+
+.legendLine.pe {
+  background: #111111 !important;
+}

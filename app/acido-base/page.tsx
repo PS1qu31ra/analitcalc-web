@@ -411,6 +411,10 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   const [pontoConsulta, setPontoConsulta] =
     useState<PontoCurvaAcidoBase | null>(null);
 
+    const [volumeAtualTempoReal, setVolumeAtualTempoReal] = useState(0);
+const [volumeManualTempoReal, setVolumeManualTempoReal] = useState("");
+const [pontosTempoReal, setPontosTempoReal] = useState<PontoCurvaAcidoBase[]>([]);
+
     const [peIndicadorAtivo, setPeIndicadorAtivo] = useState(1);
 const [indicadorSelecionado, setIndicadorSelecionado] =
   useState<RankingIndicadorAcidoBase | null>(null);
@@ -433,6 +437,9 @@ const [indicadorSelecionado, setIndicadorSelecionado] =
     setMensagemPoli("");
     setPeIndicadorAtivo(1);
     setIndicadorSelecionado(null);
+    setVolumeAtualTempoReal(0);
+setVolumeManualTempoReal("");
+setPontosTempoReal([]);
   }
 
   function avaliarPoliprotico() {
@@ -483,6 +490,9 @@ setPontoConsulta(null);
 setVolumeConsulta("");
 setPeIndicadorAtivo(1);
 setIndicadorSelecionado(null);
+setVolumeAtualTempoReal(0);
+setVolumeManualTempoReal("");
+setPontosTempoReal([]);
 setMensagemPoli("Sistema avaliado com sucesso.");
     } catch (erro) {
       setResultadoPoli(null);
@@ -506,6 +516,53 @@ setMensagemPoli("Sistema avaliado com sucesso.");
     const ponto = calcularPhPorVolumePoliprotico(resultadoPoli, volume);
 
     setPontoConsulta(ponto);
+  }
+
+  function adicionarVolumeTempoReal(incremento: number) {
+    if (!resultadoPoli || !curvaPoli) return;
+  
+    const volumeMaximo = curvaPoli.volumeMaximo;
+    const novoVolume = Math.min(volumeAtualTempoReal + incremento, volumeMaximo);
+  
+    const ponto = calcularPhPorVolumePoliprotico(resultadoPoli, novoVolume);
+  
+    setVolumeAtualTempoReal(novoVolume);
+    setPontosTempoReal((pontos) => [...pontos, ponto]);
+  }
+  
+  function adicionarVolumeManualTempoReal() {
+    if (!resultadoPoli || !curvaPoli) return;
+  
+    const incremento = converterNumero(volumeManualTempoReal);
+  
+    if (!Number.isFinite(incremento) || incremento <= 0) {
+      return;
+    }
+  
+    adicionarVolumeTempoReal(incremento);
+    setVolumeManualTempoReal("");
+  }
+  
+  function irParaProximoPETempoReal() {
+    if (!resultadoPoli) return;
+  
+    const proximoPE = resultadoPoli.volumesPE.find(
+      (volume) => volume > volumeAtualTempoReal + 0.0001
+    );
+  
+    const volumeDestino =
+      proximoPE ?? resultadoPoli.volumesPE[resultadoPoli.volumesPE.length - 1];
+  
+    const ponto = calcularPhPorVolumePoliprotico(resultadoPoli, volumeDestino);
+  
+    setVolumeAtualTempoReal(volumeDestino);
+    setPontosTempoReal((pontos) => [...pontos, ponto]);
+  }
+  
+  function limparTempoRealPoliprotico() {
+    setVolumeAtualTempoReal(0);
+    setVolumeManualTempoReal("");
+    setPontosTempoReal([]);
   }
 
   function avaliarDetectabilidadePE(volumePE: number) {
@@ -708,6 +765,11 @@ const tabelaSegundaDerivada =
   resultadoPoli && tabelaPrimeiraDerivada.length > 0
     ? montarTabelaSegundaDerivadaPoli(resultadoPoli, tabelaPrimeiraDerivada)
     : [];
+
+    const pontoAtualTempoReal =
+  resultadoPoli && curvaPoli
+    ? calcularPhPorVolumePoliprotico(resultadoPoli, volumeAtualTempoReal)
+    : null;
 
   return (
     <section className="container calculatorSection">
@@ -1646,15 +1708,225 @@ const tabelaSegundaDerivada =
   </div>
 )}
 
-        {abaAtiva === "tempoReal" && (
+{abaAtiva === "tempoReal" && (
+  <div className="resultsPanel curveMainPanel">
+    <span className="eyebrow">Simulação em tempo real</span>
+    <h2>Simulação em tempo real da titulação ácido-base</h2>
+
+    {!resultadoPoli || !curvaPoli ? (
+      <p>Avalie o sistema primeiro na aba Visão geral.</p>
+    ) : (
+      <>
+        <p>
+        Esta aba simula a adição gradual do titulante. A curva ideal aparece como
+referência em segundo plano, enquanto os pontos destacados representam apenas
+os volumes realmente adicionados pelo usuário.
+        </p>
+
+        <div className="realTimeSimulationGrid">
           <div className="resultsPanel">
-            <h2>Tempo real</h2>
-            <p>
-              Próxima etapa: simular a adição gradual do titulante e acompanhar
-              o pH calculado a cada volume adicionado.
-            </p>
+            <h2>Controles da titulação</h2>
+
+            <div className="currentVolumeBox">
+              <span>Volume atual</span>
+              <strong>{formatarNumeroBR(volumeAtualTempoReal, 2)} mL</strong>
+            </div>
+
+            <div className="volumeButtonGrid">
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoReal(0.05)}
+              >
+                +0,05 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoReal(0.1)}
+              >
+                +0,10 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoReal(0.5)}
+              >
+                +0,50 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoReal(1)}
+              >
+                +1,00 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoReal(5)}
+              >
+                +5,00 mL
+              </button>
+            </div>
+
+            <div className="manualVolumeBox">
+              <label>
+                Adicionar volume personalizado mL
+                <input
+                  value={volumeManualTempoReal}
+                  onChange={(event) =>
+                    setVolumeManualTempoReal(event.target.value)
+                  }
+                  placeholder="Ex.: 5,00"
+                />
+              </label>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={adicionarVolumeManualTempoReal}
+              >
+                Adicionar
+              </button>
+
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={irParaProximoPETempoReal}
+              >
+                Ir para próximo PE
+              </button>
+
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={limparTempoRealPoliprotico}
+              >
+                Limpar
+              </button>
+            </div>
           </div>
-        )}
+
+          <div className="resultsPanel">
+            <h2>Simulação em tempo real</h2>
+            <p>
+            A curva suave representa a tendência ideal, enquanto os pontos e a linha
+tracejada mostram a sequência experimental simulada.
+            </p>
+
+            <GraficoTempoRealPoliprotico
+  curva={curvaPoli}
+  resultado={resultadoPoli}
+  pontosAdicionados={pontosTempoReal}
+/>
+
+<div className="chartLegend realTimeChartLegend">
+  <span>
+    <i className="legendLine idealAcidBaseCurve"></i>
+    Curva ideal
+  </span>
+
+  <span>
+    <i className="legendLine liveAcidBasePoints"></i>
+    Pontos adicionados
+  </span>
+
+  <span>
+    <i className="legendLine pe"></i>
+    Pontos de equivalência
+  </span>
+</div>
+          </div>
+        </div>
+
+        <div className="resultsPanel">
+          <h2>Ponto atual</h2>
+
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>Volume adicionado</span>
+              <strong>
+                {formatarNumeroBR(volumeAtualTempoReal, 2)} mL
+              </strong>
+            </div>
+
+            <div className="resultCard">
+              <span>pH</span>
+              <strong>
+              {pontoAtualTempoReal?.ph === null ||
+pontoAtualTempoReal?.ph === undefined
+  ? "-"
+  : formatarNumeroBR(pontoAtualTempoReal.ph, 2)}
+              </strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Região</span>
+              <strong>{pontoAtualTempoReal?.regiao ?? "-"}</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Explicação</span>
+              <strong>
+                {pontoAtualTempoReal?.explicacao
+                  ? "Disponível"
+                  : "-"}
+              </strong>
+            </div>
+          </div>
+
+          {pontoAtualTempoReal?.explicacao && (
+            <div className="explanationBox">
+              <h3>Interpretação</h3>
+              <p>{pontoAtualTempoReal.explicacao}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="resultsPanel">
+          <h2>Pontos adicionados</h2>
+
+          {pontosTempoReal.length === 0 ? (
+            <div className="chartEmpty">Nenhum ponto adicionado ainda.</div>
+          ) : (
+            <div className="derivativeTableWrapper">
+              <table className="derivativeTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Volume mL</th>
+                    <th>pH</th>
+                    <th>Região</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {pontosTempoReal.map((ponto, index) => (
+                    <tr key={`tempo-real-${index}`}>
+                      <td>{index + 1}</td>
+                      <td>{formatarNumeroBR(ponto.volume, 2)}</td>
+                      <td>
+                        {ponto.ph === null
+                          ? "-"
+                          : formatarNumeroBR(ponto.ph, 2)}
+                      </td>
+                      <td>{ponto.regiao}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </>
+    )}
+  </div>
+)}
       </div>
     </section>
   );
@@ -3235,6 +3507,375 @@ function GraficoDerivadaPoliprotico({
         transform={`rotate(-90 22 ${margem.top + alturaGrafico / 2})`}
       >
         {tipo === "d1" ? "dpH/dV" : "d²pH/dV²"}
+      </text>
+    </svg>
+  );
+}
+
+function GraficoTempoRealPoliprotico({
+  curva,
+  resultado,
+  pontosAdicionados,
+}: {
+  curva: CurvaAcidoBasePoliprotica;
+  resultado: ResultadoSistemaPoliprotico;
+  pontosAdicionados: PontoCurvaAcidoBase[];
+}) {
+  const largura = 1200;
+  const altura = 820;
+
+  const margem = {
+    top: 36,
+    right: 36,
+    bottom: 64,
+    left: 72,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximoTotal = curva.volumeMaximo || 1;
+
+  const phMin = 0;
+  const phMax = 14;
+
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const pontosAdicionadosValidos = pontosAdicionados.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const ultimoVolume =
+    pontosAdicionadosValidos.length > 0
+      ? pontosAdicionadosValidos[pontosAdicionadosValidos.length - 1].volume
+      : 0;
+
+  const larguraJanela = Math.min(
+    volumeMaximoTotal,
+    Math.max(resultado.volumePE1 * 1.4, 20)
+  );
+
+  const margemSeguimento = larguraJanela * 0.22;
+
+  let xMinVisivel = 0;
+  let xMaxVisivel = larguraJanela;
+
+  if (ultimoVolume > xMaxVisivel - margemSeguimento) {
+    xMaxVisivel = Math.min(volumeMaximoTotal, ultimoVolume + margemSeguimento);
+    xMinVisivel = Math.max(0, xMaxVisivel - larguraJanela);
+  }
+
+  const amplitudeX = Math.max(xMaxVisivel - xMinVisivel, 1);
+
+  function xScale(volume: number) {
+    return (
+      margem.left +
+      ((volume - xMinVisivel) / amplitudeX) * larguraGrafico
+    );
+  }
+
+  function yScale(ph: number) {
+    return margem.top + ((phMax - ph) / (phMax - phMin)) * alturaGrafico;
+  }
+
+  const pontosValidosVisiveis = pontosValidos.filter(
+    (ponto) => ponto.volume >= xMinVisivel && ponto.volume <= xMaxVisivel
+  );
+
+  const pontosAdicionadosVisiveis = pontosAdicionadosValidos.filter(
+    (ponto) => ponto.volume >= xMinVisivel && ponto.volume <= xMaxVisivel
+  );
+
+  const pathCurva = pontosValidosVisiveis
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pathPontosAdicionados = pontosAdicionadosVisiveis
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const saltosGrandes = pontosAdicionadosVisiveis
+    .map((ponto, index, array) => {
+      if (index === 0) return null;
+
+      const anterior = array[index - 1];
+      const deltaV = ponto.volume - anterior.volume;
+
+      const limiteSalto = Math.max(resultado.volumePE1 * 0.08, 2);
+
+      if (deltaV <= limiteSalto) return null;
+
+      return {
+        volumeInicio: anterior.volume,
+        volumeFim: ponto.volume,
+        phInicio: anterior.ph,
+        phFim: ponto.ph,
+        deltaV,
+      };
+    })
+    .filter(
+      (
+        item
+      ): item is {
+        volumeInicio: number;
+        volumeFim: number;
+        phInicio: number | null;
+        phFim: number | null;
+        deltaV: number;
+      } => item !== null
+    );
+
+  const linhasPH = [0, 2, 4, 6, 8, 10, 12, 14];
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return xMinVisivel + (amplitudeX / 5) * index;
+  });
+
+  const volumesPEVisiveis = resultado.volumesPE
+    .map((volume, index) => ({
+      volume,
+      pe: index + 1,
+    }))
+    .filter(
+      (item) => item.volume >= xMinVisivel && item.volume <= xMaxVisivel
+    );
+
+  return (
+    <svg
+      className="acidBaseCurveSvg realTimeAcidBaseCurveSvg"
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label="Simulação em tempo real da titulação ácido-base"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasPH.map((ph) => (
+        <g key={`tempo-real-ph-${ph}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(ph)}
+            y2={yScale(ph)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={margem.left - 12}
+            y={yScale(ph) + 5}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {ph}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`tempo-real-volume-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      {volumesPEVisiveis.map((item) => (
+        <line
+          key={`tempo-real-pe-${item.pe}`}
+          x1={xScale(item.volume)}
+          x2={xScale(item.volume)}
+          y1={margem.top}
+          y2={margem.top + alturaGrafico}
+          stroke="#111111"
+          strokeWidth="1.8"
+          strokeDasharray="8 6"
+        />
+      ))}
+
+      {pathCurva && (
+        <path
+          d={pathCurva}
+          fill="none"
+          stroke="#a80000"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.22"
+        />
+      )}
+
+      {volumesPEVisiveis.map((item) => {
+        const pontoPE = calcularPhPorVolumePoliprotico(resultado, item.volume);
+
+        if (pontoPE.ph === null) return null;
+
+        const cx = xScale(item.volume);
+        const cy = yScale(pontoPE.ph);
+
+        return (
+          <g key={`tempo-real-marcador-pe-${item.pe}`}>
+            <circle
+              cx={cx}
+              cy={cy}
+              r="7"
+              fill="#111111"
+              stroke="#ffffff"
+              strokeWidth="3"
+            />
+
+<text
+  x={cx + 14}
+  y={cy - 14}
+  fill="#111111"
+  fontSize="17"
+  fontWeight="900"
+  fontFamily="Arial, Helvetica, sans-serif"
+>
+  PE{item.pe}
+</text>
+          </g>
+        );
+      })}
+
+      {pathPontosAdicionados && (
+        <path
+          d={pathPontosAdicionados}
+          fill="none"
+          stroke="#f43f5e"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="10 8"
+        />
+      )}
+
+      {saltosGrandes.map((salto, index) => {
+        if (salto.phInicio === null || salto.phFim === null) return null;
+
+        const x1 = xScale(salto.volumeInicio);
+        const x2 = xScale(salto.volumeFim);
+        const y1 = yScale(salto.phInicio);
+        const y2 = yScale(salto.phFim);
+
+        return (
+          <g key={`salto-volume-${index}`}>
+            <line
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="#f43f5e"
+              strokeWidth="5"
+              strokeDasharray="4 10"
+              opacity="0.55"
+            />
+          </g>
+        );
+      })}
+
+      {pontosAdicionadosVisiveis.map((ponto, index) => {
+        const ehUltimoPontoGeral =
+          pontosAdicionadosValidos.length > 0 &&
+          ponto.volume ===
+            pontosAdicionadosValidos[pontosAdicionadosValidos.length - 1].volume;
+
+        const cx = xScale(ponto.volume);
+        const cy = yScale(ponto.ph ?? 0);
+
+        return (
+          <g key={`tempo-real-ponto-${index}`}>
+            <circle
+              cx={cx}
+              cy={cy}
+              r={ehUltimoPontoGeral ? "10" : "7"}
+              fill="#f43f5e"
+              stroke="#ffffff"
+              strokeWidth="4"
+            />
+
+            {ehUltimoPontoGeral && (
+              <text
+                x={cx}
+                y={cy - 16}
+                fill="#9f1239"
+                fontSize="13"
+                fontWeight="900"
+                textAnchor="middle"
+                fontFamily="Arial, Helvetica, sans-serif"
+              >
+                {formatarNumeroBR(ponto.volume, 2)}
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="16"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={18}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="16"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
+      >
+        pH
       </text>
     </svg>
   );
