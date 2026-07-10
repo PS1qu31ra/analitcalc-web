@@ -3806,3 +3806,129 @@ section.container.calculatorSection + section.container.calculatorSection {
 .legendLine.pe {
   background: #111111 !important;
 }
+
+/* =========================================================
+   AJUSTE FINAL — GRÁFICO TEMPO REAL ÁCIDO-BASE MAIOR
+========================================================= */
+
+.realTimeSimulationGrid {
+  grid-template-columns: 420px minmax(0, 1fr) !important;
+  gap: 34px !important;
+  align-items: stretch !important;
+}
+
+.realTimeSimulationGrid > .resultsPanel:nth-child(2) {
+  padding: 34px !important;
+  min-width: 0 !important;
+}
+
+.realTimeAcidBaseCurveSvg {
+  width: 100% !important;
+  min-height: 760px !important;
+  display: block !important;
+}
+
+.realTimeSimulationGrid .chartEmpty {
+  min-height: 760px !important;
+}
+
+@media (max-width: 1150px) {
+  .realTimeSimulationGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .realTimeAcidBaseCurveSvg {
+    min-height: 620px !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .realTimeAcidBaseCurveSvg {
+    min-height: 430px !important;
+  }
+}
+
+.realTimeSimulationGrid {
+  grid-template-columns: 360px minmax(0, 1fr) !important;
+  gap: 32px !important;
+}
+
+.realTimeSimulationGrid > .resultsPanel:nth-child(2) {
+  padding: 26px !important;
+  min-width: 0 !important;
+}
+
+.realTimeAcidBaseCurveSvg {
+  width: 100% !important;
+  min-height: 820px !important;
+  display: block !important;
+}
+
+.realTimeChartLegend {
+  margin-top: 20px !important;
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+}
+
+.legendLine.idealAcidBaseCurve {
+  background: rgba(168, 0, 0, 0.35);
+}
+
+.legendLine.liveAcidBasePoints {
+  background: #f43f5e;
+}
+
+@media (max-width: 1150px) {
+  .realTimeSimulationGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .realTimeAcidBaseCurveSvg {
+    min-height: 640px !important;
+  }
+}
+
+.realTimeSimulationGrid {
+  grid-template-columns: 340px minmax(0, 1fr) !important;
+  gap: 30px !important;
+}
+
+.realTimeSimulationGrid > .resultsPanel:nth-child(2) {
+  padding: 26px !important;
+  min-width: 0 !important;
+}
+
+.realTimeAcidBaseCurveSvg {
+  width: 100% !important;
+  min-height: 920px !important;
+  display: block !important;
+}
+
+.realTimeChartLegend {
+  margin-top: 24px !important;
+  font-size: 1.25rem !important;
+  font-weight: 900 !important;
+}
+
+.realTimeChartLegend .legendLine {
+  width: 34px !important;
+  height: 7px !important;
+}
+
+.legendLine.idealAcidBaseCurve {
+  background: rgba(168, 0, 0, 0.35);
+}
+
+.legendLine.liveAcidBasePoints {
+  background: #f43f5e;
+}
+
+@media (max-width: 1150px) {
+  .realTimeSimulationGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .realTimeAcidBaseCurveSvg {
+    min-height: 680px !important;
+  }
+}

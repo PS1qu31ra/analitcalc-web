@@ -3521,15 +3521,15 @@ function GraficoTempoRealPoliprotico({
   resultado: ResultadoSistemaPoliprotico;
   pontosAdicionados: PontoCurvaAcidoBase[];
 }) {
-  const largura = 1200;
-  const altura = 820;
+  const largura = 1500;
+const altura = 820;
 
-  const margem = {
-    top: 36,
-    right: 36,
-    bottom: 64,
-    left: 72,
-  };
+const margem = {
+  top: 36,
+  right: 36,
+  bottom: 90,
+  left: 72,
+};
 
   const larguraGrafico = largura - margem.left - margem.right;
   const alturaGrafico = altura - margem.top - margem.bottom;
@@ -3683,17 +3683,17 @@ function GraficoTempoRealPoliprotico({
             strokeWidth="1"
           />
 
-          <text
-            x={margem.left - 12}
-            y={yScale(ph) + 5}
-            fill="#667085"
-            fontSize="13"
-            fontWeight="700"
-            textAnchor="end"
-            fontFamily="Arial, Helvetica, sans-serif"
-          >
-            {ph}
-          </text>
+<text
+  x={margem.left - 12}
+  y={yScale(ph) + 7}
+  fill="#667085"
+  fontSize="22"
+  fontWeight="900"
+  textAnchor="end"
+  fontFamily="Arial, Helvetica, sans-serif"
+>
+  {ph}
+</text>
         </g>
       ))}
 
@@ -3708,17 +3708,17 @@ function GraficoTempoRealPoliprotico({
             strokeWidth="1"
           />
 
-          <text
-            x={xScale(volume)}
-            y={margem.top + alturaGrafico + 28}
-            fill="#667085"
-            fontSize="13"
-            fontWeight="700"
-            textAnchor="middle"
-            fontFamily="Arial, Helvetica, sans-serif"
-          >
-            {formatarNumeroBR(volume, 0)}
-          </text>
+<text
+  x={xScale(volume)}
+  y={margem.top + alturaGrafico + 42}
+  fill="#667085"
+  fontSize="22"
+  fontWeight="900"
+  textAnchor="middle"
+  fontFamily="Arial, Helvetica, sans-serif"
+>
+  {formatarNumeroBR(volume, 0)}
+</text>
         </g>
       ))}
 
@@ -3760,17 +3760,17 @@ function GraficoTempoRealPoliprotico({
             <circle
               cx={cx}
               cy={cy}
-              r="7"
+              r="11"
               fill="#111111"
               stroke="#ffffff"
               strokeWidth="3"
             />
 
 <text
-  x={cx + 14}
-  y={cy - 14}
+  x={cx + 18}
+  y={cy - 18}
   fill="#111111"
-  fontSize="17"
+  fontSize="26"
   fontWeight="900"
   fontFamily="Arial, Helvetica, sans-serif"
 >
@@ -3830,7 +3830,7 @@ function GraficoTempoRealPoliprotico({
             <circle
               cx={cx}
               cy={cy}
-              r={ehUltimoPontoGeral ? "10" : "7"}
+              r={ehUltimoPontoGeral ? "15" : "11"}
               fill="#f43f5e"
               stroke="#ffffff"
               strokeWidth="4"
@@ -3838,45 +3838,45 @@ function GraficoTempoRealPoliprotico({
 
             {ehUltimoPontoGeral && (
               <text
-                x={cx}
-                y={cy - 16}
-                fill="#9f1239"
-                fontSize="13"
-                fontWeight="900"
-                textAnchor="middle"
-                fontFamily="Arial, Helvetica, sans-serif"
-              >
-                {formatarNumeroBR(ponto.volume, 2)}
-              </text>
+              x={cx}
+              y={cy - 24}
+              fill="#9f1239"
+              fontSize="26"
+              fontWeight="900"
+              textAnchor="middle"
+              fontFamily="Arial, Helvetica, sans-serif"
+            >
+              {formatarNumeroBR(ponto.volume, 2)}
+            </text>
             )}
           </g>
         );
       })}
 
-      <text
-        x={margem.left + larguraGrafico / 2}
-        y={altura - 14}
-        fill="#344054"
-        fontSize="16"
-        fontWeight="800"
-        textAnchor="middle"
-        fontFamily="Arial, Helvetica, sans-serif"
-      >
-        Volume de titulante adicionado mL
-      </text>
+<text
+  x={margem.left + larguraGrafico / 2}
+  y={altura - 24}
+  fill="#344054"
+  fontSize="26"
+  fontWeight="900"
+  textAnchor="middle"
+  fontFamily="Arial, Helvetica, sans-serif"
+>
+  Volume de titulante adicionado mL
+</text>
 
-      <text
-        x={18}
-        y={margem.top + alturaGrafico / 2}
-        fill="#344054"
-        fontSize="16"
-        fontWeight="800"
-        textAnchor="middle"
-        fontFamily="Arial, Helvetica, sans-serif"
-        transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
-      >
-        pH
-      </text>
+<text
+  x={24}
+  y={margem.top + alturaGrafico / 2}
+  fill="#344054"
+  fontSize="26"
+  fontWeight="900"
+  textAnchor="middle"
+  fontFamily="Arial, Helvetica, sans-serif"
+  transform={`rotate(-90 24 ${margem.top + alturaGrafico / 2})`}
+>
+  pH
+</text>
     </svg>
   );
 }
