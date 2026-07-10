@@ -17,6 +17,7 @@ import type {
 
 import { acidosPoliproticosKa } from "../../lib/data/acidoBasePoliproticosKa";
 import { basesPolibasicasKb } from "../../lib/data/acidoBasePolibasicosKb";
+import { indicadoresAcidoBase } from "../../lib/data/indicadoresAcidoBase";
 
 type TipoSistemaAcidoBase = "mono" | "poli";
 
@@ -27,6 +28,70 @@ type AbaAcidoBase =
   | "indicadores"
   | "derivadas"
   | "tempoReal";
+
+type RankingIndicadorAcidoBase = {
+  pe: number;
+  volumePE: number;
+  phPE: number;
+  nome: string;
+  phMin: number;
+  phMax: number;
+  phCentral: number;
+  faixa: string;
+  categoria: string;
+  cobrePE: boolean;
+  erro: number;
+  score: number;
+  justificativa: string;
+};
+
+type BlocoRankingIndicadorAcidoBase = {
+  pe: number;
+  volumePE: number;
+  phPE: number;
+  ranking: RankingIndicadorAcidoBase[];
+};
+
+type PontoDerivadaAcidoBase = {
+  volume: number;
+  d1: number | null;
+  d2: number | null;
+};
+
+type ResumoDerivadaPE = {
+  pe: number;
+  volumeTeorico: number;
+  volumePicoD1: number | null;
+  valorPicoD1: number | null;
+  volumeZeroD2: number | null;
+  valorD2: number | null;
+  detectavelD1: boolean;
+  detectavelD2: boolean;
+  detectavelGeral: boolean;
+  interpretacao: string;
+};
+
+type LinhaTabelaPrimeiraDerivada = {
+  indice: number;
+  volume: number;
+  ph: number | null;
+  volumeMedio: number | null;
+  deltaPH: number | null;
+  deltaV: number | null;
+  primeiraDerivada: number | null;
+  status: string;
+};
+
+type LinhaTabelaSegundaDerivada = {
+  indice: number;
+  volumeMedioPrimeira: number;
+  primeiraDerivada: number;
+  volumeMedioSegunda: number | null;
+  deltaPrimeiraDerivada: number | null;
+  deltaV: number | null;
+  segundaDerivada: number | null;
+  status: string;
+};
 
 export default function AcidoBasePage() {
   const [tipoSistema, setTipoSistema] =
@@ -346,6 +411,10 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   const [pontoConsulta, setPontoConsulta] =
     useState<PontoCurvaAcidoBase | null>(null);
 
+    const [peIndicadorAtivo, setPeIndicadorAtivo] = useState(1);
+const [indicadorSelecionado, setIndicadorSelecionado] =
+  useState<RankingIndicadorAcidoBase | null>(null);
+
   const tituladosDisponiveis =
     titulante === "HCl"
       ? basesPolibasicasKb
@@ -362,6 +431,8 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
     setCurvaPoli(null);
     setPontoConsulta(null);
     setMensagemPoli("");
+    setPeIndicadorAtivo(1);
+    setIndicadorSelecionado(null);
   }
 
   function avaliarPoliprotico() {
@@ -390,6 +461,7 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
       setMensagemPoli(
         "Preencha concentração do titulante, concentração do titulado, volume do titulado e volume da bureta com valores positivos."
       );
+
       return;
     }
 
@@ -406,10 +478,12 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
       const curvaGerada = gerarCurvaPoliprotica(avaliacao);
 
       setResultadoPoli(avaliacao);
-      setCurvaPoli(curvaGerada);
-      setPontoConsulta(null);
-      setVolumeConsulta("");
-      setMensagemPoli("Sistema avaliado com sucesso.");
+setCurvaPoli(curvaGerada);
+setPontoConsulta(null);
+setVolumeConsulta("");
+setPeIndicadorAtivo(1);
+setIndicadorSelecionado(null);
+setMensagemPoli("Sistema avaliado com sucesso.");
     } catch (erro) {
       setResultadoPoli(null);
       setCurvaPoli(null);
@@ -503,10 +577,8 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
     };
   }
 
-  function baixarGraficoCurvaPoliprotica() {
-    const svgOriginal = document.querySelector(
-      ".acidBaseCurveSvg"
-    ) as SVGSVGElement | null;
+  function baixarGraficoPorSeletor(seletor: string, nomeArquivo: string) {
+    const svgOriginal = document.querySelector(seletor) as SVGSVGElement | null;
   
     if (!svgOriginal) {
       return;
@@ -547,7 +619,7 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   
       const link = document.createElement("a");
       link.href = pngUrl;
-      link.download = "curva-titulacao-acido-base.png";
+      link.download = nomeArquivo;
       link.click();
   
       URL.revokeObjectURL(url);
@@ -599,6 +671,43 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   }
 
   const avisoVolumeBureta = montarAvisoVolumeBureta();
+
+  const rankingsIndicadoresPoli =
+  resultadoPoli && curvaPoli
+    ? montarRankingIndicadoresPoli(resultadoPoli)
+    : [];
+
+const blocoIndicadorAtivo =
+  rankingsIndicadoresPoli.find((item) => item.pe === peIndicadorAtivo) ??
+  rankingsIndicadoresPoli[0] ??
+  null;
+
+const indicadorAtivo =
+  indicadorSelecionado &&
+  blocoIndicadorAtivo &&
+  indicadorSelecionado.pe === blocoIndicadorAtivo.pe
+    ? indicadorSelecionado
+    : blocoIndicadorAtivo?.ranking[0] ?? null;
+
+    const derivadasPoli =
+  curvaPoli && resultadoPoli
+    ? calcularDerivadasCurvaPoliprotica(curvaPoli)
+    : [];
+
+const resumoDerivadasPoli =
+  resultadoPoli && derivadasPoli.length > 0
+    ? montarResumoDerivadasPoli(resultadoPoli, derivadasPoli)
+    : [];
+
+const tabelaPrimeiraDerivada =
+  resultadoPoli && curvaPoli
+    ? montarTabelaPrimeiraDerivadaPoli(resultadoPoli, curvaPoli)
+    : [];
+
+const tabelaSegundaDerivada =
+  resultadoPoli && tabelaPrimeiraDerivada.length > 0
+    ? montarTabelaSegundaDerivadaPoli(resultadoPoli, tabelaPrimeiraDerivada)
+    : [];
 
   return (
     <section className="container calculatorSection">
@@ -979,7 +1088,12 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   <button
     type="button"
     className="downloadChartButton"
-    onClick={baixarGraficoCurvaPoliprotica}
+    onClick={() =>
+      baixarGraficoPorSeletor(
+        ".mainAcidBaseCurveSvg",
+        "curva-titulacao-acido-base.png"
+      )
+    }
   >
     Baixar gráfico PNG
   </button>
@@ -1068,25 +1182,469 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   </div>
 )}
 
-        {abaAtiva === "indicadores" && (
-          <div className="resultsPanel">
-            <h2>Indicadores</h2>
-            <p>
-              Próxima etapa: usar os pH dos pontos de equivalência para ranquear
-              indicadores ácido-base.
-            </p>
-          </div>
-        )}
+{abaAtiva === "indicadores" && (
+  <div className="resultsPanel indicatorHeroPanel">
+    <div className="indicatorHeroContent">
+      <div>
+        <span className="eyebrow">Indicadores ácido-base</span>
+        <h2>Ranking de indicadores por ponto de equivalência</h2>
+        <p>
+          O sistema calcula o pH em cada ponto de equivalência, compara esse
+          valor com as faixas de viragem cadastradas e ranqueia os indicadores
+          mais compatíveis para cada PE.
+        </p>
+      </div>
 
-        {abaAtiva === "derivadas" && (
-          <div className="resultsPanel">
-            <h2>Derivadas</h2>
-            <p>
-              Próxima etapa: calcular primeira e segunda derivada da curva para
-              localizar os pontos de equivalência.
-            </p>
-          </div>
+      <div className="indicatorScoreCircle">
+        <strong>
+          {indicadorAtivo ? `${indicadorAtivo.score}%` : "-"}
+        </strong>
+        <span>compatibilidade</span>
+      </div>
+    </div>
+
+    {!resultadoPoli || !curvaPoli ? (
+      <div className="chartEmpty">
+        Avalie o sistema primeiro na aba Visão geral.
+      </div>
+    ) : (
+      <div className="indicatorPoliDashboard">
+        <div className="indicatorPeTabs">
+          {rankingsIndicadoresPoli.map((bloco) => (
+            <button
+              key={bloco.pe}
+              type="button"
+              className={
+                bloco.pe === blocoIndicadorAtivo?.pe
+                  ? "indicatorPeButton active"
+                  : "indicatorPeButton"
+              }
+              onClick={() => {
+                setPeIndicadorAtivo(bloco.pe);
+                setIndicadorSelecionado(null);
+              }}
+            >
+              PE{bloco.pe}
+              <span>
+                pH {formatarNumeroBR(bloco.phPE, 2)} |{" "}
+                {formatarNumeroBR(bloco.volumePE, 2)} mL
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {blocoIndicadorAtivo && indicadorAtivo && (
+          <>
+            <div className="indicatorSelectedGrid">
+              <div className="resultCard">
+                <span>PE analisado</span>
+                <strong>PE{blocoIndicadorAtivo.pe}</strong>
+                <small>
+                  Volume = {formatarNumeroBR(blocoIndicadorAtivo.volumePE, 2)} mL
+                </small>
+              </div>
+
+              <div className="resultCard">
+                <span>pH do PE</span>
+                <strong>{formatarNumeroBR(blocoIndicadorAtivo.phPE, 2)}</strong>
+              </div>
+
+              <div className="resultCard">
+                <span>Indicador selecionado</span>
+                <strong>{indicadorAtivo.nome}</strong>
+                <small>{indicadorAtivo.categoria}</small>
+              </div>
+
+              <div className="resultCard">
+                <span>Faixa de viragem</span>
+                <strong>
+                  {formatarNumeroBR(indicadorAtivo.phMin, 2)} a{" "}
+                  {formatarNumeroBR(indicadorAtivo.phMax, 2)}
+                </strong>
+              </div>
+            </div>
+
+            <div className="chartBox indicatorChartBox">
+            <div className="chartHeader">
+  <div>
+    <strong>Faixa do indicador sobre a curva</strong>
+    <span>
+      A região destacada mostra a faixa de viragem do indicador
+      selecionado em relação à curva de titulação.
+    </span>
+  </div>
+
+  <button
+    type="button"
+    className="downloadChartButton"
+    onClick={() =>
+      baixarGraficoPorSeletor(
+        ".indicatorCurveSvg",
+        "grafico-indicador-acido-base.png"
+      )
+    }
+  >
+    Baixar gráfico PNG
+  </button>
+</div>
+
+              <GraficoIndicadorPoliprotico
+                curva={curvaPoli}
+                resultado={resultadoPoli}
+                indicador={indicadorAtivo}
+              />
+
+              <div className="chartLegend">
+                <span>
+                  <i className="legendLine curve"></i>
+                  Curva de titulação
+                </span>
+                <span>
+                  <i className="legendLine indicatorRange"></i>
+                  Faixa do indicador
+                </span>
+                <span>
+                  <i className="legendLine pe"></i>
+                  Pontos de equivalência
+                </span>
+              </div>
+            </div>
+
+            <div className="resultsPanel">
+              <h2>Ranking de indicadores</h2>
+
+              <div className="indicatorRankingList">
+                {blocoIndicadorAtivo.ranking.map((item, index) => (
+                  <button
+                    key={`${item.pe}-${item.nome}`}
+                    type="button"
+                    className={
+                      indicadorAtivo.nome === item.nome
+                        ? "indicatorRankingItem active"
+                        : "indicatorRankingItem"
+                    }
+                    onClick={() => setIndicadorSelecionado(item)}
+                  >
+                    <div className="indicatorRankNumber">{index + 1}</div>
+
+                    <div className="indicatorRankMain">
+                      <strong>{item.nome}</strong>
+
+                      <div className="indicatorMetaGrid">
+                        <div className="indicatorMetaItem">
+                          <span>Faixa</span>
+                          <strong>
+                            {formatarNumeroBR(item.phMin, 2)} a{" "}
+                            {formatarNumeroBR(item.phMax, 2)}
+                          </strong>
+                        </div>
+
+                        <div className="indicatorMetaItem">
+                          <span>pH central</span>
+                          <strong>{formatarNumeroBR(item.phCentral, 2)}</strong>
+                        </div>
+
+                        <div className="indicatorMetaItem">
+                          <span>Erro</span>
+                          <strong>{formatarNumeroBR(item.erro, 2)}</strong>
+                        </div>
+
+                        <div className="indicatorMetaItem">
+                          <span>Status</span>
+                          <strong>
+                            {item.cobrePE ? "Cobre o PE" : "Próximo ao PE"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <p className="indicatorJustification">
+                        {item.justificativa}
+                      </p>
+                    </div>
+
+                    <div className="indicatorRankScore">
+                      {item.score}%
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
         )}
+      </div>
+    )}
+  </div>
+)}
+
+{abaAtiva === "derivadas" && (
+  <div className="resultsPanel curveMainPanel">
+    <h2>Derivadas da curva</h2>
+    {!resultadoPoli || !curvaPoli ? (
+      <p>Avalie o sistema primeiro na aba Visão geral.</p>
+    ) : (
+      <>
+        <p>
+          A 1ª derivada mostra a variação do pH por volume adicionado
+          (dpH/dV), enquanto a 2ª derivada ajuda a localizar o ponto em que
+          ocorre mudança de concavidade da curva, geralmente próximo ao ponto
+          de equivalência.
+        </p>
+
+        <div className="resultGrid curveSummaryGrid">
+          <div className="resultCard">
+            <span>Pontos da curva</span>
+            <strong>{curvaPoli.pontos.length}</strong>
+          </div>
+          <div className="resultCard">
+            <span>Pontos com derivadas</span>
+            <strong>{derivadasPoli.length}</strong>
+          </div>
+          <div className="resultCard">
+            <span>Nº de equivalências</span>
+            <strong>{resultadoPoli.numeroEquivalencias}</strong>
+          </div>
+          <div className="resultCard">
+            <span>Passo da curva</span>
+            <strong>{formatarNumeroBR(curvaPoli.passo, 2)} mL</strong>
+          </div>
+        </div>
+
+        <div className="equivalenceVolumePanel">
+  <span className="eyebrow">Leitura analítica</span>
+  <h3>Resumo das derivadas por ponto de equivalência</h3>
+
+  <div className="equivalenceVolumeGrid">
+    {resumoDerivadasPoli.map((item) => (
+      <div className="equivalenceVolumeCard" key={`derivada-${item.pe}`}>
+        <span>PE{item.pe}</span>
+
+        <div className="equivalenceVolumeValues">
+          <div>
+            <small>Volume teórico</small>
+            <strong>{formatarNumeroBR(item.volumeTeorico, 2)} mL</strong>
+          </div>
+
+          <div>
+            <small>Pico/vale da 1ª derivada</small>
+            <strong>
+              {item.volumePicoD1 === null
+                ? "Não detectável"
+                : `${formatarNumeroBR(item.volumePicoD1, 2)} mL`}
+            </strong>
+          </div>
+
+          <div>
+            <small>Zero da 2ª derivada</small>
+            <strong>
+              {item.volumeZeroD2 === null
+                ? "Não detectável"
+                : `${formatarNumeroBR(item.volumeZeroD2, 2)} mL`}
+            </strong>
+          </div>
+        </div>
+
+        <div
+          className={
+            item.detectavelGeral
+              ? "detectabilityBox high"
+              : "detectabilityBox veryLow"
+          }
+        >
+          <strong>
+            {item.detectavelGeral
+              ? "Detectável por derivada"
+              : "Não detectável por derivada"}
+          </strong>
+
+          <p>{item.interpretacao}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+        <div className="chartBox acidBaseChartBox">
+  <div className="chartHeader">
+    <div>
+      <strong>1ª derivada da curva (dpH/dV)</strong>
+      <span>
+        Picos ou vales de maior magnitude tendem a aparecer próximos aos pontos
+        de equivalência.
+      </span>
+    </div>
+
+    <button
+      type="button"
+      className="downloadChartButton"
+      onClick={() =>
+        baixarGraficoPorSeletor(
+          ".derivativeD1Svg",
+          "primeira-derivada-acido-base.png"
+        )
+      }
+    >
+      Baixar gráfico PNG
+    </button>
+  </div>
+
+  <GraficoDerivadaPoliprotico
+  derivadas={derivadasPoli}
+  resultado={resultadoPoli}
+  resumo={resumoDerivadasPoli}
+  tipo="d1"
+/>
+</div>
+
+<div className="chartBox acidBaseChartBox">
+  <div className="chartHeader">
+    <div>
+      <strong>2ª derivada da curva (d²pH/dV²)</strong>
+      <span>
+        O cruzamento com zero costuma ocorrer próximo ao ponto de equivalência.
+      </span>
+    </div>
+
+    <button
+      type="button"
+      className="downloadChartButton"
+      onClick={() =>
+        baixarGraficoPorSeletor(
+          ".derivativeD2Svg",
+          "segunda-derivada-acido-base.png"
+        )
+      }
+    >
+      Baixar gráfico PNG
+    </button>
+  </div>
+
+  <GraficoDerivadaPoliprotico
+  derivadas={derivadasPoli}
+  resultado={resultadoPoli}
+  resumo={resumoDerivadasPoli}
+  tipo="d2"
+/>
+</div>
+
+<div className="resultsPanel derivativeTablePanel">
+  <span className="eyebrow">Tabela numérica</span>
+  <h2>Tabela completa usada no cálculo</h2>
+  <p>
+    Esta tabela mostra os volumes, pH, variações de pH, variações de volume e
+    a primeira derivada calculada ponto a ponto.
+  </p>
+
+  <div className="derivativeTableWrapper">
+    <table className="derivativeTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Vol(mL)</th>
+          <th>pH</th>
+          <th>V médio</th>
+          <th>ΔpH</th>
+          <th>ΔV</th>
+          <th>ΔpH/ΔV</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {tabelaPrimeiraDerivada.map((linha) => (
+          <tr key={`tabela-d1-${linha.indice}`}>
+            <td>{linha.indice}</td>
+            <td>{formatarNumeroBR(linha.volume, 2)}</td>
+            <td>
+              {linha.ph === null ? "-" : formatarNumeroBR(linha.ph, 8)}
+            </td>
+            <td>
+              {linha.volumeMedio === null
+                ? "-"
+                : formatarNumeroBR(linha.volumeMedio, 3)}
+            </td>
+            <td>
+              {linha.deltaPH === null
+                ? "-"
+                : formatarNumeroBR(linha.deltaPH, 8)}
+            </td>
+            <td>
+              {linha.deltaV === null
+                ? "-"
+                : formatarNumeroBR(linha.deltaV, 3)}
+            </td>
+            <td>
+              {linha.primeiraDerivada === null
+                ? "-"
+                : formatarNumeroBR(linha.primeiraDerivada, 8)}
+            </td>
+            <td>{linha.status}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div className="resultsPanel derivativeTablePanel">
+  <span className="eyebrow">Segunda derivada</span>
+  <h2>Tabela completa da segunda derivada</h2>
+  <p>
+    Esta tabela usa os valores da primeira derivada para calcular a segunda
+    derivada da curva.
+  </p>
+
+  <div className="derivativeTableWrapper">
+    <table className="derivativeTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>V médio 1ª</th>
+          <th>1ª derivada</th>
+          <th>V 2ª derivada</th>
+          <th>Δ(1ª derivada)</th>
+          <th>ΔV</th>
+          <th>2ª derivada</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {tabelaSegundaDerivada.map((linha) => (
+          <tr key={`tabela-d2-${linha.indice}`}>
+            <td>{linha.indice}</td>
+            <td>{formatarNumeroBR(linha.volumeMedioPrimeira, 3)}</td>
+            <td>{formatarNumeroBR(linha.primeiraDerivada, 8)}</td>
+            <td>
+              {linha.volumeMedioSegunda === null
+                ? "-"
+                : formatarNumeroBR(linha.volumeMedioSegunda, 3)}
+            </td>
+            <td>
+              {linha.deltaPrimeiraDerivada === null
+                ? "-"
+                : formatarNumeroBR(linha.deltaPrimeiraDerivada, 8)}
+            </td>
+            <td>
+              {linha.deltaV === null
+                ? "-"
+                : formatarNumeroBR(linha.deltaV, 3)}
+            </td>
+            <td>
+              {linha.segundaDerivada === null
+                ? "-"
+                : formatarNumeroBR(linha.segundaDerivada, 8)}
+            </td>
+            <td>{linha.status}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+      </>
+    )}
+  </div>
+)}
 
         {abaAtiva === "tempoReal" && (
           <div className="resultsPanel">
@@ -1174,7 +1732,7 @@ function GraficoCurvaPoliprotica({
 
   return (
     <svg
-      className="acidBaseCurveSvg"
+    className="acidBaseCurveSvg mainAcidBaseCurveSvg"
       viewBox={`0 0 ${largura} ${altura}`}
       role="img"
       aria-label="Curva de titulação ácido-base"
@@ -1213,7 +1771,7 @@ function GraficoCurvaPoliprotica({
             x={margem.left - 12}
             y={yScale(ph) + 5}
             fill="#667085"
-            fontSize="15"
+            fontSize="13"
             fontWeight="700"
             textAnchor="end"
             fontFamily="Arial, Helvetica, sans-serif"
@@ -1238,7 +1796,7 @@ function GraficoCurvaPoliprotica({
             x={xScale(volume)}
             y={margem.top + alturaGrafico + 28}
             fill="#667085"
-            fontSize="15"
+            fontSize="13"
             fontWeight="700"
             textAnchor="middle"
             fontFamily="Arial, Helvetica, sans-serif"
@@ -1499,7 +2057,7 @@ ry="9"
         x={textX}
         y={textY}
         fill="#a80000"
-        fontSize="14"
+        fontSize="12"
         fontWeight="900"
         textAnchor="middle"
         fontFamily="Arial, Helvetica, sans-serif"
@@ -1533,6 +2091,1150 @@ ry="9"
         transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
       >
         pH
+      </text>
+    </svg>
+  );
+}
+
+function calcularDerivadasCurvaPoliprotica(
+  curva: CurvaAcidoBasePoliprotica
+): PontoDerivadaAcidoBase[] {
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const derivadasBase: PontoDerivadaAcidoBase[] = pontosValidos.map(
+    (ponto, index, array) => {
+      if (index === 0 || index === array.length - 1) {
+        return {
+          volume: ponto.volume,
+          d1: null,
+          d2: null,
+        };
+      }
+
+      const anterior = array[index - 1];
+      const proximo = array[index + 1];
+
+      const deltaV = proximo.volume - anterior.volume;
+      if (!Number.isFinite(deltaV) || deltaV === 0) {
+        return {
+          volume: ponto.volume,
+          d1: null,
+          d2: null,
+        };
+      }
+
+      const d1 = ((proximo.ph ?? 0) - (anterior.ph ?? 0)) / deltaV;
+
+      return {
+        volume: ponto.volume,
+        d1,
+        d2: null,
+      };
+    }
+  );
+
+  const derivadasComSegunda = derivadasBase.map((ponto, index, array) => {
+    if (
+      index === 0 ||
+      index === array.length - 1 ||
+      array[index - 1].d1 === null ||
+      array[index + 1].d1 === null
+    ) {
+      return {
+        ...ponto,
+        d2: null,
+      };
+    }
+
+    const anterior = array[index - 1];
+    const proximo = array[index + 1];
+
+    const deltaV = proximo.volume - anterior.volume;
+    if (!Number.isFinite(deltaV) || deltaV === 0) {
+      return {
+        ...ponto,
+        d2: null,
+      };
+    }
+
+    const d2 = ((proximo.d1 ?? 0) - (anterior.d1 ?? 0)) / deltaV;
+
+    return {
+      ...ponto,
+      d2,
+    };
+  });
+
+  return derivadasComSegunda;
+}
+
+function montarResumoDerivadasPoli(
+  resultado: ResultadoSistemaPoliprotico,
+  derivadas: PontoDerivadaAcidoBase[]
+): ResumoDerivadaPE[] {
+  if (!derivadas.length) return [];
+
+  const passoEstimado =
+    derivadas.length > 1
+      ? Math.abs(derivadas[1].volume - derivadas[0].volume)
+      : 0.5;
+
+  const volumeMinimoAnalise = Math.max(resultado.volumePE1 * 0.12, 1);
+
+  const derivadasUteis = derivadas.filter(
+    (item) => item.volume >= volumeMinimoAnalise
+  );
+
+  const valoresD1Globais = derivadasUteis
+    .map((item) => Math.abs(item.d1 ?? 0))
+    .filter((valor) => Number.isFinite(valor));
+
+  const maiorD1Global =
+    valoresD1Globais.length > 0 ? Math.max(...valoresD1Globais) : 0;
+
+  return resultado.volumesPE.map((volumePE, index) => {
+    const janela = Math.max(resultado.volumePE1 * 0.05, passoEstimado * 6, 1);
+
+    const candidatos = derivadasUteis.filter(
+      (item) => Math.abs(item.volume - volumePE) <= janela
+    );
+
+    const candidatosD1 = candidatos.filter(
+      (item) => item.d1 !== null && Number.isFinite(item.d1)
+    );
+
+    const candidatosD2 = candidatos.filter(
+      (item) => item.d2 !== null && Number.isFinite(item.d2)
+    );
+
+    const melhorD1 =
+      candidatosD1.length > 0
+        ? candidatosD1.reduce((melhor, atual) =>
+            Math.abs(atual.d1 ?? 0) > Math.abs(melhor.d1 ?? 0)
+              ? atual
+              : melhor
+          )
+        : null;
+
+    const maiorD1Local =
+      candidatosD1.length > 0
+        ? Math.max(...candidatosD1.map((item) => Math.abs(item.d1 ?? 0)))
+        : 0;
+
+    const temPicoD1 =
+      maiorD1Local >= 0.35 &&
+      maiorD1Global > 0 &&
+      maiorD1Local >= maiorD1Global * 0.18;
+
+    const temTrocaSinalD2 = candidatosD2.some((item, i, array) => {
+      if (i === 0) return false;
+
+      const anterior = array[i - 1].d2;
+      const atual = item.d2;
+
+      if (anterior === null || atual === null) return false;
+
+      return anterior * atual < 0;
+    });
+
+    const melhorD2 =
+      candidatosD2.length > 0 && temTrocaSinalD2
+        ? candidatosD2.reduce((melhor, atual) =>
+            Math.abs(atual.d2 ?? 0) < Math.abs(melhor.d2 ?? 0)
+              ? atual
+              : melhor
+          )
+        : null;
+
+    const detectavelD1 = temPicoD1;
+    const detectavelD2 = temPicoD1 && temTrocaSinalD2;
+    const detectavelGeral = detectavelD1 && detectavelD2;
+
+    const interpretacao = detectavelGeral
+      ? "Este ponto apresenta pico/vale relevante na 1ª derivada e inflexão compatível na 2ª derivada, podendo ser localizado graficamente."
+      : "Este ponto não apresenta pico/vale claro na 1ª derivada associado a uma inflexão confiável na 2ª derivada. Portanto, ele existe pelo cálculo estequiométrico, mas não deve ser considerado detectável pela análise derivativa.";
+
+    return {
+      pe: index + 1,
+      volumeTeorico: volumePE,
+      volumePicoD1: detectavelD1 ? melhorD1?.volume ?? null : null,
+      valorPicoD1: detectavelD1 ? melhorD1?.d1 ?? null : null,
+      volumeZeroD2: detectavelD2 ? melhorD2?.volume ?? null : null,
+      valorD2: detectavelD2 ? melhorD2?.d2 ?? null : null,
+      detectavelD1,
+      detectavelD2,
+      detectavelGeral,
+      interpretacao,
+    };
+  });
+}
+
+function identificarStatusVolume(
+  resultado: ResultadoSistemaPoliprotico,
+  volume: number
+) {
+  const tolerancia = Math.max(resultado.volumePE1 * 0.01, 0.2);
+
+  for (let index = 0; index < resultado.volumesPE.length; index++) {
+    const volumePE = resultado.volumesPE[index];
+
+    if (Math.abs(volume - volumePE) <= tolerancia) {
+      return `Próximo ao PE${index + 1}`;
+    }
+
+    if (volume < volumePE) {
+      return `Antes do PE${index + 1}`;
+    }
+  }
+
+  return `Após o PE${resultado.volumesPE.length}`;
+}
+
+function montarTabelaPrimeiraDerivadaPoli(
+  resultado: ResultadoSistemaPoliprotico,
+  curva: CurvaAcidoBasePoliprotica
+): LinhaTabelaPrimeiraDerivada[] {
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  return pontosValidos.map((ponto, index, array) => {
+    if (index === 0) {
+      return {
+        indice: index + 1,
+        volume: ponto.volume,
+        ph: ponto.ph,
+        volumeMedio: null,
+        deltaPH: null,
+        deltaV: null,
+        primeiraDerivada: null,
+        status: identificarStatusVolume(resultado, ponto.volume),
+      };
+    }
+
+    const anterior = array[index - 1];
+
+    const deltaPH = (ponto.ph ?? 0) - (anterior.ph ?? 0);
+    const deltaV = ponto.volume - anterior.volume;
+    const volumeMedio = (ponto.volume + anterior.volume) / 2;
+
+    const primeiraDerivada =
+      Number.isFinite(deltaV) && deltaV !== 0 ? deltaPH / deltaV : null;
+
+    return {
+      indice: index + 1,
+      volume: ponto.volume,
+      ph: ponto.ph,
+      volumeMedio,
+      deltaPH,
+      deltaV,
+      primeiraDerivada,
+      status: identificarStatusVolume(resultado, ponto.volume),
+    };
+  });
+}
+
+function montarTabelaSegundaDerivadaPoli(
+  resultado: ResultadoSistemaPoliprotico,
+  tabelaPrimeira: LinhaTabelaPrimeiraDerivada[]
+): LinhaTabelaSegundaDerivada[] {
+  const linhasComPrimeira = tabelaPrimeira.filter(
+    (linha) =>
+      linha.volumeMedio !== null &&
+      linha.primeiraDerivada !== null &&
+      Number.isFinite(linha.primeiraDerivada)
+  );
+
+  return linhasComPrimeira.map((linha, index, array) => {
+    if (index === 0) {
+      return {
+        indice: index + 1,
+        volumeMedioPrimeira: linha.volumeMedio ?? 0,
+        primeiraDerivada: linha.primeiraDerivada ?? 0,
+        volumeMedioSegunda: null,
+        deltaPrimeiraDerivada: null,
+        deltaV: null,
+        segundaDerivada: null,
+        status: identificarStatusVolume(resultado, linha.volumeMedio ?? 0),
+      };
+    }
+
+    const anterior = array[index - 1];
+
+    const volumeAtual = linha.volumeMedio ?? 0;
+    const volumeAnterior = anterior.volumeMedio ?? 0;
+
+    const deltaPrimeiraDerivada =
+      (linha.primeiraDerivada ?? 0) - (anterior.primeiraDerivada ?? 0);
+
+    const deltaV = volumeAtual - volumeAnterior;
+    const volumeMedioSegunda = (volumeAtual + volumeAnterior) / 2;
+
+    const segundaDerivada =
+      Number.isFinite(deltaV) && deltaV !== 0
+        ? deltaPrimeiraDerivada / deltaV
+        : null;
+
+    return {
+      indice: index + 1,
+      volumeMedioPrimeira: volumeAtual,
+      primeiraDerivada: linha.primeiraDerivada ?? 0,
+      volumeMedioSegunda,
+      deltaPrimeiraDerivada,
+      deltaV,
+      segundaDerivada,
+      status: identificarStatusVolume(resultado, volumeAtual),
+    };
+  });
+}
+
+function montarRankingIndicadoresPoli(
+  resultado: ResultadoSistemaPoliprotico
+): BlocoRankingIndicadorAcidoBase[] {
+  return resultado.volumesPE.map((volumePE, index) => {
+    const pe = index + 1;
+    const pontoPE = calcularPhPorVolumePoliprotico(resultado, volumePE);
+    const phPE = pontoPE.ph;
+
+    if (phPE === null) {
+      return {
+        pe,
+        volumePE,
+        phPE: 0,
+        ranking: [],
+      };
+    }
+
+    const ranking = indicadoresAcidoBase
+      .map((indicador) => {
+        const phMin = Number(indicador.phMinimo);
+        const phMax = Number(indicador.phMaximo);
+        const phCentral = Number(indicador.phCentral);
+
+        if (
+          !Number.isFinite(phMin) ||
+          !Number.isFinite(phMax) ||
+          !Number.isFinite(phCentral)
+        ) {
+          return null;
+        }
+
+        const cobrePE = phPE >= phMin && phPE <= phMax;
+        const erro = Math.abs(phPE - phCentral);
+        const score = calcularScoreIndicadorPoli(erro, cobrePE);
+
+        return {
+          pe,
+          volumePE,
+          phPE,
+          nome: indicador.nome,
+          phMin,
+          phMax,
+          phCentral,
+          faixa: indicador.faixa,
+          categoria: indicador.categoria,
+          cobrePE,
+          erro,
+          score,
+          justificativa: montarJustificativaIndicador({
+            nome: indicador.nome,
+            phPE,
+            phMin,
+            phMax,
+            phCentral,
+            cobrePE,
+            erro,
+          }),
+        };
+      })
+      .filter((item): item is RankingIndicadorAcidoBase => item !== null)
+      .sort((a, b) => {
+        if (a.cobrePE !== b.cobrePE) {
+          return a.cobrePE ? -1 : 1;
+        }
+
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+
+        return a.erro - b.erro;
+      })
+      .slice(0, 6);
+
+    return {
+      pe,
+      volumePE,
+      phPE,
+      ranking,
+    };
+  });
+}
+
+function calcularScoreIndicadorPoli(erro: number, cobrePE: boolean) {
+  let score = Math.max(0, 100 - erro * 25);
+
+  if (cobrePE) {
+    score += 15;
+  }
+
+  return Math.min(100, Math.round(score));
+}
+
+function montarJustificativaIndicador(params: {
+  nome: string;
+  phPE: number;
+  phMin: number;
+  phMax: number;
+  phCentral: number;
+  cobrePE: boolean;
+  erro: number;
+}) {
+  const { nome, phPE, phMin, phMax, phCentral, cobrePE, erro } = params;
+
+  if (cobrePE) {
+    return `${nome} é recomendado porque sua faixa de viragem (${formatarNumeroBR(
+      phMin,
+      2
+    )} a ${formatarNumeroBR(
+      phMax,
+      2
+    )}) cobre o pH do ponto de equivalência (${formatarNumeroBR(
+      phPE,
+      2
+    )}).`;
+  }
+
+  return `${nome} não cobre exatamente o pH do PE (${formatarNumeroBR(
+    phPE,
+    2
+  )}), mas ficou entre os mais próximos porque seu pH central (${formatarNumeroBR(
+    phCentral,
+    2
+  )}) está a ${formatarNumeroBR(erro, 2)} unidade(s) de pH do ponto analisado.`;
+}
+
+function GraficoIndicadorPoliprotico({
+  curva,
+  resultado,
+  indicador,
+}: {
+  curva: CurvaAcidoBasePoliprotica;
+  resultado: ResultadoSistemaPoliprotico;
+  indicador: RankingIndicadorAcidoBase;
+}) {
+  const largura = 980;
+  const altura = 560;
+
+  const margem = {
+    top: 52,
+    right: 36,
+    bottom: 64,
+    left: 72,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximo = curva.volumeMaximo || 1;
+  const phMinGrafico = 0;
+  const phMaxGrafico = 14;
+
+  function limitarPH(valor: number) {
+    return Math.min(phMaxGrafico, Math.max(phMinGrafico, valor));
+  }
+
+  function xScale(volume: number) {
+    return margem.left + (volume / volumeMaximo) * larguraGrafico;
+  }
+
+  function yScale(ph: number) {
+    return (
+      margem.top +
+      ((phMaxGrafico - ph) / (phMaxGrafico - phMinGrafico)) * alturaGrafico
+    );
+  }
+
+  function limitarBox(
+    x: number,
+    y: number,
+    boxWidth: number,
+    boxHeight: number
+  ) {
+    let novoX = x;
+    let novoY = y;
+
+    if (novoX < margem.left + 8) {
+      novoX = margem.left + 8;
+    }
+
+    if (novoX + boxWidth > largura - margem.right - 8) {
+      novoX = largura - margem.right - boxWidth - 8;
+    }
+
+    if (novoY < margem.top + 8) {
+      novoY = margem.top + 8;
+    }
+
+    if (novoY + boxHeight > margem.top + alturaGrafico - 8) {
+      novoY = margem.top + alturaGrafico - boxHeight - 8;
+    }
+
+    return { x: novoX, y: novoY };
+  }
+
+  function obterPosicaoLabelPE(
+    cx: number,
+    cy: number,
+    preferirDireita = true
+  ) {
+    const boxWidth = 82;
+const boxHeight = 38;
+
+const candidatoDireita = limitarBox(cx + 34, cy - 64, boxWidth, boxHeight);
+const candidatoEsquerda = limitarBox(
+  cx - boxWidth - 34,
+  cy - 64,
+  boxWidth,
+  boxHeight
+);
+
+    const box = preferirDireita ? candidatoDireita : candidatoEsquerda;
+
+    const anchorX = box.x > cx ? box.x : box.x + boxWidth;
+    const anchorY = box.y + boxHeight / 2;
+
+    return {
+      boxX: box.x,
+      boxY: box.y,
+      boxWidth,
+      boxHeight,
+      anchorX,
+      anchorY,
+    };
+  }
+
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const pathCurva = pontosValidos
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pontosPE = resultado.volumesPE
+    .map((volume, index) => {
+      const pontoPE = calcularPhPorVolumePoliprotico(resultado, volume);
+      return {
+        volume,
+        ph: pontoPE.ph,
+        label: `PE${index + 1}`,
+        pe: index + 1,
+      };
+    })
+    .filter((ponto) => ponto.ph !== null && ponto.ph !== undefined);
+
+  const linhasPH = [0, 2, 4, 6, 8, 10, 12, 14];
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return (volumeMaximo / 5) * index;
+  });
+
+  const phFaixaMin = limitarPH(indicador.phMin);
+  const phFaixaMax = limitarPH(indicador.phMax);
+
+  const faixaYTop = yScale(phFaixaMax);
+  const faixaYBottom = yScale(phFaixaMin);
+  const alturaFaixa = Math.max(2, faixaYBottom - faixaYTop);
+
+  const yPhPE = yScale(limitarPH(indicador.phPE));
+  const xVolumePE = xScale(indicador.volumePE);
+
+  const peAtivoMaisADireita = xVolumePE < margem.left + larguraGrafico * 0.72;
+  const labelAtivo = obterPosicaoLabelPE(
+    xVolumePE,
+    yPhPE,
+    peAtivoMaisADireita
+  );
+
+  const faixaLabelX = margem.left + 16;
+  const faixaLabelY = margem.top - 38;
+  const faixaLabelWidth = 250;
+  const faixaLabelHeight = 32;
+
+  return (
+    <svg
+      className="acidBaseCurveSvg indicatorCurveSvg"
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label="Faixa de indicador na curva ácido-base"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasPH.map((ph) => (
+        <g key={`ph-ind-${ph}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(ph)}
+            y2={yScale(ph)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+          <text
+            x={margem.left - 12}
+            y={yScale(ph) + 5}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {ph}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`volume-ind-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      <rect
+        x={margem.left}
+        y={faixaYTop}
+        width={larguraGrafico}
+        height={alturaFaixa}
+        fill="#fca5a5"
+opacity="0.12"
+      />
+
+      <line
+        x1={margem.left}
+        x2={margem.left + larguraGrafico}
+        y1={faixaYTop}
+        y2={faixaYTop}
+        stroke="#a80000"
+        strokeWidth="1.3"
+        strokeDasharray="8 6"
+        opacity="0.85"
+      />
+
+      <line
+        x1={margem.left}
+        x2={margem.left + larguraGrafico}
+        y1={faixaYBottom}
+        y2={faixaYBottom}
+        stroke="#a80000"
+        strokeWidth="1.3"
+        strokeDasharray="8 6"
+        opacity="0.85"
+      />
+
+      <rect
+        x={faixaLabelX}
+        y={faixaLabelY}
+        width={faixaLabelWidth}
+        height={faixaLabelHeight}
+        rx="10"
+        ry="10"
+        fill="#ffffff"
+        stroke="#f3d1d1"
+        strokeWidth="1"
+        opacity="0.96"
+      />
+
+      <text
+        x={faixaLabelX + 12}
+        y={faixaLabelY + 19}
+        fill="#7a0000"
+        fontSize="12"
+        fontWeight="900"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        {indicador.nome}: pH {formatarNumeroBR(indicador.phMin, 2)} a{" "}
+        {formatarNumeroBR(indicador.phMax, 2)}
+      </text>
+
+      <path
+        d={pathCurva}
+        fill="none"
+        stroke="#a80000"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {pontosPE.map((ponto) => {
+        const cx = xScale(ponto.volume);
+        const cy = yScale(ponto.ph ?? 0);
+        const ehPEAtivo = ponto.pe === indicador.pe;
+
+        return (
+          <g key={`ind-${ponto.label}`}>
+            <line
+              x1={cx}
+              x2={cx}
+              y1={margem.top}
+              y2={margem.top + alturaGrafico}
+              stroke="#111111"
+              strokeWidth={ehPEAtivo ? "2.2" : "1.8"}
+              strokeDasharray="8 6"
+              opacity={ehPEAtivo ? 1 : 0.9}
+            />
+
+            <circle
+              cx={cx}
+              cy={cy}
+              r={ehPEAtivo ? "10" : "6"}
+              fill={ehPEAtivo ? "#a80000" : "#111111"}
+              stroke="#ffffff"
+              strokeWidth="4"
+            />
+
+            {!ehPEAtivo && (
+              <text
+                x={cx + 14}
+                y={cy - 14}
+                fill="#111111"
+                fontSize="16"
+                fontWeight="900"
+                fontFamily="Arial, Helvetica, sans-serif"
+              >
+                {ponto.label}
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      <line
+        x1={xVolumePE}
+        y1={yPhPE}
+        x2={labelAtivo.anchorX}
+        y2={labelAtivo.anchorY}
+        stroke="#a80000"
+        strokeWidth="1.3"
+      />
+
+      <rect
+        x={labelAtivo.boxX}
+        y={labelAtivo.boxY}
+        width={labelAtivo.boxWidth}
+        height={labelAtivo.boxHeight}
+        rx="12"
+        ry="12"
+        fill="#ffffff"
+        stroke="#a80000"
+        strokeWidth="1.3"
+      />
+
+      <text
+        x={labelAtivo.boxX + labelAtivo.boxWidth / 2}
+        y={labelAtivo.boxY + 18}
+        fill="#a80000"
+        fontSize="13"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        PE{indicador.pe}
+      </text>
+
+      <text
+        x={labelAtivo.boxX + labelAtivo.boxWidth / 2}
+        y={labelAtivo.boxY + 35}
+        fill="#a80000"
+        fontSize="12"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        pH {formatarNumeroBR(indicador.phPE, 2)}
+      </text>
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={18}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
+      >
+        pH
+      </text>
+    </svg>
+  );
+}
+
+function GraficoDerivadaPoliprotico({
+  derivadas,
+  resultado,
+  resumo,
+  tipo,
+}: {
+  derivadas: PontoDerivadaAcidoBase[];
+  resultado: ResultadoSistemaPoliprotico;
+  resumo: ResumoDerivadaPE[];
+  tipo: "d1" | "d2";
+}) {
+  const largura = 980;
+  const altura = 420;
+  const margem = {
+    top: 28,
+    right: 36,
+    bottom: 64,
+    left: 84,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximo =
+    derivadas.length > 0 ? derivadas[derivadas.length - 1].volume : 1;
+
+  const pontosValidos = derivadas
+    .map((item) => ({
+      volume: item.volume,
+      valor: tipo === "d1" ? item.d1 : item.d2,
+    }))
+    .filter((item) => item.valor !== null && Number.isFinite(item.valor));
+
+  if (!pontosValidos.length) {
+    return (
+      <div className="chartEmpty">
+        Não há dados suficientes para calcular esta derivada.
+      </div>
+    );
+  }
+
+  const valores = pontosValidos.map((item) => item.valor as number);
+  const valorMin = Math.min(...valores);
+  const valorMax = Math.max(...valores);
+  const amplitude = Math.max(valorMax - valorMin, 0.0001);
+  const padding = amplitude * 0.12;
+
+  const yMin = valorMin - padding;
+  const yMax = valorMax + padding;
+
+  function xScale(volume: number) {
+    return margem.left + (volume / volumeMaximo) * larguraGrafico;
+  }
+
+  function yScale(valor: number) {
+    return margem.top + ((yMax - valor) / (yMax - yMin)) * alturaGrafico;
+  }
+
+  const pathDerivada = pontosValidos
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.valor as number);
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return (volumeMaximo / 5) * index;
+  });
+
+  const linhasY = Array.from({ length: 6 }, (_, index) => {
+    return yMin + ((yMax - yMin) / 5) * index;
+  });
+
+  const zeroDentroDoGrafico = yMin <= 0 && yMax >= 0;
+
+  const pontosDetectaveis = resumo
+  .map((item) => {
+    const volumeMarcado =
+      tipo === "d1" ? item.volumePicoD1 : item.volumeZeroD2;
+
+    if (volumeMarcado === null) return null;
+
+    const pontoMaisProximo = pontosValidos.reduce((melhor, atual) => {
+      return Math.abs(atual.volume - volumeMarcado) <
+        Math.abs(melhor.volume - volumeMarcado)
+        ? atual
+        : melhor;
+    }, pontosValidos[0]);
+
+    return {
+      pe: item.pe,
+      volumeTeorico: item.volumeTeorico,
+      volumeMarcado,
+      ponto: pontoMaisProximo,
+    };
+  })
+  .filter(
+    (
+      item
+    ): item is {
+      pe: number;
+      volumeTeorico: number;
+      volumeMarcado: number;
+      ponto: {
+        volume: number;
+        valor: number | null;
+      };
+    } => item !== null
+  );
+
+  return (
+    <svg
+    className={
+      tipo === "d1"
+        ? "acidBaseCurveSvg derivativeD1Svg"
+        : "acidBaseCurveSvg derivativeD2Svg"
+    }
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label={
+        tipo === "d1"
+          ? "Gráfico da primeira derivada"
+          : "Gráfico da segunda derivada"
+      }
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasY.map((valor, index) => (
+        <g key={`linha-y-${index}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(valor)}
+            y2={yScale(valor)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+          <text
+            x={margem.left - 12}
+            y={yScale(valor) + 5}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(valor, 2)}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`linha-x-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="14"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      {zeroDentroDoGrafico && (
+        <line
+          x1={margem.left}
+          x2={margem.left + larguraGrafico}
+          y1={yScale(0)}
+          y2={yScale(0)}
+          stroke="#344054"
+          strokeWidth="1.5"
+          strokeDasharray="6 5"
+        />
+      )}
+
+{pontosDetectaveis.map((item) => (
+  <line
+    key={`pe-derivada-${tipo}-${item.pe}`}
+    x1={xScale(item.volumeTeorico)}
+    x2={xScale(item.volumeTeorico)}
+    y1={margem.top}
+    y2={margem.top + alturaGrafico}
+    stroke="#111111"
+    strokeWidth="1.8"
+    strokeDasharray="8 6"
+  />
+))}
+
+      <path
+        d={pathDerivada}
+        fill="none"
+        stroke={tipo === "d1" ? "#a80000" : "#7a1f1f"}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+{pontosDetectaveis.map((item) => {
+  const melhor = item.ponto;
+
+  if (melhor.valor === null) return null;
+
+  const cx = xScale(melhor.volume);
+  const cy = yScale(melhor.valor);
+
+  const boxWidth = 52;
+  const boxHeight = 26;
+
+  let boxX = cx + 12;
+  let boxY = cy - 38;
+
+  if (boxX + boxWidth > largura - margem.right - 8) {
+    boxX = cx - boxWidth - 12;
+  }
+
+  if (boxY < margem.top + 8) {
+    boxY = cy + 14;
+  }
+
+  if (boxY + boxHeight > margem.top + alturaGrafico - 8) {
+    boxY = cy - 38;
+  }
+
+  const anchorX = boxX > cx ? boxX : boxX + boxWidth;
+  const anchorY = boxY + boxHeight / 2;
+
+  return (
+    <g key={`marcador-derivada-${tipo}-${item.pe}`}>
+      <line
+        x1={cx}
+        y1={cy}
+        x2={anchorX}
+        y2={anchorY}
+        stroke="#111111"
+        strokeWidth="1.3"
+      />
+
+      <rect
+        x={boxX}
+        y={boxY}
+        width={boxWidth}
+        height={boxHeight}
+        rx="8"
+        ry="8"
+        fill="#ffffff"
+        stroke="#111111"
+        strokeWidth="1.3"
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r="6.5"
+        fill="#a80000"
+        stroke="#ffffff"
+        strokeWidth="3"
+      />
+
+      <text
+        x={boxX + boxWidth / 2}
+        y={boxY + 18}
+        fill="#111111"
+        fontSize="13"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        PE{item.pe}
+      </text>
+    </g>
+  );
+})}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="16"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={22}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="16"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 22 ${margem.top + alturaGrafico / 2})`}
+      >
+        {tipo === "d1" ? "dpH/dV" : "d²pH/dV²"}
       </text>
     </svg>
   );

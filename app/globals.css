@@ -3390,3 +3390,208 @@ section.container.calculatorSection + section.container.calculatorSection {
 .detectabilityBox.neutral strong {
   color: #344054;
 }
+
+.indicatorPoliDashboard {
+  display: grid;
+  gap: 28px;
+  margin-top: 28px;
+}
+
+.indicatorPeTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.indicatorPeButton {
+  border: 1px solid #eadede;
+  border-radius: 18px;
+  padding: 16px 20px;
+  background: #ffffff;
+  color: #344054;
+  font-weight: 900;
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+  min-width: 170px;
+  text-align: left;
+  transition: 0.18s ease;
+}
+
+.indicatorPeButton span {
+  font-size: 0.85rem;
+  color: #667085;
+}
+
+.indicatorPeButton:hover {
+  border-color: rgba(168, 0, 0, 0.35);
+  background: #fffafa;
+}
+
+.indicatorPeButton.active {
+  background: linear-gradient(135deg, #c00000, #850000);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 14px 32px rgba(168, 0, 0, 0.2);
+}
+
+.indicatorPeButton.active span {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.indicatorSelectedGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.indicatorCurveSvg {
+  width: 100%;
+  min-height: 620px;
+  display: block;
+}
+
+.legendLine.indicatorRange {
+  background: #fee4e2;
+  border: 2px solid #a80000;
+  height: 12px;
+}
+
+@media (max-width: 1000px) {
+  .indicatorSelectedGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .indicatorCurveSvg {
+    min-height: 470px;
+  }
+}
+
+@media (max-width: 650px) {
+  .indicatorSelectedGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .indicatorPeButton {
+    width: 100%;
+  }
+
+  .indicatorCurveSvg {
+    min-height: 360px;
+  }
+}
+
+.indicatorCurveSvg {
+  width: 100%;
+  min-height: 620px;
+  display: block;
+}
+
+.indicatorPoliDashboard {
+  display: grid;
+  gap: 28px;
+  margin-top: 28px;
+}
+
+.indicatorPeTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.indicatorPeButton {
+  border: 1px solid #eadede;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px 20px;
+  font-weight: 900;
+  color: #101828;
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  text-align: left;
+}
+
+.indicatorPeButton span {
+  color: #667085;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.indicatorPeButton.active {
+  background: linear-gradient(135deg, #c00000, #850000);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 16px 34px rgba(168, 0, 0, 0.22);
+}
+
+.indicatorPeButton.active span {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.indicatorSelectedGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .indicatorSelectedGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .indicatorCurveSvg {
+    min-height: 460px;
+  }
+}
+
+@media (max-width: 600px) {
+  .indicatorSelectedGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .indicatorCurveSvg {
+    min-height: 360px;
+  }
+}
+
+.derivativeTablePanel {
+  margin-top: 28px;
+}
+
+.derivativeTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #eadede;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.04);
+}
+
+.derivativeTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.derivativeTable th {
+  background: #fff5f5;
+  color: #7a0000;
+  text-align: left;
+  padding: 18px 20px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.derivativeTable td {
+  padding: 16px 20px;
+  border-top: 1px solid #f0e0e0;
+  color: #1f2937;
+  font-weight: 800;
+}
+
+.derivativeTable tbody tr:hover {
+  background: #fffafa;
+}
