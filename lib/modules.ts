@@ -20,7 +20,7 @@ export const modules: AnalitCalcModule[] = [
     description:
   "Estrutura para titulações de ácidos monopróticos, bases monobásicas, ácidos polipróticos e bases polibásicas, com curvas de pH, regiões tampão, indicadores e base do cálculo.",
     href: "/acido-base",
-    status: "Em desenvolvimento",
+    status: "Disponível",
     area: "Equilíbrio ácido-base",
   },
 ];

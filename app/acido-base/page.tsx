@@ -19,6 +19,25 @@ import { acidosPoliproticosKa } from "../../lib/data/acidoBasePoliproticosKa";
 import { basesPolibasicasKb } from "../../lib/data/acidoBasePolibasicosKb";
 import { indicadoresAcidoBase } from "../../lib/data/indicadoresAcidoBase";
 
+import {
+  avaliarSistemaMonoprotico,
+  calcularPhPorVolumeMonoprotico,
+  gerarCurvaMonoprotica,
+} from "../../lib/acidoBaseMonoproticos";
+
+import type {
+  ResultadoSistemaMonoprotico,
+  CurvaAcidoBaseMonoprotica,
+  PontoCurvaAcidoBaseMono,
+} from "../../lib/acidoBaseMonoproticos";
+
+import {
+  listarTitulantesMono,
+  listarTituladosPorTitulanteMono,
+} from "../../lib/data/reacoesAcidoBaseMono";
+
+import { indicadoresAcidoBaseMono } from "../../lib/data/indicadoresAcidoBaseMono";
+
 type TipoSistemaAcidoBase = "mono" | "poli";
 
 type AbaAcidoBase =
@@ -304,87 +323,1359 @@ export default function AcidoBasePage() {
 }
 
 function ModuloMonoprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
+  const [titulanteMono, setTitulanteMono] = useState("");
+  const [tituladoMono, setTituladoMono] = useState("");
+  const [concTitulanteMono, setConcTitulanteMono] = useState("");
+  const [concTituladoMono, setConcTituladoMono] = useState("");
+  const [volTituladoMono, setVolTituladoMono] = useState("");
+  const [volBuretaMono, setVolBuretaMono] = useState("");
+
+  const [mensagemMono, setMensagemMono] = useState("");
+
+  const [resultadoMono, setResultadoMono] =
+    useState<ResultadoSistemaMonoprotico | null>(null);
+
+  const [curvaMono, setCurvaMono] =
+    useState<CurvaAcidoBaseMonoprotica | null>(null);
+
+  const [volumeConsultaMono, setVolumeConsultaMono] = useState("");
+
+  const [pontoConsultaMono, setPontoConsultaMono] =
+    useState<PontoCurvaAcidoBaseMono | null>(null);
+
+    const [volumeAtualTempoRealMono, setVolumeAtualTempoRealMono] = useState(0);
+const [volumeManualTempoRealMono, setVolumeManualTempoRealMono] = useState("");
+const [pontosTempoRealMono, setPontosTempoRealMono] = useState<
+  PontoCurvaAcidoBaseMono[]
+>([]);
+
+    const [indicadorMonoSelecionado, setIndicadorMonoSelecionado] =
+  useState<RankingIndicadorAcidoBase | null>(null);
+
+  const titulantesMono = listarTitulantesMono();
+
+  const tituladosDisponiveisMono = titulanteMono
+    ? listarTituladosPorTitulanteMono(titulanteMono)
+    : [];
+
+  function converterNumeroMono(valor: string) {
+    return Number(String(valor).replace(",", "."));
+  }
+
+  function limparResultadoMono() {
+    setResultadoMono(null);
+    setCurvaMono(null);
+    setPontoConsultaMono(null);
+    setVolumeConsultaMono("");
+    setMensagemMono("");
+    setIndicadorMonoSelecionado(null);
+    setVolumeAtualTempoRealMono(0);
+    setVolumeManualTempoRealMono("");
+    setPontosTempoRealMono([]);
+  }
+
+  function avaliarMonoprotico() {
+    setMensagemMono("");
+
+    if (!titulanteMono || !tituladoMono) {
+      setMensagemMono("Selecione o titulante e o titulado antes de avaliar.");
+      return;
+    }
+
+    const ctitulante = converterNumeroMono(concTitulanteMono);
+    const ctitulado = converterNumeroMono(concTituladoMono);
+    const vtitulado = converterNumeroMono(volTituladoMono);
+    const vbureta = converterNumeroMono(volBuretaMono);
+
+    if (
+      !Number.isFinite(ctitulante) ||
+      !Number.isFinite(ctitulado) ||
+      !Number.isFinite(vtitulado) ||
+      !Number.isFinite(vbureta) ||
+      ctitulante <= 0 ||
+      ctitulado <= 0 ||
+      vtitulado <= 0 ||
+      vbureta <= 0
+    ) {
+      setMensagemMono(
+        "Preencha concentração do titulante, concentração do titulado, volume do titulado e volume da bureta com valores positivos."
+      );
+      return;
+    }
+
+    try {
+      const avaliacao = avaliarSistemaMonoprotico({
+        titulante: titulanteMono,
+        titulado: tituladoMono,
+        concTitulante: ctitulante,
+        concTitulado: ctitulado,
+        volTitulado: vtitulado,
+        volBureta: vbureta,
+      });
+
+      const curvaGerada = gerarCurvaMonoprotica(avaliacao);
+
+      setResultadoMono(avaliacao);
+setCurvaMono(curvaGerada);
+setPontoConsultaMono(null);
+setVolumeConsultaMono("");
+setIndicadorMonoSelecionado(null);
+setVolumeAtualTempoRealMono(0);
+setVolumeManualTempoRealMono("");
+setPontosTempoRealMono([]);
+setMensagemMono("Sistema monoprótico avaliado com sucesso.");
+    } catch (erro) {
+      setResultadoMono(null);
+      setCurvaMono(null);
+      setPontoConsultaMono(null);
+      setMensagemMono(
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível avaliar o sistema monoprótico."
+      );
+    }
+  }
+
+  function consultarVolumeMono() {
+    if (!resultadoMono) return;
+
+    const volume = converterNumeroMono(volumeConsultaMono);
+
+    if (!Number.isFinite(volume)) return;
+
+    const ponto = calcularPhPorVolumeMonoprotico(resultadoMono, volume);
+
+    setPontoConsultaMono(ponto);
+  }
+
+  function adicionarVolumeTempoRealMono(incremento: number) {
+    if (!resultadoMono || !curvaMono) return;
+  
+    const volumeMaximo = curvaMono.volumeMaximo;
+    const novoVolume = Math.min(
+      volumeAtualTempoRealMono + incremento,
+      volumeMaximo
+    );
+  
+    const ponto = calcularPhPorVolumeMonoprotico(resultadoMono, novoVolume);
+  
+    setVolumeAtualTempoRealMono(novoVolume);
+    setPontosTempoRealMono((pontos) => [...pontos, ponto]);
+  }
+  
+  function adicionarVolumeManualTempoRealMono() {
+    if (!resultadoMono || !curvaMono) return;
+  
+    const incremento = converterNumeroMono(volumeManualTempoRealMono);
+  
+    if (!Number.isFinite(incremento) || incremento <= 0) {
+      return;
+    }
+  
+    adicionarVolumeTempoRealMono(incremento);
+    setVolumeManualTempoRealMono("");
+  }
+  
+  function irParaPETempoRealMono() {
+    if (!resultadoMono) return;
+  
+    const ponto = calcularPhPorVolumeMonoprotico(
+      resultadoMono,
+      resultadoMono.volumePE
+    );
+  
+    setVolumeAtualTempoRealMono(resultadoMono.volumePE);
+    setPontosTempoRealMono((pontos) => [...pontos, ponto]);
+  }
+  
+  function limparTempoRealMonoprotico() {
+    setVolumeAtualTempoRealMono(0);
+    setVolumeManualTempoRealMono("");
+    setPontosTempoRealMono([]);
+  }
+
+  function baixarGraficoMonoPorSeletor(seletor: string, nomeArquivo: string) {
+    const svgOriginal = document.querySelector(seletor) as SVGSVGElement | null;
+  
+    if (!svgOriginal) {
+      return;
+    }
+  
+    const svgClone = svgOriginal.cloneNode(true) as SVGSVGElement;
+  
+    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgClone.setAttribute("width", "1960");
+    svgClone.setAttribute("height", "1120");
+  
+    const svgTexto = new XMLSerializer().serializeToString(svgClone);
+  
+    const svgBlob = new Blob([svgTexto], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+  
+    const url = URL.createObjectURL(svgBlob);
+    const imagem = new Image();
+  
+    imagem.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1960;
+      canvas.height = 1120;
+  
+      const contexto = canvas.getContext("2d");
+  
+      if (!contexto) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+  
+      contexto.fillStyle = "#ffffff";
+      contexto.fillRect(0, 0, canvas.width, canvas.height);
+      contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+  
+      const pngUrl = canvas.toDataURL("image/png");
+  
+      const link = document.createElement("a");
+      link.href = pngUrl;
+      link.download = nomeArquivo;
+      link.click();
+  
+      URL.revokeObjectURL(url);
+    };
+  
+    imagem.src = url;
+  }
+  
+  const rankingIndicadoresMono = resultadoMono
+    ? montarRankingIndicadoresMono(resultadoMono)
+    : [];
+  
+  const indicadorMonoAtivo =
+    indicadorMonoSelecionado &&
+    rankingIndicadoresMono.some(
+      (item) => item.nome === indicadorMonoSelecionado.nome
+    )
+      ? indicadorMonoSelecionado
+      : rankingIndicadoresMono[0] ?? null;
+
+      const derivadasMono =
+  curvaMono && resultadoMono ? calcularDerivadasCurvaMonoprotica(curvaMono) : [];
+
+const resumoDerivadaMono =
+  resultadoMono && derivadasMono.length > 0
+    ? montarResumoDerivadaMono(resultadoMono, derivadasMono)
+    : null;
+
+const tabelaPrimeiraDerivadaMono =
+  resultadoMono && curvaMono
+    ? montarTabelaPrimeiraDerivadaMono(resultadoMono, curvaMono)
+    : [];
+
+const tabelaSegundaDerivadaMono =
+  resultadoMono && tabelaPrimeiraDerivadaMono.length > 0
+    ? montarTabelaSegundaDerivadaMono(resultadoMono, tabelaPrimeiraDerivadaMono)
+    : [];
+
+    const pontoAtualTempoRealMono =
+  resultadoMono && curvaMono
+    ? calcularPhPorVolumeMonoprotico(
+        resultadoMono,
+        volumeAtualTempoRealMono
+      )
+    : null;
+
   return (
     <section className="container calculatorSection">
       <div className="curveDashboard">
         {abaAtiva === "visao" && (
           <div className="resultsPanel">
             <span className="eyebrow">Monopróticos / monobásicas</span>
-            <h2>Visão geral</h2>
+            <h2>Sistema monoprótico / monobásico</h2>
+
             <p>
-              Área reservada para entrada dos dados de titulações envolvendo
-              ácidos monopróticos ou bases monobásicas.
+              Esta aba avalia titulações envolvendo ácidos monopróticos e bases
+              monobásicas. O cálculo considera sistemas forte × forte, ácido
+              fraco × base forte e base fraca × ácido forte.
             </p>
 
-            <div className="resultGrid">
-              <div className="resultCard">
-                <span>Sistema</span>
-                <strong>Ácido monoprótico ou base monobásica</strong>
-              </div>
+            <div className="acidBaseFormGrid">
+              <label>
+                Titulante
+                <select
+                  value={titulanteMono}
+                  onChange={(event) => {
+                    setTitulanteMono(event.target.value);
+                    setTituladoMono("");
+                    limparResultadoMono();
+                  }}
+                >
+                  <option value="">Selecione o titulante...</option>
 
-              <div className="resultCard">
-                <span>Exemplos</span>
-                <strong>HCl, CH₃COOH, NaOH, NH₃</strong>
-              </div>
+                  {titulantesMono.map((item) => (
+                    <option key={item.formula} value={item.formula}>
+                      {item.nome} — {item.formulaExibicao}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              <div className="resultCard">
-                <span>Foco</span>
-                <strong>Uma neutralização principal</strong>
-              </div>
+              <label>
+                Titulado
+                <select
+                  value={tituladoMono}
+                  onChange={(event) => {
+                    setTituladoMono(event.target.value);
+                    limparResultadoMono();
+                  }}
+                  disabled={!titulanteMono}
+                >
+                  <option value="">
+                    {titulanteMono
+                      ? "Selecione o titulado..."
+                      : "Selecione primeiro o titulante..."}
+                  </option>
+
+                  {tituladosDisponiveisMono.map((item) => (
+                    <option key={item.chaveReacao} value={item.formula}>
+                      {item.nome} — {item.formulaExibicao}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Concentração do titulante mol/L
+                <input
+                  value={concTitulanteMono}
+                  onChange={(event) => {
+                    setConcTitulanteMono(event.target.value);
+                    limparResultadoMono();
+                  }}
+                  placeholder="Ex.: 0,1000"
+                />
+              </label>
+
+              <label>
+                Concentração do titulado mol/L
+                <input
+                  value={concTituladoMono}
+                  onChange={(event) => {
+                    setConcTituladoMono(event.target.value);
+                    limparResultadoMono();
+                  }}
+                  placeholder="Ex.: 0,1000"
+                />
+              </label>
+
+              <label>
+                Volume do titulado mL
+                <input
+                  value={volTituladoMono}
+                  onChange={(event) => {
+                    setVolTituladoMono(event.target.value);
+                    limparResultadoMono();
+                  }}
+                  placeholder="Ex.: 25,00"
+                />
+              </label>
+
+              <label>
+                Volume máximo da bureta mL
+                <input
+                  value={volBuretaMono}
+                  onChange={(event) => {
+                    setVolBuretaMono(event.target.value);
+                    limparResultadoMono();
+                  }}
+                  placeholder="Ex.: 50,00"
+                />
+              </label>
             </div>
-          </div>
-        )}
 
-        {abaAtiva === "curva" && (
-          <div className="resultsPanel">
-            <h2>Curva de titulação</h2>
-            <p>
-              Espaço reservado para o gráfico pH × volume do titulante em
-              sistemas monopróticos.
-            </p>
-          </div>
-        )}
+            <button className="primaryButton" onClick={avaliarMonoprotico}>
+              Avaliar sistema
+            </button>
 
-        {abaAtiva === "indicadores" && (
-          <div className="resultsPanel">
-            <h2>Indicadores</h2>
-            <p>
-              Espaço reservado para recomendação de indicadores ácido-base com
-              base na faixa de viragem e no pH do ponto de equivalência.
-            </p>
+            {mensagemMono && (
+              <div
+                className={
+                  resultadoMono
+                    ? "statusMessage success"
+                    : "statusMessage warning"
+                }
+              >
+                {mensagemMono}
+              </div>
+            )}
+
+            {resultadoMono && (
+              <>
+                <div className="resultGrid">
+                  <div className="resultCard">
+                    <span>Titulante</span>
+                    <strong>{resultadoMono.titulante.nome}</strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Titulado</span>
+                    <strong>{resultadoMono.titulado.nome}</strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Tipo de titulação</span>
+                    <strong>
+                      {resultadoMono.tipoSistema ===
+                      "acido-forte-com-base-forte"
+                        ? "Ácido forte × base forte"
+                        : resultadoMono.tipoSistema ===
+                            "acido-fraco-com-base-forte"
+                          ? "Ácido fraco × base forte"
+                          : resultadoMono.tipoSistema ===
+                              "base-forte-com-acido-forte"
+                            ? "Base forte × ácido forte"
+                            : "Base fraca × ácido forte"}
+                    </strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Volume de equivalência</span>
+                    <strong>
+                      {formatarNumeroBR(resultadoMono.volumePE, 2)} mL
+                    </strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Concentração no PE</span>
+                    <strong>
+                      {formatarNumeroBR(resultadoMono.concentracaoNoPE, 5)} mol/L
+                    </strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Equivalências</span>
+                    <strong>1</strong>
+                  </div>
+                </div>
+
+                {resultadoMono.reacao && (
+                  <div className="reactionDetailsStack">
+                    <div className="reactionWideCard">
+                      <span>Equação global</span>
+                      <strong>{resultadoMono.reacao.equacaoExibicao}</strong>
+                    </div>
+
+                    <div className="reactionWideCard">
+                      <span>Observação</span>
+                      <strong>{resultadoMono.reacao.obs}</strong>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
         {abaAtiva === "baseCalculo" && (
           <div className="resultsPanel">
             <h2>Base do cálculo</h2>
-            <p>
-              Espaço reservado para mostrar Ka, Kb, Kw, concentração inicial,
-              volume de equivalência e constantes utilizadas.
-            </p>
+
+            {!resultadoMono ? (
+              <p>Avalie o sistema primeiro na aba Visão geral.</p>
+            ) : (
+              <>
+                <p>{resultadoMono.resumo}</p>
+
+                <div className="resultGrid">
+                  <div className="resultCard">
+                    <span>Constante do titulado</span>
+                    <strong>
+                      {resultadoMono.titulado.classe === "ácido"
+                        ? `Ka = ${resultadoMono.titulado.constante.toExponential(
+                            2
+                          )}`
+                        : `Kb = ${resultadoMono.titulado.constante.toExponential(
+                            2
+                          )}`}
+                    </strong>
+
+                    <small>
+                      {resultadoMono.titulado.classe === "ácido"
+                        ? `pKa = ${formatarNumeroBR(
+                            resultadoMono.titulado.pValor,
+                            2
+                          )}`
+                        : `pKb = ${formatarNumeroBR(
+                            resultadoMono.titulado.pValor,
+                            2
+                          )}`}
+                    </small>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Mol inicial do titulado</span>
+                    <strong>
+                      {formatarNumeroBR(
+                        resultadoMono.entradas.concTitulado *
+                          (resultadoMono.entradas.volTitulado / 1000),
+                        6
+                      )}{" "}
+                      mol
+                    </strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Volume PE</span>
+                    <strong>
+                      {formatarNumeroBR(resultadoMono.volumePE, 2)} mL
+                    </strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Kw 25 °C</span>
+                    <strong>1,00 × 10⁻¹⁴</strong>
+                  </div>
+                </div>
+
+                <div className="explanationBox">
+                  <h3>Interpretação</h3>
+                  <p>{resultadoMono.resumo}</p>
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {abaAtiva === "derivadas" && (
-          <div className="resultsPanel">
-            <h2>Derivadas</h2>
-            <p>
-              Espaço reservado para análise da primeira e segunda derivada da
-              curva de titulação ácido-base, auxiliando na localização do ponto
-              de equivalência.
-            </p>
+        {abaAtiva === "curva" && (
+          <div className="resultsPanel curveMainPanel">
+            <h2>Curva de titulação</h2>
+
+            {!resultadoMono || !curvaMono ? (
+              <p>Avalie o sistema primeiro na aba Visão geral.</p>
+            ) : (
+              <>
+                <p>
+                  Curva calculada com {curvaMono.pontos.length} pontos, passo de{" "}
+                  {formatarNumeroBR(curvaMono.passo, 2)} mL e volume máximo de{" "}
+                  {formatarNumeroBR(curvaMono.volumeMaximo, 2)} mL.
+                </p>
+
+                <div className="resultGrid curveSummaryGrid">
+                  <div className="resultCard">
+                    <span>Titulado</span>
+                    <strong>{resultadoMono.titulado.nome}</strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Titulante</span>
+                    <strong>{resultadoMono.titulante.nome}</strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Volume PE</span>
+                    <strong>
+                      {formatarNumeroBR(resultadoMono.volumePE, 2)} mL
+                    </strong>
+                  </div>
+
+                  <div className="resultCard">
+                    <span>Volume máximo</span>
+                    <strong>
+                      {formatarNumeroBR(curvaMono.volumeMaximo, 2)} mL
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="chartBox acidBaseChartBox">
+                <div className="chartHeader">
+  <div>
+    <strong>Curva pH × volume</strong>
+    <span>
+      A curva mostra a variação do pH conforme o titulante é adicionado ao
+      sistema monoprótico.
+    </span>
+  </div>
+
+  <button
+    type="button"
+    className="downloadChartButton"
+    onClick={() =>
+      baixarGraficoMonoPorSeletor(
+        ".mainMonoAcidBaseCurveSvg",
+        "curva-titulacao-mono-acido-base.png"
+      )
+    }
+  >
+    Baixar gráfico PNG
+  </button>
+</div>
+
+  <GraficoCurvaMonoprotica
+    curva={curvaMono}
+    resultado={resultadoMono}
+    pontoConsulta={pontoConsultaMono}
+  />
+
+  <div className="chartLegend">
+    <span>
+      <i className="legendLine curve"></i>
+      Curva de titulação
+    </span>
+
+    <span>
+      <i className="legendLine pe"></i>
+      Ponto de equivalência
+    </span>
+
+    <span>
+      <i className="legendLine consult"></i>
+      Volume consultado
+    </span>
+  </div>
+</div>
+
+                <div className="curveConsultBox acidBaseConsultBox">
+                  <div className="acidBaseConsultHeader">
+                    <span className="eyebrow">Consulta pontual</span>
+                    <h3>Consultar ponto na curva</h3>
+                    <p>
+                      Informe um volume de titulante adicionado para calcular o
+                      pH, localizar a região da titulação e interpretar o ponto.
+                    </p>
+                  </div>
+
+                  <div className="acidBaseConsultGrid">
+                    <label>
+                      Volume adicionado de titulante mL
+                      <input
+                        value={volumeConsultaMono}
+                        onChange={(event) =>
+                          setVolumeConsultaMono(event.target.value)
+                        }
+                        placeholder="Ex.: 12,50"
+                      />
+                    </label>
+
+                    <button
+                      className="primaryButton"
+                      onClick={consultarVolumeMono}
+                    >
+                      Consultar pH
+                    </button>
+                  </div>
+                </div>
+
+                {pontoConsultaMono && (
+                  <>
+                    <div className="resultGrid curvePointGrid">
+                      <div className="resultCard">
+                        <span>Volume consultado</span>
+                        <strong>
+                          {formatarNumeroBR(pontoConsultaMono.volume, 2)} mL
+                        </strong>
+                      </div>
+
+                      <div className="resultCard">
+                        <span>pH calculado</span>
+                        <strong>
+                          {pontoConsultaMono.ph === null
+                            ? "-"
+                            : formatarNumeroBR(pontoConsultaMono.ph, 2)}
+                        </strong>
+                      </div>
+
+                      <div className="resultCard">
+                        <span>Região</span>
+                        <strong>{pontoConsultaMono.regiao}</strong>
+                      </div>
+                    </div>
+
+                    <div className="explanationBox">
+                      <h3>Interpretação do ponto consultado</h3>
+                      <p>{pontoConsultaMono.explicacao}</p>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
           </div>
         )}
 
-        {abaAtiva === "tempoReal" && (
-          <div className="resultsPanel">
-            <h2>Tempo real</h2>
-            <p>
-              Espaço reservado para simular a adição gradual do titulante e
-              acompanhar o pH calculado a cada volume adicionado.
-            </p>
+{abaAtiva === "indicadores" && (
+  <div className="resultsPanel indicatorHeroPanel">
+    <div className="indicatorHeroContent">
+      <div>
+        <span className="eyebrow">Indicadores ácido-base</span>
+        <h2>Ranking de indicadores para o ponto de equivalência</h2>
+        <p>
+          O sistema calcula o pH do ponto de equivalência, compara esse valor
+          com as faixas de viragem cadastradas e ranqueia os indicadores mais
+          compatíveis para a titulação monoprótica.
+        </p>
+      </div>
+
+      <div className="indicatorScoreCircle">
+        <strong>
+          {indicadorMonoAtivo ? `${indicadorMonoAtivo.score}%` : "-"}
+        </strong>
+        <span>compatibilidade</span>
+      </div>
+    </div>
+
+    {!resultadoMono || !curvaMono ? (
+      <div className="chartEmpty">
+        Avalie o sistema primeiro na aba Visão geral.
+      </div>
+    ) : (
+      <div className="indicatorPoliDashboard">
+        {indicadorMonoAtivo && (
+          <>
+            <div className="indicatorSelectedGrid">
+              <div className="resultCard">
+                <span>PE analisado</span>
+                <strong>PE</strong>
+                <small>
+                  Volume = {formatarNumeroBR(resultadoMono.volumePE, 2)} mL
+                </small>
+              </div>
+
+              <div className="resultCard">
+                <span>pH do PE</span>
+                <strong>{formatarNumeroBR(indicadorMonoAtivo.phPE, 2)}</strong>
+              </div>
+
+              <div className="resultCard">
+                <span>Indicador selecionado</span>
+                <strong>{indicadorMonoAtivo.nome}</strong>
+                <small>{indicadorMonoAtivo.categoria}</small>
+              </div>
+
+              <div className="resultCard">
+                <span>Faixa de viragem</span>
+                <strong>
+                  {formatarNumeroBR(indicadorMonoAtivo.phMin, 2)} a{" "}
+                  {formatarNumeroBR(indicadorMonoAtivo.phMax, 2)}
+                </strong>
+              </div>
+            </div>
+
+            <div className="chartBox indicatorChartBox">
+              <div className="chartHeader">
+                <div>
+                  <strong>Faixa do indicador sobre a curva</strong>
+                  <span>
+                    A região destacada mostra a faixa de viragem do indicador
+                    selecionado em relação à curva monoprótica.
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="downloadChartButton"
+                  onClick={() =>
+                    baixarGraficoMonoPorSeletor(
+                      ".indicatorMonoCurveSvg",
+                      "grafico-indicador-mono-acido-base.png"
+                    )
+                  }
+                >
+                  Baixar gráfico PNG
+                </button>
+              </div>
+
+              <GraficoIndicadorMonoprotico
+                curva={curvaMono}
+                resultado={resultadoMono}
+                indicador={indicadorMonoAtivo}
+              />
+
+              <div className="chartLegend">
+                <span>
+                  <i className="legendLine curve"></i>
+                  Curva de titulação
+                </span>
+
+                <span>
+                  <i className="legendLine indicatorRange"></i>
+                  Faixa do indicador
+                </span>
+
+                <span>
+                  <i className="legendLine pe"></i>
+                  Ponto de equivalência
+                </span>
+              </div>
+            </div>
+
+            <div className="resultsPanel">
+              <h2>Ranking de indicadores</h2>
+
+              <div className="indicatorRankingList">
+                {rankingIndicadoresMono.map((item, index) => (
+                  <button
+                    key={`mono-indicador-${item.nome}`}
+                    type="button"
+                    className={
+                      indicadorMonoAtivo.nome === item.nome
+                        ? "indicatorRankingItem active"
+                        : "indicatorRankingItem"
+                    }
+                    onClick={() => setIndicadorMonoSelecionado(item)}
+                  >
+                    <div className="indicatorRankNumber">{index + 1}</div>
+
+                    <div className="indicatorRankMain">
+                      <strong>{item.nome}</strong>
+
+                      <div className="indicatorMetaGrid">
+                        <div className="indicatorMetaItem">
+                          <span>Faixa</span>
+                          <strong>
+                            {formatarNumeroBR(item.phMin, 2)} a{" "}
+                            {formatarNumeroBR(item.phMax, 2)}
+                          </strong>
+                        </div>
+
+                        <div className="indicatorMetaItem">
+                          <span>pH central</span>
+                          <strong>{formatarNumeroBR(item.phCentral, 2)}</strong>
+                        </div>
+
+                        <div className="indicatorMetaItem">
+                          <span>Erro</span>
+                          <strong>{formatarNumeroBR(item.erro, 2)}</strong>
+                        </div>
+
+                        <div className="indicatorMetaItem">
+                          <span>Status</span>
+                          <strong>
+                            {item.cobrePE ? "Cobre o PE" : "Próximo ao PE"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <p className="indicatorJustification">
+                        {item.justificativa}
+                      </p>
+                    </div>
+
+                    <div className="indicatorRankScore">{item.score}%</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    )}
+  </div>
+)}
+
+{abaAtiva === "derivadas" && (
+  <div className="resultsPanel curveMainPanel">
+    <h2>Derivadas da curva</h2>
+
+    {!resultadoMono || !curvaMono ? (
+      <p>Avalie o sistema primeiro na aba Visão geral.</p>
+    ) : (
+      <>
+        <p>
+          A 1ª derivada mostra a variação do pH por volume adicionado
+          (dpH/dV). A 2ª derivada ajuda a localizar a região de maior mudança
+          de concavidade, geralmente próxima ao ponto de equivalência.
+        </p>
+
+        <div className="resultGrid curveSummaryGrid">
+          <div className="resultCard">
+            <span>Pontos da curva</span>
+            <strong>{curvaMono.pontos.length}</strong>
+          </div>
+
+          <div className="resultCard">
+            <span>Pontos com derivadas</span>
+            <strong>{derivadasMono.length}</strong>
+          </div>
+
+          <div className="resultCard">
+            <span>Equivalências</span>
+            <strong>1</strong>
+          </div>
+
+          <div className="resultCard">
+            <span>Passo da curva</span>
+            <strong>{formatarNumeroBR(curvaMono.passo, 2)} mL</strong>
+          </div>
+        </div>
+
+        {resumoDerivadaMono && (
+          <div className="equivalenceVolumePanel">
+            <span className="eyebrow">Leitura analítica</span>
+            <h3>Resumo da derivada no ponto de equivalência</h3>
+
+            <div className="equivalenceVolumeGrid">
+              <div className="equivalenceVolumeCard">
+                <span>PE</span>
+
+                <div className="equivalenceVolumeValues">
+                  <div>
+                    <small>Volume teórico</small>
+                    <strong>
+                      {formatarNumeroBR(
+                        resumoDerivadaMono.volumeTeorico,
+                        2
+                      )}{" "}
+                      mL
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Pico/vale da 1ª derivada</small>
+                    <strong>
+                      {resumoDerivadaMono.volumePicoD1 === null
+                        ? "Não detectável"
+                        : `${formatarNumeroBR(
+                            resumoDerivadaMono.volumePicoD1,
+                            2
+                          )} mL`}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Zero da 2ª derivada</small>
+                    <strong>
+                      {resumoDerivadaMono.volumeZeroD2 === null
+                        ? "Não detectável"
+                        : `${formatarNumeroBR(
+                            resumoDerivadaMono.volumeZeroD2,
+                            2
+                          )} mL`}
+                    </strong>
+                  </div>
+                </div>
+
+                <div
+                  className={
+                    resumoDerivadaMono.detectavelGeral
+                      ? "detectabilityBox high"
+                      : "detectabilityBox veryLow"
+                  }
+                >
+                  <strong>
+                    {resumoDerivadaMono.detectavelGeral
+                      ? "Detectável por derivada"
+                      : "Não detectável por derivada"}
+                  </strong>
+
+                  <p>{resumoDerivadaMono.interpretacao}</p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
+
+        <div className="chartBox acidBaseChartBox">
+          <div className="chartHeader">
+            <div>
+              <strong>1ª derivada da curva (dpH/dV)</strong>
+              <span>
+                O pico ou vale de maior magnitude tende a aparecer próximo ao
+                ponto de equivalência.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="downloadChartButton"
+              onClick={() =>
+                baixarGraficoMonoPorSeletor(
+                  ".monoDerivativeD1Svg",
+                  "primeira-derivada-mono-acido-base.png"
+                )
+              }
+            >
+              Baixar gráfico PNG
+            </button>
+          </div>
+
+          <GraficoDerivadaMonoprotico
+            derivadas={derivadasMono}
+            resultado={resultadoMono}
+            resumo={resumoDerivadaMono}
+            tipo="d1"
+          />
+        </div>
+
+        <div className="chartBox acidBaseChartBox">
+          <div className="chartHeader">
+            <div>
+              <strong>2ª derivada da curva (d²pH/dV²)</strong>
+              <span>
+                O cruzamento com zero costuma ocorrer próximo ao ponto de
+                equivalência.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="downloadChartButton"
+              onClick={() =>
+                baixarGraficoMonoPorSeletor(
+                  ".monoDerivativeD2Svg",
+                  "segunda-derivada-mono-acido-base.png"
+                )
+              }
+            >
+              Baixar gráfico PNG
+            </button>
+          </div>
+
+          <GraficoDerivadaMonoprotico
+            derivadas={derivadasMono}
+            resultado={resultadoMono}
+            resumo={resumoDerivadaMono}
+            tipo="d2"
+          />
+        </div>
+
+        <div className="resultsPanel derivativeTablePanel">
+          <span className="eyebrow">Tabela numérica</span>
+          <h2>Tabela completa usada no cálculo</h2>
+          <p>
+            Esta tabela mostra os volumes, pH, variações de pH, variações de
+            volume e a primeira derivada calculada ponto a ponto.
+          </p>
+
+          <div className="derivativeTableWrapper">
+            <table className="derivativeTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vol(mL)</th>
+                  <th>pH</th>
+                  <th>V médio</th>
+                  <th>ΔpH</th>
+                  <th>ΔV</th>
+                  <th>ΔpH/ΔV</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {tabelaPrimeiraDerivadaMono.map((linha) => (
+                  <tr key={`mono-tabela-d1-${linha.indice}`}>
+                    <td>{linha.indice}</td>
+                    <td>{formatarNumeroBR(linha.volume, 2)}</td>
+                    <td>
+                      {linha.ph === null
+                        ? "-"
+                        : formatarNumeroBR(linha.ph, 8)}
+                    </td>
+                    <td>
+                      {linha.volumeMedio === null
+                        ? "-"
+                        : formatarNumeroBR(linha.volumeMedio, 3)}
+                    </td>
+                    <td>
+                      {linha.deltaPH === null
+                        ? "-"
+                        : formatarNumeroBR(linha.deltaPH, 8)}
+                    </td>
+                    <td>
+                      {linha.deltaV === null
+                        ? "-"
+                        : formatarNumeroBR(linha.deltaV, 3)}
+                    </td>
+                    <td>
+                      {linha.primeiraDerivada === null
+                        ? "-"
+                        : formatarNumeroBR(linha.primeiraDerivada, 8)}
+                    </td>
+                    <td>{linha.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="resultsPanel derivativeTablePanel">
+          <span className="eyebrow">Segunda derivada</span>
+          <h2>Tabela completa da segunda derivada</h2>
+          <p>
+            Esta tabela usa os valores da primeira derivada para calcular a
+            segunda derivada da curva monoprótica.
+          </p>
+
+          <div className="derivativeTableWrapper">
+            <table className="derivativeTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>V médio 1ª</th>
+                  <th>1ª derivada</th>
+                  <th>V 2ª derivada</th>
+                  <th>Δ(1ª derivada)</th>
+                  <th>ΔV</th>
+                  <th>2ª derivada</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {tabelaSegundaDerivadaMono.map((linha) => (
+                  <tr key={`mono-tabela-d2-${linha.indice}`}>
+                    <td>{linha.indice}</td>
+                    <td>{formatarNumeroBR(linha.volumeMedioPrimeira, 3)}</td>
+                    <td>{formatarNumeroBR(linha.primeiraDerivada, 8)}</td>
+                    <td>
+                      {linha.volumeMedioSegunda === null
+                        ? "-"
+                        : formatarNumeroBR(linha.volumeMedioSegunda, 3)}
+                    </td>
+                    <td>
+                      {linha.deltaPrimeiraDerivada === null
+                        ? "-"
+                        : formatarNumeroBR(linha.deltaPrimeiraDerivada, 8)}
+                    </td>
+                    <td>
+                      {linha.deltaV === null
+                        ? "-"
+                        : formatarNumeroBR(linha.deltaV, 3)}
+                    </td>
+                    <td>
+                      {linha.segundaDerivada === null
+                        ? "-"
+                        : formatarNumeroBR(linha.segundaDerivada, 8)}
+                    </td>
+                    <td>{linha.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+)}
+
+{abaAtiva === "tempoReal" && (
+  <div className="resultsPanel curveMainPanel">
+    <span className="eyebrow">Simulação em tempo real</span>
+    <h2>Simulação em tempo real da titulação monoprótica</h2>
+
+    {!resultadoMono || !curvaMono ? (
+      <p>Avalie o sistema primeiro na aba Visão geral.</p>
+    ) : (
+      <>
+        <p>
+          Esta aba simula a adição gradual do titulante em sistemas
+          monopróticos. A curva ideal aparece como referência e os pontos
+          destacados representam apenas os volumes adicionados pelo usuário.
+        </p>
+
+        <div className="realTimeSimulationGrid">
+          <div className="resultsPanel">
+            <h2>Controles da titulação</h2>
+
+            <div className="currentVolumeBox">
+              <span>Volume atual</span>
+              <strong>
+                {formatarNumeroBR(volumeAtualTempoRealMono, 2)} mL
+              </strong>
+            </div>
+
+            <div className="volumeButtonGrid">
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoRealMono(0.05)}
+              >
+                +0,05 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoRealMono(0.1)}
+              >
+                +0,10 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoRealMono(0.5)}
+              >
+                +0,50 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoRealMono(1)}
+              >
+                +1,00 mL
+              </button>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={() => adicionarVolumeTempoRealMono(5)}
+              >
+                +5,00 mL
+              </button>
+            </div>
+
+            <div className="manualVolumeBox">
+              <label>
+                Adicionar volume personalizado mL
+                <input
+                  value={volumeManualTempoRealMono}
+                  onChange={(event) =>
+                    setVolumeManualTempoRealMono(event.target.value)
+                  }
+                  placeholder="Ex.: 2,50"
+                />
+              </label>
+
+              <button
+                type="button"
+                className="primaryButton"
+                onClick={adicionarVolumeManualTempoRealMono}
+              >
+                Adicionar
+              </button>
+
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={irParaPETempoRealMono}
+              >
+                Ir para o PE
+              </button>
+
+              <button
+                type="button"
+                className="secondaryButton"
+                onClick={limparTempoRealMonoprotico}
+              >
+                Limpar
+              </button>
+            </div>
+          </div>
+
+          <div className="resultsPanel">
+            <h2>Simulação em tempo real</h2>
+            <p>
+              A curva suave representa a tendência ideal, enquanto os pontos e a
+              linha tracejada mostram a sequência experimental simulada.
+            </p>
+
+            <GraficoTempoRealMonoprotico
+              curva={curvaMono}
+              resultado={resultadoMono}
+              pontosAdicionados={pontosTempoRealMono}
+            />
+
+            <div className="chartLegend realTimeChartLegend">
+              <span>
+                <i className="legendLine idealAcidBaseCurve"></i>
+                Curva ideal
+              </span>
+
+              <span>
+                <i className="legendLine liveAcidBasePoints"></i>
+                Pontos adicionados
+              </span>
+
+              <span>
+                <i className="legendLine pe"></i>
+                Ponto de equivalência
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="resultsPanel">
+          <h2>Ponto atual</h2>
+
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>Volume adicionado</span>
+              <strong>
+                {formatarNumeroBR(volumeAtualTempoRealMono, 2)} mL
+              </strong>
+            </div>
+
+            <div className="resultCard">
+              <span>pH</span>
+              <strong>
+                {pontoAtualTempoRealMono?.ph === null ||
+                pontoAtualTempoRealMono?.ph === undefined
+                  ? "-"
+                  : formatarNumeroBR(pontoAtualTempoRealMono.ph, 2)}
+              </strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Região</span>
+              <strong>{pontoAtualTempoRealMono?.regiao ?? "-"}</strong>
+            </div>
+
+            <div className="resultCard">
+              <span>Explicação</span>
+              <strong>
+                {pontoAtualTempoRealMono?.explicacao ? "Disponível" : "-"}
+              </strong>
+            </div>
+          </div>
+
+          {pontoAtualTempoRealMono?.explicacao && (
+            <div className="explanationBox">
+              <h3>Interpretação</h3>
+              <p>{pontoAtualTempoRealMono.explicacao}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="resultsPanel">
+          <h2>Pontos adicionados</h2>
+
+          {pontosTempoRealMono.length === 0 ? (
+            <div className="chartEmpty">Nenhum ponto adicionado ainda.</div>
+          ) : (
+            <div className="derivativeTableWrapper">
+              <table className="derivativeTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Volume mL</th>
+                    <th>pH</th>
+                    <th>Região</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {pontosTempoRealMono.map((ponto, index) => (
+                    <tr key={`tempo-real-mono-${index}`}>
+                      <td>{index + 1}</td>
+                      <td>{formatarNumeroBR(ponto.volume, 2)}</td>
+                      <td>
+                        {ponto.ph === null
+                          ? "-"
+                          : formatarNumeroBR(ponto.ph, 2)}
+                      </td>
+                      <td>{ponto.regiao}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </>
+    )}
+  </div>
+)}
       </div>
     </section>
   );
@@ -2543,6 +3834,276 @@ function montarResumoDerivadasPoli(
   });
 }
 
+function calcularDerivadasCurvaMonoprotica(
+  curva: CurvaAcidoBaseMonoprotica
+): PontoDerivadaAcidoBase[] {
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const derivadasBase: PontoDerivadaAcidoBase[] = pontosValidos.map(
+    (ponto, index, array) => {
+      if (index === 0 || index === array.length - 1) {
+        return {
+          volume: ponto.volume,
+          d1: null,
+          d2: null,
+        };
+      }
+
+      const anterior = array[index - 1];
+      const proximo = array[index + 1];
+
+      const deltaV = proximo.volume - anterior.volume;
+
+      if (!Number.isFinite(deltaV) || deltaV === 0) {
+        return {
+          volume: ponto.volume,
+          d1: null,
+          d2: null,
+        };
+      }
+
+      const d1 = ((proximo.ph ?? 0) - (anterior.ph ?? 0)) / deltaV;
+
+      return {
+        volume: ponto.volume,
+        d1,
+        d2: null,
+      };
+    }
+  );
+
+  const derivadasComSegunda = derivadasBase.map((ponto, index, array) => {
+    if (
+      index === 0 ||
+      index === array.length - 1 ||
+      array[index - 1].d1 === null ||
+      array[index + 1].d1 === null
+    ) {
+      return {
+        ...ponto,
+        d2: null,
+      };
+    }
+
+    const anterior = array[index - 1];
+    const proximo = array[index + 1];
+
+    const deltaV = proximo.volume - anterior.volume;
+
+    if (!Number.isFinite(deltaV) || deltaV === 0) {
+      return {
+        ...ponto,
+        d2: null,
+      };
+    }
+
+    const d2 = ((proximo.d1 ?? 0) - (anterior.d1 ?? 0)) / deltaV;
+
+    return {
+      ...ponto,
+      d2,
+    };
+  });
+
+  return derivadasComSegunda;
+}
+
+function montarResumoDerivadaMono(
+  resultado: ResultadoSistemaMonoprotico,
+  derivadas: PontoDerivadaAcidoBase[]
+): ResumoDerivadaPE | null {
+  if (!derivadas.length) return null;
+
+  const passoEstimado =
+    derivadas.length > 1
+      ? Math.abs(derivadas[1].volume - derivadas[0].volume)
+      : 0.5;
+
+  const janela = Math.max(resultado.volumePE * 0.08, passoEstimado * 8, 1);
+
+  const candidatos = derivadas.filter(
+    (item) => Math.abs(item.volume - resultado.volumePE) <= janela
+  );
+
+  const candidatosD1 = candidatos.filter(
+    (item) => item.d1 !== null && Number.isFinite(item.d1)
+  );
+
+  const candidatosD2 = candidatos.filter(
+    (item) => item.d2 !== null && Number.isFinite(item.d2)
+  );
+
+  const melhorD1 =
+    candidatosD1.length > 0
+      ? candidatosD1.reduce((melhor, atual) =>
+          Math.abs(atual.d1 ?? 0) > Math.abs(melhor.d1 ?? 0)
+            ? atual
+            : melhor
+        )
+      : null;
+
+  const melhorD2 =
+    candidatosD2.length > 0
+      ? candidatosD2.reduce((melhor, atual) =>
+          Math.abs(atual.d2 ?? 0) < Math.abs(melhor.d2 ?? 0) ? atual : melhor
+        )
+      : null;
+
+  const maiorD1Local =
+    candidatosD1.length > 0
+      ? Math.max(...candidatosD1.map((item) => Math.abs(item.d1 ?? 0)))
+      : 0;
+
+  const temTrocaSinalD2 = candidatosD2.some((item, index, array) => {
+    if (index === 0) return false;
+
+    const anterior = array[index - 1].d2;
+    const atual = item.d2;
+
+    if (anterior === null || atual === null) return false;
+
+    return anterior * atual < 0;
+  });
+
+  const detectavelD1 = maiorD1Local >= 0.35;
+  const detectavelD2 = detectavelD1 && temTrocaSinalD2;
+  const detectavelGeral = detectavelD1;
+
+  const interpretacao = detectavelGeral
+  ? "A curva apresenta uma mudança brusca de pH próxima ao ponto de equivalência. Por isso, a 1ª derivada forma um pico/vale bem definido, indicando que o PE pode ser localizado com boa precisão pela análise derivativa."
+  : "Este ponto existe pelo cálculo estequiométrico, mas a variação de pH ao redor do PE é pouco intensa. Por isso, o pico/vale da 1ª derivada pode ser discreto e a localização do PE pela derivada pode ser menos evidente.";
+
+  return {
+    pe: 1,
+    volumeTeorico: resultado.volumePE,
+    volumePicoD1: detectavelD1 ? melhorD1?.volume ?? null : null,
+    valorPicoD1: detectavelD1 ? melhorD1?.d1 ?? null : null,
+    volumeZeroD2: detectavelD2 ? melhorD2?.volume ?? null : null,
+    valorD2: detectavelD2 ? melhorD2?.d2 ?? null : null,
+    detectavelD1,
+    detectavelD2,
+    detectavelGeral,
+    interpretacao,
+  };
+}
+
+function identificarStatusVolumeMono(
+  resultado: ResultadoSistemaMonoprotico,
+  volume: number
+) {
+  const tolerancia = Math.max(resultado.volumePE * 0.01, 0.2);
+
+  if (Math.abs(volume - resultado.volumePE) <= tolerancia) {
+    return "Próximo ao PE";
+  }
+
+  if (volume < resultado.volumePE) {
+    return "Antes do PE";
+  }
+
+  return "Após o PE";
+}
+
+function montarTabelaPrimeiraDerivadaMono(
+  resultado: ResultadoSistemaMonoprotico,
+  curva: CurvaAcidoBaseMonoprotica
+): LinhaTabelaPrimeiraDerivada[] {
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  return pontosValidos.map((ponto, index, array) => {
+    if (index === 0) {
+      return {
+        indice: index + 1,
+        volume: ponto.volume,
+        ph: ponto.ph,
+        volumeMedio: null,
+        deltaPH: null,
+        deltaV: null,
+        primeiraDerivada: null,
+        status: identificarStatusVolumeMono(resultado, ponto.volume),
+      };
+    }
+
+    const anterior = array[index - 1];
+
+    const deltaPH = (ponto.ph ?? 0) - (anterior.ph ?? 0);
+    const deltaV = ponto.volume - anterior.volume;
+    const volumeMedio = (ponto.volume + anterior.volume) / 2;
+
+    const primeiraDerivada =
+      Number.isFinite(deltaV) && deltaV !== 0 ? deltaPH / deltaV : null;
+
+    return {
+      indice: index + 1,
+      volume: ponto.volume,
+      ph: ponto.ph,
+      volumeMedio,
+      deltaPH,
+      deltaV,
+      primeiraDerivada,
+      status: identificarStatusVolumeMono(resultado, ponto.volume),
+    };
+  });
+}
+
+function montarTabelaSegundaDerivadaMono(
+  resultado: ResultadoSistemaMonoprotico,
+  tabelaPrimeira: LinhaTabelaPrimeiraDerivada[]
+): LinhaTabelaSegundaDerivada[] {
+  const linhasComPrimeira = tabelaPrimeira.filter(
+    (linha) =>
+      linha.volumeMedio !== null &&
+      linha.primeiraDerivada !== null &&
+      Number.isFinite(linha.primeiraDerivada)
+  );
+
+  return linhasComPrimeira.map((linha, index, array) => {
+    if (index === 0) {
+      return {
+        indice: index + 1,
+        volumeMedioPrimeira: linha.volumeMedio ?? 0,
+        primeiraDerivada: linha.primeiraDerivada ?? 0,
+        volumeMedioSegunda: null,
+        deltaPrimeiraDerivada: null,
+        deltaV: null,
+        segundaDerivada: null,
+        status: identificarStatusVolumeMono(resultado, linha.volumeMedio ?? 0),
+      };
+    }
+
+    const anterior = array[index - 1];
+
+    const volumeAtual = linha.volumeMedio ?? 0;
+    const volumeAnterior = anterior.volumeMedio ?? 0;
+
+    const deltaPrimeiraDerivada =
+      (linha.primeiraDerivada ?? 0) - (anterior.primeiraDerivada ?? 0);
+
+    const deltaV = volumeAtual - volumeAnterior;
+    const volumeMedioSegunda = (volumeAtual + volumeAnterior) / 2;
+
+    const segundaDerivada =
+      Number.isFinite(deltaV) && deltaV !== 0
+        ? deltaPrimeiraDerivada / deltaV
+        : null;
+
+    return {
+      indice: index + 1,
+      volumeMedioPrimeira: volumeAtual,
+      primeiraDerivada: linha.primeiraDerivada ?? 0,
+      volumeMedioSegunda,
+      deltaPrimeiraDerivada,
+      deltaV,
+      segundaDerivada,
+      status: identificarStatusVolumeMono(resultado, volumeAtual),
+    };
+  });
+}
+
 function identificarStatusVolume(
   resultado: ResultadoSistemaPoliprotico,
   volume: number
@@ -2742,6 +4303,77 @@ function montarRankingIndicadoresPoli(
       ranking,
     };
   });
+}
+
+function montarRankingIndicadoresMono(
+  resultado: ResultadoSistemaMonoprotico
+): RankingIndicadorAcidoBase[] {
+  const pontoPE = calcularPhPorVolumeMonoprotico(
+    resultado,
+    resultado.volumePE
+  );
+
+  if (pontoPE.ph === null) {
+    return [];
+  }
+
+  const phPE = pontoPE.ph;
+
+  return indicadoresAcidoBaseMono
+    .map((indicador) => {
+      const phMin = Number(indicador.phMin);
+      const phMax = Number(indicador.phMax);
+      const phCentral = Number(indicador.phCentral);
+
+      if (
+        !Number.isFinite(phMin) ||
+        !Number.isFinite(phMax) ||
+        !Number.isFinite(phCentral)
+      ) {
+        return null;
+      }
+
+      const cobrePE = phPE >= phMin && phPE <= phMax;
+      const erro = Math.abs(phPE - phCentral);
+      const score = calcularScoreIndicadorPoli(erro, cobrePE);
+
+      return {
+        pe: 1,
+        volumePE: resultado.volumePE,
+        phPE,
+        nome: indicador.nome,
+        phMin,
+        phMax,
+        phCentral,
+        faixa: indicador.faixa,
+        categoria: cobrePE ? "Cobre o PE" : "Próximo ao PE",
+        cobrePE,
+        erro,
+        score,
+        justificativa: montarJustificativaIndicador({
+          nome: indicador.nome,
+          phPE,
+          phMin,
+          phMax,
+          phCentral,
+          cobrePE,
+          erro,
+        }),
+      };
+    })
+    .filter((item): item is RankingIndicadorAcidoBase => item !== null)
+    .sort((a, b) => {
+      if (a.cobrePE !== b.cobrePE) {
+        return a.cobrePE ? -1 : 1;
+      }
+
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+
+      return a.erro - b.erro;
+    })
+    .slice(0, 8);
 }
 
 function calcularScoreIndicadorPoli(erro: number, cobrePE: boolean) {
@@ -3877,6 +5509,1401 @@ const margem = {
 >
   pH
 </text>
+    </svg>
+  );
+}
+
+function GraficoCurvaMonoprotica({
+  curva,
+  resultado,
+  pontoConsulta,
+}: {
+  curva: CurvaAcidoBaseMonoprotica;
+  resultado: ResultadoSistemaMonoprotico;
+  pontoConsulta: PontoCurvaAcidoBaseMono | null;
+}) {
+  const largura = 980;
+  const altura = 560;
+
+  const margem = {
+    top: 36,
+    right: 36,
+    bottom: 64,
+    left: 72,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximo = curva.volumeMaximo || 1;
+  const phMin = 0;
+  const phMax = 14;
+
+  function xScale(volume: number) {
+    return margem.left + (volume / volumeMaximo) * larguraGrafico;
+  }
+
+  function yScale(ph: number) {
+    return margem.top + ((phMax - ph) / (phMax - phMin)) * alturaGrafico;
+  }
+
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const pathCurva = pontosValidos
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pontoPE = calcularPhPorVolumeMonoprotico(
+    resultado,
+    resultado.volumePE
+  );
+
+  const linhasPH = [0, 2, 4, 6, 8, 10, 12, 14];
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return (volumeMaximo / 5) * index;
+  });
+
+  return (
+    <svg
+      className="acidBaseCurveSvg mainMonoAcidBaseCurveSvg"
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label="Curva de titulação ácido-base monoprótica"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasPH.map((ph) => (
+        <g key={`mono-ph-${ph}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(ph)}
+            y2={yScale(ph)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={margem.left - 12}
+            y={yScale(ph) + 5}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {ph}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`mono-volume-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      {pathCurva && (
+        <path
+          d={pathCurva}
+          fill="none"
+          stroke="#a80000"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
+
+{pontoPE.ph !== null && (() => {
+  const cx = xScale(resultado.volumePE);
+  const cy = yScale(pontoPE.ph);
+
+  const boxX = cx + 18;
+  const boxY = cy - 44;
+  const boxWidth = 74;
+  const boxHeight = 30;
+
+  const anchorX = boxX;
+  const anchorY = boxY + boxHeight / 2;
+
+  return (
+    <g>
+      <line
+        x1={cx}
+        x2={cx}
+        y1={margem.top}
+        y2={margem.top + alturaGrafico}
+        stroke="#111111"
+        strokeWidth="2"
+        strokeDasharray="8 6"
+      />
+
+      <line
+        x1={cx}
+        y1={cy}
+        x2={anchorX}
+        y2={anchorY}
+        stroke="#111111"
+        strokeWidth="1.5"
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r="9"
+        fill="#111111"
+        stroke="#ffffff"
+        strokeWidth="4"
+      />
+
+      <rect
+        x={boxX}
+        y={boxY}
+        width={boxWidth}
+        height={boxHeight}
+        rx="10"
+        ry="10"
+        fill="#ffffff"
+        stroke="#111111"
+        strokeWidth="1.5"
+      />
+
+      <text
+        x={boxX + boxWidth / 2}
+        y={boxY + 20}
+        fill="#111111"
+        fontSize="16"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        PE
+      </text>
+    </g>
+  );
+})()}
+
+{pontoConsulta && pontoConsulta.ph !== null && (() => {
+  const cx = xScale(pontoConsulta.volume);
+  const cy = yScale(pontoConsulta.ph);
+
+  const larguraBox = 88;
+  const alturaBox = 28;
+
+  function limitarCaixa(x: number, y: number) {
+    let novoX = x;
+    let novoY = y;
+
+    if (novoX < margem.left + 8) {
+      novoX = margem.left + 8;
+    }
+
+    if (novoX + larguraBox > largura - margem.right - 8) {
+      novoX = largura - margem.right - larguraBox - 8;
+    }
+
+    if (novoY < margem.top + 8) {
+      novoY = margem.top + 8;
+    }
+
+    if (novoY + alturaBox > margem.top + alturaGrafico - 8) {
+      novoY = margem.top + alturaGrafico - alturaBox - 8;
+    }
+
+    return { x: novoX, y: novoY };
+  }
+
+  function distanciaPontoCaixa(
+    px: number,
+    py: number,
+    caixa: { x: number; y: number }
+  ) {
+    const dx = Math.max(
+      caixa.x - px,
+      0,
+      px - (caixa.x + larguraBox)
+    );
+
+    const dy = Math.max(
+      caixa.y - py,
+      0,
+      py - (caixa.y + alturaBox)
+    );
+
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  const candidatos = [
+    limitarCaixa(cx + 58, cy - 76), // direita acima
+    limitarCaixa(cx + 58, cy + 44), // direita abaixo
+    limitarCaixa(cx - larguraBox - 58, cy - 76), // esquerda acima
+    limitarCaixa(cx - larguraBox - 58, cy + 44), // esquerda abaixo
+  ];
+
+  const pontosCurvaEmPixel = pontosValidos.map((ponto) => ({
+    x: xScale(ponto.volume),
+    y: yScale(ponto.ph ?? 0),
+  }));
+
+  const melhorCaixa = candidatos.reduce((melhor, atual) => {
+    const menorDistanciaAtual = Math.min(
+      ...pontosCurvaEmPixel.map((ponto) =>
+        distanciaPontoCaixa(ponto.x, ponto.y, atual)
+      )
+    );
+
+    const menorDistanciaMelhor = Math.min(
+      ...pontosCurvaEmPixel.map((ponto) =>
+        distanciaPontoCaixa(ponto.x, ponto.y, melhor)
+      )
+    );
+
+    return menorDistanciaAtual > menorDistanciaMelhor ? atual : melhor;
+  }, candidatos[0]);
+
+  const boxX = melhorCaixa.x;
+  const boxY = melhorCaixa.y;
+
+  const textX = boxX + larguraBox / 2;
+  const textY = boxY + 19;
+
+  const anchorX = boxX > cx ? boxX : boxX + larguraBox;
+  const anchorY = boxY + alturaBox / 2;
+
+  return (
+    <g>
+      <line
+        x1={cx}
+        x2={cx}
+        y1={margem.top}
+        y2={margem.top + alturaGrafico}
+        stroke="#f43f5e"
+        strokeWidth="1.8"
+        strokeDasharray="6 5"
+      />
+
+      <line
+        x1={cx}
+        y1={cy}
+        x2={anchorX}
+        y2={anchorY}
+        stroke="#a80000"
+        strokeWidth="1.5"
+      />
+
+      <rect
+        x={boxX}
+        y={boxY}
+        width={larguraBox}
+        height={alturaBox}
+        rx="9"
+        ry="9"
+        fill="#fff5f5"
+        stroke="#a80000"
+        strokeWidth="1.5"
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r="9"
+        fill="#a80000"
+        stroke="#ffffff"
+        strokeWidth="4"
+      />
+
+      <text
+        x={textX}
+        y={textY}
+        fill="#a80000"
+        fontSize="12"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        {formatarNumeroBR(pontoConsulta.volume, 2)} mL
+      </text>
+    </g>
+  );
+})()}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={18}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
+      >
+        pH
+      </text>
+    </svg>
+  );
+}
+
+function GraficoIndicadorMonoprotico({
+  curva,
+  resultado,
+  indicador,
+}: {
+  curva: CurvaAcidoBaseMonoprotica;
+  resultado: ResultadoSistemaMonoprotico;
+  indicador: RankingIndicadorAcidoBase;
+}) {
+  const largura = 980;
+  const altura = 560;
+
+  const margem = {
+    top: 52,
+    right: 36,
+    bottom: 64,
+    left: 72,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximo = curva.volumeMaximo || 1;
+  const phMinGrafico = 0;
+  const phMaxGrafico = 14;
+
+  function limitarPH(valor: number) {
+    return Math.min(phMaxGrafico, Math.max(phMinGrafico, valor));
+  }
+
+  function xScale(volume: number) {
+    return margem.left + (volume / volumeMaximo) * larguraGrafico;
+  }
+
+  function yScale(ph: number) {
+    return (
+      margem.top +
+      ((phMaxGrafico - ph) / (phMaxGrafico - phMinGrafico)) * alturaGrafico
+    );
+  }
+
+  function limitarBox(
+    x: number,
+    y: number,
+    boxWidth: number,
+    boxHeight: number
+  ) {
+    let novoX = x;
+    let novoY = y;
+
+    if (novoX < margem.left + 8) {
+      novoX = margem.left + 8;
+    }
+
+    if (novoX + boxWidth > largura - margem.right - 8) {
+      novoX = largura - margem.right - boxWidth - 8;
+    }
+
+    if (novoY < margem.top + 8) {
+      novoY = margem.top + 8;
+    }
+
+    if (novoY + boxHeight > margem.top + alturaGrafico - 8) {
+      novoY = margem.top + alturaGrafico - boxHeight - 8;
+    }
+
+    return { x: novoX, y: novoY };
+  }
+
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const pathCurva = pontosValidos
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pontoPE = calcularPhPorVolumeMonoprotico(
+    resultado,
+    resultado.volumePE
+  );
+
+  const linhasPH = [0, 2, 4, 6, 8, 10, 12, 14];
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return (volumeMaximo / 5) * index;
+  });
+
+  const phFaixaMin = limitarPH(indicador.phMin);
+  const phFaixaMax = limitarPH(indicador.phMax);
+
+  const faixaYTop = yScale(phFaixaMax);
+  const faixaYBottom = yScale(phFaixaMin);
+  const alturaFaixa = Math.max(2, faixaYBottom - faixaYTop);
+
+  const xVolumePE = xScale(resultado.volumePE);
+  const yPhPE = yScale(limitarPH(indicador.phPE));
+
+  const boxWidth = 86;
+  const boxHeight = 38;
+
+  const box = limitarBox(
+    xVolumePE < margem.left + larguraGrafico * 0.72
+      ? xVolumePE + 34
+      : xVolumePE - boxWidth - 34,
+    yPhPE - 64,
+    boxWidth,
+    boxHeight
+  );
+
+  const anchorX = box.x > xVolumePE ? box.x : box.x + boxWidth;
+  const anchorY = box.y + boxHeight / 2;
+
+  const faixaLabelX = margem.left + 16;
+  const faixaLabelY = margem.top - 38;
+  const faixaLabelWidth = 250;
+  const faixaLabelHeight = 32;
+
+  return (
+    <svg
+      className="acidBaseCurveSvg indicatorMonoCurveSvg"
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label="Faixa de indicador na curva ácido-base monoprótica"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasPH.map((ph) => (
+        <g key={`mono-ind-ph-${ph}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(ph)}
+            y2={yScale(ph)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={margem.left - 12}
+            y={yScale(ph) + 5}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {ph}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`mono-ind-volume-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      <rect
+        x={margem.left}
+        y={faixaYTop}
+        width={larguraGrafico}
+        height={alturaFaixa}
+        fill="#fca5a5"
+        opacity="0.12"
+      />
+
+      <line
+        x1={margem.left}
+        x2={margem.left + larguraGrafico}
+        y1={faixaYTop}
+        y2={faixaYTop}
+        stroke="#a80000"
+        strokeWidth="1.3"
+        strokeDasharray="8 6"
+        opacity="0.85"
+      />
+
+      <line
+        x1={margem.left}
+        x2={margem.left + larguraGrafico}
+        y1={faixaYBottom}
+        y2={faixaYBottom}
+        stroke="#a80000"
+        strokeWidth="1.3"
+        strokeDasharray="8 6"
+        opacity="0.85"
+      />
+
+      <rect
+        x={faixaLabelX}
+        y={faixaLabelY}
+        width={faixaLabelWidth}
+        height={faixaLabelHeight}
+        rx="10"
+        ry="10"
+        fill="#ffffff"
+        stroke="#f3d1d1"
+        strokeWidth="1"
+        opacity="0.96"
+      />
+
+      <text
+        x={faixaLabelX + 12}
+        y={faixaLabelY + 19}
+        fill="#7a0000"
+        fontSize="12"
+        fontWeight="900"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        {indicador.nome}: pH {formatarNumeroBR(indicador.phMin, 2)} a{" "}
+        {formatarNumeroBR(indicador.phMax, 2)}
+      </text>
+
+      {pathCurva && (
+        <path
+          d={pathCurva}
+          fill="none"
+          stroke="#a80000"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
+
+      {pontoPE.ph !== null && (
+        <>
+          <line
+            x1={xVolumePE}
+            x2={xVolumePE}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#111111"
+            strokeWidth="2.2"
+            strokeDasharray="8 6"
+          />
+
+          <circle
+            cx={xVolumePE}
+            cy={yScale(pontoPE.ph)}
+            r="10"
+            fill="#a80000"
+            stroke="#ffffff"
+            strokeWidth="4"
+          />
+
+          <line
+            x1={xVolumePE}
+            y1={yPhPE}
+            x2={anchorX}
+            y2={anchorY}
+            stroke="#a80000"
+            strokeWidth="1.3"
+          />
+
+          <rect
+            x={box.x}
+            y={box.y}
+            width={boxWidth}
+            height={boxHeight}
+            rx="12"
+            ry="12"
+            fill="#ffffff"
+            stroke="#a80000"
+            strokeWidth="1.3"
+          />
+
+          <text
+            x={box.x + boxWidth / 2}
+            y={box.y + 18}
+            fill="#a80000"
+            fontSize="13"
+            fontWeight="900"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            PE
+          </text>
+
+          <text
+            x={box.x + boxWidth / 2}
+            y={box.y + 35}
+            fill="#a80000"
+            fontSize="12"
+            fontWeight="800"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            pH {formatarNumeroBR(indicador.phPE, 2)}
+          </text>
+        </>
+      )}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={18}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="17"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
+      >
+        pH
+      </text>
+    </svg>
+  );
+}
+
+function GraficoDerivadaMonoprotico({
+  derivadas,
+  resultado,
+  resumo,
+  tipo,
+}: {
+  derivadas: PontoDerivadaAcidoBase[];
+  resultado: ResultadoSistemaMonoprotico;
+  resumo: ResumoDerivadaPE | null;
+  tipo: "d1" | "d2";
+}) {
+  const largura = 980;
+  const altura = 420;
+
+  const margem = {
+    top: 28,
+    right: 36,
+    bottom: 64,
+    left: 84,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximo =
+    derivadas.length > 0 ? derivadas[derivadas.length - 1].volume : 1;
+
+  const pontosValidos = derivadas
+    .map((item) => ({
+      volume: item.volume,
+      valor: tipo === "d1" ? item.d1 : item.d2,
+    }))
+    .filter((item) => item.valor !== null && Number.isFinite(item.valor));
+
+  if (!pontosValidos.length) {
+    return (
+      <div className="chartEmpty">
+        Não há dados suficientes para calcular esta derivada.
+      </div>
+    );
+  }
+
+  const valores = pontosValidos.map((item) => item.valor as number);
+
+  const valorMin = Math.min(...valores);
+  const valorMax = Math.max(...valores);
+  const amplitude = Math.max(valorMax - valorMin, 0.0001);
+  const padding = amplitude * 0.12;
+
+  const yMin = valorMin - padding;
+  const yMax = valorMax + padding;
+
+  function xScale(volume: number) {
+    return margem.left + (volume / volumeMaximo) * larguraGrafico;
+  }
+
+  function yScale(valor: number) {
+    return margem.top + ((yMax - valor) / (yMax - yMin)) * alturaGrafico;
+  }
+
+  const pathDerivada = pontosValidos
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.valor as number);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return (volumeMaximo / 5) * index;
+  });
+
+  const linhasY = Array.from({ length: 6 }, (_, index) => {
+    return yMin + ((yMax - yMin) / 5) * index;
+  });
+
+  const zeroDentroDoGrafico = yMin <= 0 && yMax >= 0;
+
+  const volumeMarcado =
+  resumo === null
+    ? null
+    : tipo === "d1"
+      ? resumo.volumePicoD1
+      : resumo.volumeZeroD2;
+
+  const pontoDetectavel =
+    volumeMarcado !== null
+      ? pontosValidos.reduce((melhor, atual) =>
+          Math.abs(atual.volume - volumeMarcado) <
+          Math.abs(melhor.volume - volumeMarcado)
+            ? atual
+            : melhor
+        )
+      : null;
+
+  return (
+    <svg
+      className={
+        tipo === "d1"
+          ? "acidBaseCurveSvg monoDerivativeD1Svg"
+          : "acidBaseCurveSvg monoDerivativeD2Svg"
+      }
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label={
+        tipo === "d1"
+          ? "Gráfico da primeira derivada monoprótica"
+          : "Gráfico da segunda derivada monoprótica"
+      }
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasY.map((valor, index) => (
+        <g key={`mono-derivada-y-${tipo}-${index}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(valor)}
+            y2={yScale(valor)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={margem.left - 12}
+            y={yScale(valor) + 5}
+            fill="#667085"
+            fontSize="13"
+            fontWeight="700"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(valor, 2)}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`mono-derivada-x-${tipo}-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 28}
+            fill="#667085"
+            fontSize="14"
+            fontWeight="700"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      {zeroDentroDoGrafico && (
+        <line
+          x1={margem.left}
+          x2={margem.left + larguraGrafico}
+          y1={yScale(0)}
+          y2={yScale(0)}
+          stroke="#344054"
+          strokeWidth="1.5"
+          strokeDasharray="6 5"
+        />
+      )}
+
+      <line
+        x1={xScale(resultado.volumePE)}
+        x2={xScale(resultado.volumePE)}
+        y1={margem.top}
+        y2={margem.top + alturaGrafico}
+        stroke="#111111"
+        strokeWidth="1.8"
+        strokeDasharray="8 6"
+      />
+
+      <path
+        d={pathDerivada}
+        fill="none"
+        stroke={tipo === "d1" ? "#a80000" : "#7a1f1f"}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {pontoDetectavel && pontoDetectavel.valor !== null && (
+        (() => {
+          const cx = xScale(pontoDetectavel.volume);
+          const cy = yScale(pontoDetectavel.valor);
+
+          const boxWidth = 52;
+          const boxHeight = 26;
+
+          let boxX = cx + 12;
+          let boxY = cy - 38;
+
+          if (boxX + boxWidth > largura - margem.right - 8) {
+            boxX = cx - boxWidth - 12;
+          }
+
+          if (boxY < margem.top + 8) {
+            boxY = cy + 14;
+          }
+
+          if (boxY + boxHeight > margem.top + alturaGrafico - 8) {
+            boxY = cy - 38;
+          }
+
+          const anchorX = boxX > cx ? boxX : boxX + boxWidth;
+          const anchorY = boxY + boxHeight / 2;
+
+          return (
+            <g>
+              <line
+                x1={cx}
+                y1={cy}
+                x2={anchorX}
+                y2={anchorY}
+                stroke="#111111"
+                strokeWidth="1.3"
+              />
+
+              <rect
+                x={boxX}
+                y={boxY}
+                width={boxWidth}
+                height={boxHeight}
+                rx="8"
+                ry="8"
+                fill="#ffffff"
+                stroke="#111111"
+                strokeWidth="1.3"
+              />
+
+              <circle
+                cx={cx}
+                cy={cy}
+                r="6.5"
+                fill="#a80000"
+                stroke="#ffffff"
+                strokeWidth="3"
+              />
+
+              <text
+                x={boxX + boxWidth / 2}
+                y={boxY + 18}
+                fill="#111111"
+                fontSize="13"
+                fontWeight="900"
+                textAnchor="middle"
+                fontFamily="Arial, Helvetica, sans-serif"
+              >
+                PE
+              </text>
+            </g>
+          );
+        })()
+      )}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 14}
+        fill="#344054"
+        fontSize="16"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={22}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="16"
+        fontWeight="800"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 22 ${margem.top + alturaGrafico / 2})`}
+      >
+        {tipo === "d1" ? "dpH/dV" : "d²pH/dV²"}
+      </text>
+    </svg>
+  );
+}
+
+function GraficoTempoRealMonoprotico({
+  curva,
+  resultado,
+  pontosAdicionados,
+}: {
+  curva: CurvaAcidoBaseMonoprotica;
+  resultado: ResultadoSistemaMonoprotico;
+  pontosAdicionados: PontoCurvaAcidoBaseMono[];
+}) {
+  const largura = 1500;
+  const altura = 820;
+
+  const margem = {
+    top: 36,
+    right: 36,
+    bottom: 90,
+    left: 72,
+  };
+
+  const larguraGrafico = largura - margem.left - margem.right;
+  const alturaGrafico = altura - margem.top - margem.bottom;
+
+  const volumeMaximoTotal = curva.volumeMaximo || 1;
+
+  const phMin = 0;
+  const phMax = 14;
+
+  const pontosValidos = curva.pontos.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const pontosAdicionadosValidos = pontosAdicionados.filter(
+    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
+  );
+
+  const ultimoVolume =
+    pontosAdicionadosValidos.length > 0
+      ? pontosAdicionadosValidos[pontosAdicionadosValidos.length - 1].volume
+      : 0;
+
+  const larguraJanela = Math.min(
+    volumeMaximoTotal,
+    Math.max(resultado.volumePE * 1.4, 20)
+  );
+
+  const margemSeguimento = larguraJanela * 0.22;
+
+  let xMinVisivel = 0;
+  let xMaxVisivel = larguraJanela;
+
+  if (ultimoVolume > xMaxVisivel - margemSeguimento) {
+    xMaxVisivel = Math.min(volumeMaximoTotal, ultimoVolume + margemSeguimento);
+    xMinVisivel = Math.max(0, xMaxVisivel - larguraJanela);
+  }
+
+  const amplitudeX = Math.max(xMaxVisivel - xMinVisivel, 1);
+
+  function xScale(volume: number) {
+    return (
+      margem.left +
+      ((volume - xMinVisivel) / amplitudeX) * larguraGrafico
+    );
+  }
+
+  function yScale(ph: number) {
+    return margem.top + ((phMax - ph) / (phMax - phMin)) * alturaGrafico;
+  }
+
+  const pontosValidosVisiveis = pontosValidos.filter(
+    (ponto) => ponto.volume >= xMinVisivel && ponto.volume <= xMaxVisivel
+  );
+
+  const pontosAdicionadosVisiveis = pontosAdicionadosValidos.filter(
+    (ponto) => ponto.volume >= xMinVisivel && ponto.volume <= xMaxVisivel
+  );
+
+  const pathCurva = pontosValidosVisiveis
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pathPontosAdicionados = pontosAdicionadosVisiveis
+    .map((ponto, index) => {
+      const x = xScale(ponto.volume);
+      const y = yScale(ponto.ph ?? 0);
+
+      return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+    })
+    .join(" ");
+
+  const pontoPE = calcularPhPorVolumeMonoprotico(
+    resultado,
+    resultado.volumePE
+  );
+
+  const peVisivel =
+    resultado.volumePE >= xMinVisivel && resultado.volumePE <= xMaxVisivel;
+
+  const saltosGrandes = pontosAdicionadosVisiveis
+    .map((ponto, index, array) => {
+      if (index === 0) return null;
+
+      const anterior = array[index - 1];
+      const deltaV = ponto.volume - anterior.volume;
+
+      const limiteSalto = Math.max(resultado.volumePE * 0.08, 2);
+
+      if (deltaV <= limiteSalto) return null;
+
+      return {
+        volumeInicio: anterior.volume,
+        volumeFim: ponto.volume,
+        phInicio: anterior.ph,
+        phFim: ponto.ph,
+        deltaV,
+      };
+    })
+    .filter(
+      (
+        item
+      ): item is {
+        volumeInicio: number;
+        volumeFim: number;
+        phInicio: number | null;
+        phFim: number | null;
+        deltaV: number;
+      } => item !== null
+    );
+
+  const linhasPH = [0, 2, 4, 6, 8, 10, 12, 14];
+
+  const linhasVolume = Array.from({ length: 6 }, (_, index) => {
+    return xMinVisivel + (amplitudeX / 5) * index;
+  });
+
+  return (
+    <svg
+      className="acidBaseCurveSvg realTimeAcidBaseCurveSvg"
+      viewBox={`0 0 ${largura} ${altura}`}
+      role="img"
+      aria-label="Simulação em tempo real da titulação monoprótica"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="0" y="0" width={largura} height={altura} fill="#ffffff" />
+
+      <rect
+        x={margem.left}
+        y={margem.top}
+        width={larguraGrafico}
+        height={alturaGrafico}
+        fill="#fffafa"
+        stroke="#f1d4d4"
+        strokeWidth="1"
+      />
+
+      {linhasPH.map((ph) => (
+        <g key={`tempo-real-mono-ph-${ph}`}>
+          <line
+            x1={margem.left}
+            x2={margem.left + larguraGrafico}
+            y1={yScale(ph)}
+            y2={yScale(ph)}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={margem.left - 12}
+            y={yScale(ph) + 7}
+            fill="#667085"
+            fontSize="22"
+            fontWeight="900"
+            textAnchor="end"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {ph}
+          </text>
+        </g>
+      ))}
+
+      {linhasVolume.map((volume) => (
+        <g key={`tempo-real-mono-volume-${volume}`}>
+          <line
+            x1={xScale(volume)}
+            x2={xScale(volume)}
+            y1={margem.top}
+            y2={margem.top + alturaGrafico}
+            stroke="#eeeeee"
+            strokeWidth="1"
+          />
+
+          <text
+            x={xScale(volume)}
+            y={margem.top + alturaGrafico + 42}
+            fill="#667085"
+            fontSize="22"
+            fontWeight="900"
+            textAnchor="middle"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            {formatarNumeroBR(volume, 0)}
+          </text>
+        </g>
+      ))}
+
+      {peVisivel && (
+        <line
+          x1={xScale(resultado.volumePE)}
+          x2={xScale(resultado.volumePE)}
+          y1={margem.top}
+          y2={margem.top + alturaGrafico}
+          stroke="#111111"
+          strokeWidth="1.8"
+          strokeDasharray="8 6"
+        />
+      )}
+
+      {pathCurva && (
+        <path
+          d={pathCurva}
+          fill="none"
+          stroke="#a80000"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.22"
+        />
+      )}
+
+      {peVisivel && pontoPE.ph !== null && (
+        <g>
+          <circle
+            cx={xScale(resultado.volumePE)}
+            cy={yScale(pontoPE.ph)}
+            r="11"
+            fill="#111111"
+            stroke="#ffffff"
+            strokeWidth="3"
+          />
+
+          <text
+            x={xScale(resultado.volumePE) + 18}
+            y={yScale(pontoPE.ph) - 18}
+            fill="#111111"
+            fontSize="26"
+            fontWeight="900"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            PE
+          </text>
+        </g>
+      )}
+
+      {pathPontosAdicionados && (
+        <path
+          d={pathPontosAdicionados}
+          fill="none"
+          stroke="#f43f5e"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="10 8"
+        />
+      )}
+
+      {saltosGrandes.map((salto, index) => {
+        if (salto.phInicio === null || salto.phFim === null) return null;
+
+        return (
+          <line
+            key={`salto-volume-mono-${index}`}
+            x1={xScale(salto.volumeInicio)}
+            y1={yScale(salto.phInicio)}
+            x2={xScale(salto.volumeFim)}
+            y2={yScale(salto.phFim)}
+            stroke="#f43f5e"
+            strokeWidth="5"
+            strokeDasharray="4 10"
+            opacity="0.55"
+          />
+        );
+      })}
+
+      {pontosAdicionadosVisiveis.map((ponto, index) => {
+        const ehUltimoPontoGeral =
+          pontosAdicionadosValidos.length > 0 &&
+          ponto.volume ===
+            pontosAdicionadosValidos[pontosAdicionadosValidos.length - 1].volume;
+
+        const cx = xScale(ponto.volume);
+        const cy = yScale(ponto.ph ?? 0);
+
+        return (
+          <g key={`tempo-real-mono-ponto-${index}`}>
+            <circle
+              cx={cx}
+              cy={cy}
+              r={ehUltimoPontoGeral ? "15" : "11"}
+              fill="#f43f5e"
+              stroke="#ffffff"
+              strokeWidth="4"
+            />
+
+            {ehUltimoPontoGeral && (
+              <text
+                x={cx}
+                y={cy - 24}
+                fill="#9f1239"
+                fontSize="26"
+                fontWeight="900"
+                textAnchor="middle"
+                fontFamily="Arial, Helvetica, sans-serif"
+              >
+                {formatarNumeroBR(ponto.volume, 2)}
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      <text
+        x={margem.left + larguraGrafico / 2}
+        y={altura - 24}
+        fill="#344054"
+        fontSize="26"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+      >
+        Volume de titulante adicionado mL
+      </text>
+
+      <text
+        x={24}
+        y={margem.top + alturaGrafico / 2}
+        fill="#344054"
+        fontSize="26"
+        fontWeight="900"
+        textAnchor="middle"
+        fontFamily="Arial, Helvetica, sans-serif"
+        transform={`rotate(-90 24 ${margem.top + alturaGrafico / 2})`}
+      >
+        pH
+      </text>
     </svg>
   );
 }

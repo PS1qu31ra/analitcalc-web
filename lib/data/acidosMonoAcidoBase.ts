@@ -1,0 +1,336 @@
+export type AcidoMonoAcidoBase = {
+    id: string;
+    nome: string;
+    formula: string;
+    tipo: "forte" | "fraco" | "superforte" | "muito-fraco";
+    pKa25C: number;
+    ka25C: number;
+    ativo: boolean;
+    observacao: string;
+  };
+  
+  function kaPorPka(pKa: number) {
+    return Math.pow(10, -pKa);
+  }
+  
+  export const acidosMonoAcidoBase: AcidoMonoAcidoBase[] = [
+    {
+      id: "hclo4",
+      nome: "Perclórico",
+      formula: "HClO4",
+      tipo: "forte",
+      pKa25C: -15,
+      ka25C: kaPorPka(-15),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "hi",
+      nome: "Hidroiodídrico",
+      formula: "HI",
+      tipo: "forte",
+      pKa25C: -9.5,
+      ka25C: kaPorPka(-9.5),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "hbr",
+      nome: "Hidrobromídrico",
+      formula: "HBr",
+      tipo: "forte",
+      pKa25C: -8.8,
+      ka25C: kaPorPka(-8.8),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "hcl",
+      nome: "Clorídrico",
+      formula: "HCl",
+      tipo: "forte",
+      pKa25C: -5.9,
+      ka25C: kaPorPka(-5.9),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "hno3",
+      nome: "Nítrico",
+      formula: "HNO3",
+      tipo: "forte",
+      pKa25C: -1.6,
+      ka25C: kaPorPka(-1.6),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "hclo3",
+      nome: "Clórico",
+      formula: "HClO3",
+      tipo: "forte",
+      pKa25C: -1,
+      ka25C: kaPorPka(-1),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "cf3so3h",
+      nome: "Trifluorometanossulfônico (trifílico)",
+      formula: "CF3SO3H",
+      tipo: "superforte",
+      pKa25C: -14,
+      ka25C: kaPorPka(-14),
+      ativo: true,
+      observacao: "Ácido monoprótico superforte.",
+    },
+    {
+      id: "ch3so3h",
+      nome: "Metanossulfônico",
+      formula: "CH3SO3H",
+      tipo: "forte",
+      pKa25C: -1.9,
+      ka25C: kaPorPka(-1.9),
+      ativo: true,
+      observacao: "Ácido monoprótico forte.",
+    },
+    {
+      id: "ch3c6h4so3h",
+      nome: "p-Toluenossulfônico (p-TsOH)",
+      formula: "CH3C6H4SO3H",
+      tipo: "forte",
+      pKa25C: -2.8,
+      ka25C: kaPorPka(-2.8),
+      ativo: true,
+      observacao: "Ácido monoprótico forte orgânico.",
+    },
+  
+    {
+      id: "hf",
+      nome: "Ácido fluorídrico",
+      formula: "HF",
+      tipo: "fraco",
+      pKa25C: 3.17,
+      ka25C: kaPorPka(3.17),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hno2",
+      nome: "Ácido nitroso",
+      formula: "HNO2",
+      tipo: "fraco",
+      pKa25C: 3.25,
+      ka25C: kaPorPka(3.25),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hclo",
+      nome: "Ácido hipocloroso",
+      formula: "HClO",
+      tipo: "fraco",
+      pKa25C: 7.53,
+      ka25C: kaPorPka(7.53),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hclo2",
+      nome: "Ácido cloroso",
+      formula: "HClO2",
+      tipo: "fraco",
+      pKa25C: 1.96,
+      ka25C: kaPorPka(1.96),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hbro",
+      nome: "Ácido hipobromoso",
+      formula: "HBrO",
+      tipo: "fraco",
+      pKa25C: 8.65,
+      ka25C: kaPorPka(8.65),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hio",
+      nome: "Ácido hipoiodoso",
+      formula: "HIO",
+      tipo: "fraco",
+      pKa25C: 10.6,
+      ka25C: kaPorPka(10.6),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hcn",
+      nome: "Ácido cianídrico",
+      formula: "HCN",
+      tipo: "fraco",
+      pKa25C: 9.21,
+      ka25C: kaPorPka(9.21),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hscn",
+      nome: "Ácido tiociânico",
+      formula: "HSCN",
+      tipo: "fraco",
+      pKa25C: 0.9,
+      ka25C: kaPorPka(0.9),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco relativamente forte.",
+    },
+    {
+      id: "hn3",
+      nome: "Ácido azotídrico (hidrazóico)",
+      formula: "HN3",
+      tipo: "fraco",
+      pKa25C: 4.72,
+      ka25C: kaPorPka(4.72),
+      ativo: true,
+      observacao: "Ácido monoprótico fraco.",
+    },
+    {
+      id: "hco2h",
+      nome: "Ácido fórmico",
+      formula: "HCO2H",
+      tipo: "fraco",
+      pKa25C: 3.75,
+      ka25C: kaPorPka(3.75),
+      ativo: true,
+      observacao: "Ácido carboxílico monoprótico fraco.",
+    },
+    {
+      id: "ch3cooh",
+      nome: "Ácido acético",
+      formula: "CH3COOH",
+      tipo: "fraco",
+      pKa25C: 4.76,
+      ka25C: kaPorPka(4.76),
+      ativo: true,
+      observacao: "Ácido carboxílico monoprótico fraco.",
+    },
+    {
+      id: "c2h5cooh",
+      nome: "Ácido propanoico",
+      formula: "C2H5COOH",
+      tipo: "fraco",
+      pKa25C: 4.87,
+      ka25C: kaPorPka(4.87),
+      ativo: true,
+      observacao: "Ácido carboxílico monoprótico fraco.",
+    },
+    {
+      id: "c3h7cooh",
+      nome: "Ácido butanoico",
+      formula: "C3H7COOH",
+      tipo: "fraco",
+      pKa25C: 4.82,
+      ka25C: kaPorPka(4.82),
+      ativo: true,
+      observacao: "Ácido carboxílico monoprótico fraco.",
+    },
+    {
+      id: "c6h5cooh",
+      nome: "Ácido benzoico",
+      formula: "C6H5COOH",
+      tipo: "fraco",
+      pKa25C: 4.2,
+      ka25C: kaPorPka(4.2),
+      ativo: true,
+      observacao: "Ácido carboxílico aromático monoprótico fraco.",
+    },
+    {
+      id: "ch2clcooh",
+      nome: "Ácido monocloroacético",
+      formula: "CH2ClCOOH",
+      tipo: "fraco",
+      pKa25C: 2.86,
+      ka25C: kaPorPka(2.86),
+      ativo: true,
+      observacao: "Ácido carboxílico monoprótico fraco.",
+    },
+    {
+      id: "chcl2cooh",
+      nome: "Ácido dicloroacético",
+      formula: "CHCl2COOH",
+      tipo: "fraco",
+      pKa25C: 1.35,
+      ka25C: kaPorPka(1.35),
+      ativo: true,
+      observacao: "Ácido carboxílico monoprótico mais forte que ácidos carboxílicos simples.",
+    },
+    {
+      id: "ccl3cooh",
+      nome: "Ácido tricloroacético",
+      formula: "CCl3COOH",
+      tipo: "fraco",
+      pKa25C: 0.66,
+      ka25C: kaPorPka(0.66),
+      ativo: true,
+      observacao: "Ácido monoprótico relativamente forte, mas tratado no cálculo como ácido fraco com Ka definido.",
+    },
+    {
+      id: "c3h6o3",
+      nome: "Ácido láctico",
+      formula: "C3H6O3",
+      tipo: "fraco",
+      pKa25C: 3.86,
+      ka25C: kaPorPka(3.86),
+      ativo: true,
+      observacao: "Ácido orgânico monoprótico fraco.",
+    },
+    {
+      id: "c6h5oh",
+      nome: "Fenol",
+      formula: "C6H5OH",
+      tipo: "muito-fraco",
+      pKa25C: 9.99,
+      ka25C: kaPorPka(9.99),
+      ativo: true,
+      observacao: "Ácido muito fraco.",
+    },
+    {
+      id: "o2nc6h4oh",
+      nome: "p-Nitrofenol",
+      formula: "O2NC6H4OH",
+      tipo: "fraco",
+      pKa25C: 7.15,
+      ka25C: kaPorPka(7.15),
+      ativo: true,
+      observacao: "Fenol substituído, ácido fraco.",
+    },
+    {
+      id: "o2n2c6h3oh",
+      nome: "2,4-Dinitrofenol",
+      formula: "(O2N)2C6H3OH",
+      tipo: "fraco",
+      pKa25C: 4.09,
+      ka25C: kaPorPka(4.09),
+      ativo: true,
+      observacao: "Fenol substituído, ácido fraco.",
+    },
+  ];
+  
+  export function buscarAcidoMonoPorFormula(formula: string) {
+    return acidosMonoAcidoBase.find(
+      (acido) => acido.formula.toLowerCase() === formula.toLowerCase()
+    );
+  }
+  
+  export function listarAcidosMonoFortes() {
+    return acidosMonoAcidoBase.filter(
+      (acido) => acido.tipo === "forte" || acido.tipo === "superforte"
+    );
+  }
+  
+  export function listarAcidosMonoFracos() {
+    return acidosMonoAcidoBase.filter(
+      (acido) => acido.tipo === "fraco" || acido.tipo === "muito-fraco"
+    );
+  }
