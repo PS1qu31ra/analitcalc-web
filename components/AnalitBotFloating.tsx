@@ -9,42 +9,33 @@ type MensagemAnalitBot = {
 };
 
 function responderPergunta(pergunta: string, contexto: string) {
-  const perguntaNormalizada = pergunta.toLowerCase();
+  const contextoNormalizado = contexto.toLowerCase();
 
-  if (
-    perguntaNormalizada.includes("sistema") ||
-    perguntaNormalizada.includes("calculo") ||
-    perguntaNormalizada.includes("cálculo")
-  ) {
-    return `Com base no contexto atual:
-${contexto}
+  if (contextoNormalizado.includes("complexometria")) {
+    return `Ainda não encontrei uma resposta específica na base do Analito para essa pergunta.
 
-Esse é o sistema que está conectado ao AnalitBot neste momento.`;
+Tente perguntar de forma mais direta, por exemplo:
+• Qual a importância de informar o pH no começo?
+• Por que o melhor indicador foi esse?
+• Qual indicador devo usar?
+• O que é Kf efetivo?
+• Esse sistema é quantitativo?
+• Esse interferente atrapalha?`;
   }
 
-  if (
-    perguntaNormalizada.includes("pe") ||
-    perguntaNormalizada.includes("equivalência") ||
-    perguntaNormalizada.includes("equivalencia")
-  ) {
-    return `O ponto de equivalência é o ponto em que a quantidade de titulante adicionada reage estequiometricamente com o titulado.`;
+  if (contextoNormalizado.includes("ácido-base") || contextoNormalizado.includes("acido-base")) {
+    return `Ainda não encontrei uma resposta específica na base do Analito para essa pergunta.
+
+Tente perguntar de forma mais direta, por exemplo:
+• O que é ponto de equivalência?
+• Como escolher o indicador?
+• O que representa a curva de titulação?
+• Por que o pH muda durante a titulação?`;
   }
 
-  if (
-    perguntaNormalizada.includes("indicador") ||
-    perguntaNormalizada.includes("viragem")
-  ) {
-    return `A escolha do indicador depende da faixa de viragem em relação ao pH próximo ao ponto de equivalência.`;
-  }
+  return `Ainda não encontrei uma resposta específica na base do Analito para essa pergunta.
 
-  if (
-    perguntaNormalizada.includes("curva") ||
-    perguntaNormalizada.includes("ph")
-  ) {
-    return `A curva mostra como o pH varia conforme o volume de titulante é adicionado.`;
-  }
-
-  return `Ainda não encontrei essa resposta na minha base de conhecimento. Tente perguntar usando termos como Kf efetivo, indicador, ponto de equivalência, curva, pH ou interferentes.`;
+Tente perguntar usando termos como Kf efetivo, indicador, ponto de equivalência, curva, pH ou interferentes.`;
 }
 
 export default function AnalitBotFloating() {
