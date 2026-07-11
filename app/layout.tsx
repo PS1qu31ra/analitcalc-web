@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "../components/Header";
+import { AnalitBotProvider } from "./contexts/AnalitBotContext";
+import AnalitBotFloating from "../components/AnalitBotFloating";
 
 export const metadata: Metadata = {
   title: "AnalitCalc",
@@ -16,8 +18,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <Header />
-        {children}
+        <AnalitBotProvider>
+          <Header />
+          {children}
+          <AnalitBotFloating />
+        </AnalitBotProvider>
       </body>
     </html>
   );

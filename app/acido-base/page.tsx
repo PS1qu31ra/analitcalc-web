@@ -38,6 +38,8 @@ import {
 
 import { indicadoresAcidoBaseMono } from "../../lib/data/indicadoresAcidoBaseMono";
 
+import { useAnalitBot } from "../contexts/AnalitBotContext";
+
 type TipoSistemaAcidoBase = "mono" | "poli";
 
 type AbaAcidoBase =
@@ -136,25 +138,23 @@ export default function AcidoBasePage() {
       <section className="moduleHero">
         <div className="container moduleHeroContent">
           <div>
-            <span className="eyebrow">Módulo em desenvolvimento</span>
+          <span className="eyebrow">Módulo disponível</span>
             <h1>Titulações ácido-base</h1>
             <p>
-              Simule e interprete titulações envolvendo ácidos monopróticos,
-              bases monobásicas, ácidos polipróticos e bases polibásicas. O
-              módulo será estruturado para calcular curvas de pH, regiões
-              tampão, pontos de equivalência, espécies predominantes e bases do
-              cálculo.
-            </p>
+  Simule e interprete titulações envolvendo ácidos monopróticos,
+  bases monobásicas, ácidos polipróticos e bases polibásicas. O
+  módulo calcula curvas de pH, regiões tampão, pontos de equivalência,
+  indicadores, derivadas e bases do cálculo.
+</p>
           </div>
 
           <div className="moduleInfoCard">
-            <strong>Status</strong>
-            <span>
-              Ambiente preparado para separar sistemas
-              monopróticos/monobásicos e polipróticos/polibásicos dentro do
-              mesmo módulo.
-            </span>
-          </div>
+  <strong>Status</strong>
+  <span>
+    Módulo disponível para simular titulações monopróticas,
+    monobásicas, polipróticas e polibásicas.
+  </span>
+</div>
         </div>
       </section>
 
@@ -323,6 +323,8 @@ export default function AcidoBasePage() {
 }
 
 function ModuloMonoprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
+  const { atualizarDados } = useAnalitBot();
+
   const [titulanteMono, setTitulanteMono] = useState("");
   const [tituladoMono, setTituladoMono] = useState("");
   const [concTitulanteMono, setConcTitulanteMono] = useState("");
@@ -372,6 +374,13 @@ const [pontosTempoRealMono, setPontosTempoRealMono] = useState<
     setVolumeAtualTempoRealMono(0);
     setVolumeManualTempoRealMono("");
     setPontosTempoRealMono([]);
+  
+    atualizarDados({
+      moduloAtual: "Titulações ácido-base",
+      tipoSistema: "Sistema monoprótico / monobásico",
+      resumoCalculo: "Nenhum sistema monoprótico foi avaliado ainda.",
+      contextoTexto: "Nenhum sistema monoprótico foi avaliado ainda.",
+    });
   }
 
   function avaliarMonoprotico() {
@@ -415,7 +424,31 @@ const [pontosTempoRealMono, setPontosTempoRealMono] = useState<
 
       const curvaGerada = gerarCurvaMonoprotica(avaliacao);
 
-      setResultadoMono(avaliacao);
+atualizarDados({
+  moduloAtual: "Titulações ácido-base",
+  tipoSistema: "Sistema monoprótico / monobásico",
+  resumoCalculo: `${avaliacao.titulado.nome} titulado com ${avaliacao.titulante.nome}. PE em ${formatarNumeroBR(
+    avaliacao.volumePE,
+    2
+  )} mL.`,
+  contextoTexto: `
+Módulo: Titulações ácido-base.
+Tipo de sistema: monoprótico / monobásico.
+Titulante: ${avaliacao.titulante.nome}.
+Titulado: ${avaliacao.titulado.nome}.
+Tipo de titulação: ${avaliacao.tipoSistema}.
+Volume de equivalência: ${formatarNumeroBR(avaliacao.volumePE, 2)} mL.
+Concentração no ponto de equivalência: ${formatarNumeroBR(
+    avaliacao.concentracaoNoPE,
+    5
+  )} mol/L.
+Resumo calculado: ${avaliacao.resumo}
+Equação global: ${avaliacao.reacao?.equacaoExibicao ?? "Não cadastrada"}.
+Observação da reação: ${avaliacao.reacao?.obs ?? "Sem observação cadastrada"}.
+`,
+});
+
+setResultadoMono(avaliacao);
 setCurvaMono(curvaGerada);
 setPontoConsultaMono(null);
 setVolumeConsultaMono("");
@@ -1676,12 +1709,14 @@ const tabelaSegundaDerivadaMono =
     )}
   </div>
 )}
-      </div>
+              </div>
     </section>
   );
 }
 
+
 function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
+  const { atualizarDados } = useAnalitBot();
   const [titulante, setTitulante] = useState("");
   const [titulado, setTitulado] = useState("");
   const [concTitulante, setConcTitulante] = useState("");
@@ -1775,7 +1810,27 @@ setPontosTempoReal([]);
 
       const curvaGerada = gerarCurvaPoliprotica(avaliacao);
 
-      setResultadoPoli(avaliacao);
+atualizarDados({
+  moduloAtual: "Titulações ácido-base",
+  tipoSistema: "Sistema poliprótico / polibásico",
+  resumoCalculo: `${avaliacao.titulado.nome} titulado com ${avaliacao.titulante.nome}. ${avaliacao.numeroEquivalencias} equivalência(s).`,
+  contextoTexto: `
+Módulo: Titulações ácido-base.
+Tipo de sistema: poliprótico / polibásico.
+Titulante: ${avaliacao.titulante.nome}.
+Titulado: ${avaliacao.titulado.nome}.
+Tipo de titulação: ${avaliacao.tipoSistema}.
+Número de equivalências: ${avaliacao.numeroEquivalencias}.
+Volumes de equivalência: ${avaliacao.volumesPE
+    .map((volume, index) => `PE${index + 1}: ${formatarNumeroBR(volume, 2)} mL`)
+    .join("; ")}.
+Resumo calculado: ${avaliacao.resumo}
+Equação global: ${avaliacao.reacao.equacaoGlobal}.
+Produto final: ${avaliacao.reacao.produtoFinal}.
+`,
+});
+
+setResultadoPoli(avaliacao);
 setCurvaPoli(curvaGerada);
 setPontoConsulta(null);
 setVolumeConsulta("");
@@ -2404,7 +2459,11 @@ const tabelaSegundaDerivada =
 
           <div>
             <small>pH</small>
-            <strong>{formatarNumeroBR(pontoPE.ph, 2)}</strong>
+            <strong>
+  {pontoPE.ph === null || pontoPE.ph === undefined
+    ? "-"
+    : formatarNumeroBR(pontoPE.ph, 2)}
+</strong>
           </div>
         </div>
 
@@ -2515,7 +2574,11 @@ const tabelaSegundaDerivada =
 
               <div className="resultCard">
                 <span>pH calculado</span>
-                <strong>{formatarNumeroBR(pontoConsulta.ph, 2)}</strong>
+                <strong>
+  {pontoConsulta.ph === null || pontoConsulta.ph === undefined
+    ? "-"
+    : formatarNumeroBR(pontoConsulta.ph, 2)}
+</strong>
               </div>
 
               <div className="resultCard">
@@ -3218,7 +3281,7 @@ pontoAtualTempoReal?.ph === undefined
     )}
   </div>
 )}
-      </div>
+            </div>
     </section>
   );
 }

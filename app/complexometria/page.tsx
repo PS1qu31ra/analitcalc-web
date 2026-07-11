@@ -38,6 +38,7 @@ import {
 import { CurvaEdtaChart } from "../../components/CurvaEdtaChart";
 import { DerivadaEdtaChart } from "../../components/DerivadaEdtaChart";
 import { SimulacaoTempoRealEdtaChart } from "../../components/SimulacaoTempoRealEdtaChart";
+import { useAnalitBot } from "../contexts/AnalitBotContext";
 
 type AbaAtiva =
   | "visao"
@@ -48,8 +49,10 @@ type AbaAtiva =
   | "tempoReal"
   | "derivadas";
 
-export default function ComplexometriaPage() {
-  const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>("visao");
+  export default function ComplexometriaPage() {
+    const { atualizarDados } = useAnalitBot();
+  
+    const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>("visao");
 
   const [metalPrincipal, setMetalPrincipal] = useState("");
   const [pH, setPH] = useState("");
@@ -132,6 +135,12 @@ const [pontosTempoReal, setPontosTempoReal] = useState<PontoCurvaEDTA[]>([]);
     setVolumeAtualTempoReal(0);
 setVolumeManualTempoReal("");
 setPontosTempoReal([]);
+atualizarDados({
+  moduloAtual: "Complexometria com EDTA",
+  tipoSistema: "Titulação complexométrica com EDTA",
+  resumoCalculo: "Nenhum sistema complexométrico foi avaliado ainda.",
+  contextoTexto: "Nenhum sistema complexométrico foi avaliado ainda.",
+});
   }
 
   function avaliar(abaDepois?: AbaAtiva) {
@@ -161,12 +170,56 @@ setPontosTempoReal([]);
       const curvaGerada = gerarCurvaEDTA(avaliacao, {
         passo: 0.25,
       });
-  
+      
       const ranking = montarRankingIndicadoresEDTA(avaliacao);
-  
+      
+      atualizarDados({
+        moduloAtual: "Complexometria com EDTA",
+        tipoSistema: "Titulação complexométrica com EDTA",
+        resumoCalculo: `${avaliacao.metalPrincipal.metal} titulado com EDTA em pH ${formatarNumeroBR(
+          avaliacao.entradas.pH,
+          2
+        )}. PE em ${
+          curvaGerada.volumePE
+            ? `${formatarNumeroBR(curvaGerada.volumePE, 2)} mL`
+            : "volume não definido"
+        }.`,
+        contextoTexto: `
+      Módulo: Complexometria com EDTA.
+      Metal principal: ${avaliacao.metalPrincipal.metal} — ${avaliacao.metalPrincipal.nome}.
+      Complexo formado: ${avaliacao.metalPrincipal.complexo}.
+      pH avaliado: ${formatarNumeroBR(avaliacao.entradas.pH, 2)}.
+      Volume de equivalência: ${
+          curvaGerada.volumePE
+            ? `${formatarNumeroBR(curvaGerada.volumePE, 2)} mL`
+            : "Não calculado"
+        }.
+      α(Y⁴⁻): ${formatarCientificoBR(avaliacao.metalPrincipal.alpha)}.
+      Kf condicional: ${formatarCientificoBR(
+          avaliacao.metalPrincipal.kfCondicional
+        )}.
+      Kf efetivo: ${formatarCientificoBR(avaliacao.metalPrincipal.kfEfetivo)}.
+      Status da titulação: ${avaliacao.metalPrincipal.status}.
+      Mensagem do sistema: ${avaliacao.metalPrincipal.mensagem}
+      Resumo químico: ${avaliacao.resumo.texto}
+      Interferentes avaliados: ${
+          avaliacao.interferentes.length > 0
+            ? avaliacao.interferentes
+                .map((item) => `${item.metal} — risco ${item.risco}`)
+                .join("; ")
+            : "Nenhum interferente selecionado"
+        }.
+      Indicador mais compatível: ${
+          ranking[0]
+            ? `${ranking[0].indicador} (${ranking[0].score}% de compatibilidade)`
+            : "Nenhum indicador compatível encontrado"
+        }.
+      `,
+      });
+      
       setResultado(avaliacao);
-setCurva(curvaGerada);
-setRankingIndicadores(ranking);
+      setCurva(curvaGerada);
+      setRankingIndicadores(ranking);
 
 setPontoConsulta(null);
 setVolumeConsulta("");

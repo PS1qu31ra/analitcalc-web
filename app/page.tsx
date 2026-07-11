@@ -35,6 +35,29 @@ export default function Home() {
                 Começar por complexometria
               </a>
             </div>
+
+            <div className="analitoHomeHint">
+  <div className="analitoHomeGlow" />
+
+  <div className="analitoHomeIcon">An</div>
+
+  <div className="analitoHomeContent">
+    <span>Assistente inteligente</span>
+
+    <strong>Conheça o Analito</strong>
+
+    <p>
+      O Analito acompanha seus cálculos em tempo real, interpreta os resultados
+      e ajuda a entender conceitos de Química Analítica. Para conversar com ele,
+      clique no botão flutuante no canto inferior direito.
+    </p>
+  </div>
+
+  <div className="analitoHomePointer">
+    <span>Botão</span>
+    <strong>An</strong>
+  </div>
+</div>
           </div>
 
           <div className="heroPanel">
