@@ -394,7 +394,6 @@ export async function POST(request: Request) {
       modulo: melhorLinha.linha.modulo,
       topico: melhorLinha.linha.topico,
       intencao: melhorLinha.linha.intencao,
-      pontuacao: melhorLinha.pontuacao,
       resposta: montarResposta(melhorLinha.linha, pergunta),
     });
   } catch (erro) {
