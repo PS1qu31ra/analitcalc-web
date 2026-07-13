@@ -275,7 +275,6 @@ function calcularPontuacao(
 
   if (intencaoLinha && intencaoLinha === intencaoPergunta) {
     pontuacao += 18;
-    evidenciaPergunta += 18;
   }
 
   if (
@@ -524,20 +523,20 @@ export async function POST(request: Request) {
 
     const controller = new AbortController();
 
-const timeout = setTimeout(() => {
-  controller.abort();
-}, 10000);
-
-let respostaSheets: Response;
-
-try {
-  respostaSheets = await fetch(csvUrl, {
-    cache: "no-store",
-    signal: controller.signal,
-  });
-} finally {
-  clearTimeout(timeout);
-}
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 10000);
+    
+    let respostaSheets: Response;
+    
+    try {
+      respostaSheets = await fetch(csvUrl, {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!respostaSheets.ok) {
       return Response.json(
@@ -571,33 +570,33 @@ try {
 
     const respostaBase = montarResposta(melhorLinha.linha, pergunta);
 
-const complementoDados = montarComplementoComDados(
-  melhorLinha.linha,
-  contexto,
-  pergunta
-);
-
-const intencaoResposta = detectarIntencao(pergunta);
-
-const devePriorizarDados =
-  intencaoResposta === "indicador" ||
-  intencaoResposta === "interpretacao" ||
-  intencaoResposta === "interferente" ||
-  intencaoResposta === "ponto_equivalencia" ||
-  intencaoResposta === "decisao";
-
-const respostaFinal =
-  devePriorizarDados && complementoDados
-    ? `${complementoDados.trim()}\n\n${respostaBase}`
-    : `${respostaBase}${complementoDados}`;
-
-return Response.json({
-  encontrou: true,
-  modulo: melhorLinha.linha.modulo,
-  topico: melhorLinha.linha.topico,
-  intencao: melhorLinha.linha.intencao,
-  resposta: respostaFinal,
-});
+    const complementoDados = montarComplementoComDados(
+      melhorLinha.linha,
+      contexto,
+      pergunta
+    );
+    
+    const intencaoResposta = detectarIntencao(pergunta);
+    
+    const devePriorizarDados =
+      intencaoResposta === "indicador" ||
+      intencaoResposta === "interpretacao" ||
+      intencaoResposta === "interferente" ||
+      intencaoResposta === "ponto_equivalencia" ||
+      intencaoResposta === "decisao";
+    
+    const respostaFinal =
+      devePriorizarDados && complementoDados
+        ? `${complementoDados.trim()}\n\n${respostaBase}`
+        : `${respostaBase}${complementoDados}`;
+    
+    return Response.json({
+      encontrou: true,
+      modulo: melhorLinha.linha.modulo,
+      topico: melhorLinha.linha.topico,
+      intencao: melhorLinha.linha.intencao,
+      resposta: respostaFinal,
+    });
 
   } catch (erro) {
     return Response.json(
