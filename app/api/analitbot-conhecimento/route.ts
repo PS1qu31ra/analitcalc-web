@@ -343,6 +343,163 @@ function detectarIntencao(pergunta: string) {
   return "";
 }
 
+function detectarAssunto(pergunta: string) {
+  const p = normalizarTexto(pergunta);
+
+  if (
+    perguntaCombinaComTermo(pergunta, "titulação") ||
+    perguntaCombinaComTermo(pergunta, "titulacao") ||
+    perguntaCombinaComTermo(pergunta, "análise volumétrica") ||
+    perguntaCombinaComTermo(pergunta, "analise volumetrica")
+  ) {
+    return "titulacao";
+  }
+
+  if (
+    perguntaCombinaComTermo(pergunta, "titulante") ||
+    p.includes("solucao titulante") ||
+    p.includes("reagente padrao")
+  ) {
+    return "titulante";
+  }
+
+  if (
+    perguntaCombinaComTermo(pergunta, "titulado") ||
+    p.includes("solucao titulada") ||
+    p.includes("amostra titulada")
+  ) {
+    return "titulado";
+  }
+
+  if (
+    perguntaCombinaComTermo(pergunta, "analito") ||
+    p.includes("especie analisada") ||
+    p.includes("substancia analisada")
+  ) {
+    return "analito";
+  }
+
+  if (
+    p.includes("ponto final") ||
+    p.includes("final da titulacao") ||
+    p.includes("fim da titulacao")
+  ) {
+    return "ponto_final";
+  }
+
+  if (
+    p.includes("ponto de equivalencia") ||
+    p.includes("equivalencia") ||
+    p.includes("volume de equivalencia") ||
+    p.includes(" pe ") ||
+    p.endsWith(" pe")
+  ) {
+    return "ponto_equivalencia";
+  }
+
+  if (
+    perguntaCombinaComTermo(pergunta, "indicador") ||
+    p.includes("viragem") ||
+    p.includes("mudanca de cor") ||
+    p.includes("cor")
+  ) {
+    return "indicador";
+  }
+
+  if (
+    perguntaCombinaComTermo(pergunta, "curva") ||
+    p.includes("grafico") ||
+    p.includes("regiao") ||
+    p.includes("antes do pe") ||
+    p.includes("depois do pe")
+  ) {
+    return "curva";
+  }
+
+  if (
+    p.includes("ph") ||
+    p.includes("pka") ||
+    p.includes("pkb") ||
+    p.includes("tampao") ||
+    p.includes("tampon")
+  ) {
+    return "ph";
+  }
+
+  if (
+    p.includes("kf") ||
+    p.includes("constante de formacao") ||
+    p.includes("constante efetiva") ||
+    p.includes("constante condicional")
+  ) {
+    return "kf";
+  }
+
+  if (
+    p.includes("edta") ||
+    p.includes("complexante") ||
+    p.includes("quelante") ||
+    p.includes("ligante")
+  ) {
+    return "edta";
+  }
+
+  if (
+    p.includes("metal principal") ||
+    p.includes("metal analisado") ||
+    p.includes("ion metalico") ||
+    p.includes("cation")
+  ) {
+    return "metal_principal";
+  }
+
+  if (
+    p.includes("complexo") ||
+    p.includes("metal edta") ||
+    p.includes("metal-edta") ||
+    p.includes("my")
+  ) {
+    return "complexo";
+  }
+
+  if (
+    p.includes("interferente") ||
+    p.includes("interferencia") ||
+    p.includes("atrapalha") ||
+    p.includes("competicao") ||
+    p.includes("competir")
+  ) {
+    return "interferente";
+  }
+
+  if (
+    p.includes("mascarante") ||
+    p.includes("mascaramento") ||
+    p.includes("mascarar")
+  ) {
+    return "mascarante";
+  }
+
+  if (
+    p.includes("concentracao") ||
+    p.includes("molaridade") ||
+    p.includes("mol/l") ||
+    p.includes("mol por litro")
+  ) {
+    return "concentracao";
+  }
+
+  if (
+    p.includes("estequiometria") ||
+    p.includes("proporcao") ||
+    p.includes("relacao molar")
+  ) {
+    return "estequiometria";
+  }
+
+  return "";
+}
+
 function calcularPontuacao(
   linha: LinhaConhecimento,
   pergunta: string,
@@ -361,7 +518,8 @@ function calcularPontuacao(
   const quandoNaoUsarLinha = normalizarTexto(linha.quando_nao_usar);
 
   const intencaoPergunta = normalizarTexto(detectarIntencao(pergunta));
-
+  const assuntoPergunta = normalizarTexto(detectarAssunto(pergunta));
+  
   let pontuacao = 0;
   let evidenciaPergunta = 0;
 
@@ -434,6 +592,48 @@ function calcularPontuacao(
     pontuacao += 18;
   }
 
+  const assuntoLinha =
+  normalizarTexto(linha.topico) +
+  " " +
+  normalizarTexto(linha.palavras_chave) +
+  " " +
+  normalizarTexto(linha.pergunta_base);
+
+const assuntoPerguntaTexto = assuntoPergunta.replace(/_/g, " ");
+
+if (
+  assuntoPergunta &&
+  (assuntoLinha.includes(assuntoPergunta) ||
+    assuntoLinha.includes(assuntoPerguntaTexto))
+) {
+  pontuacao += 22;
+  evidenciaPergunta += 12;
+}
+
+const linhaPareceRegiao =
+  topicoLinha.includes("regiao") ||
+  palavrasChaveLinha.includes("antes do pe") ||
+  palavrasChaveLinha.includes("depois do pe");
+
+if (assuntoPergunta === "titulacao" && linhaPareceRegiao) {
+  pontuacao -= 30;
+}
+
+const linhaPareceCurva =
+  topicoLinha.includes("curva") || palavrasChaveLinha.includes("grafico");
+
+if (assuntoPergunta === "titulacao" && linhaPareceCurva) {
+  pontuacao -= 20;
+}
+
+const linhaPareceMetal =
+  topicoLinha.includes("metal principal") ||
+  palavrasChaveLinha.includes("metal principal");
+
+if (assuntoPergunta !== "metal_principal" && linhaPareceMetal) {
+  pontuacao -= 18;
+}
+
   if (topicoLinha && perguntaCombinaComTermo(pergunta, linha.topico)) {
     pontuacao += 12;
     evidenciaPergunta += 12;
@@ -484,15 +684,15 @@ function calcularPontuacao(
     .map((termo) => termo.trim())
     .filter(Boolean);
 
-  for (const termo of termosQuandoNaoUsar) {
-    if (
-      termo.length >= 3 &&
-      (perguntaNormalizada.includes(termo) ||
-        contextoNormalizado.includes(termo))
-    ) {
-      pontuacao -= 8;
+    for (const termo of termosQuandoNaoUsar) {
+      if (
+        termo.length >= 3 &&
+        (perguntaNormalizada.includes(termo) ||
+          contextoNormalizado.includes(termo))
+      ) {
+        pontuacao -= 20;
+      }
     }
-  }
 
   pontuacao += linha.prioridade || 0;
 
