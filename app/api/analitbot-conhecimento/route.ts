@@ -19,6 +19,140 @@ function normalizarTexto(texto: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+function limparPontuacao(texto: string) {
+  return normalizarTexto(texto)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function removerStopwords(texto: string) {
+  const stopwords = new Set([
+    "o",
+    "a",
+    "os",
+    "as",
+    "um",
+    "uma",
+    "uns",
+    "umas",
+    "de",
+    "do",
+    "da",
+    "dos",
+    "das",
+    "em",
+    "no",
+    "na",
+    "nos",
+    "nas",
+    "para",
+    "pra",
+    "por",
+    "com",
+    "sem",
+    "que",
+    "e",
+    "eh",
+    "é",
+    "oq",
+    "oque",
+    "o que",
+    "qual",
+    "quais",
+    "me",
+    "explica",
+    "explique",
+    "fala",
+    "sobre",
+    "isso",
+    "esse",
+    "essa",
+    "este",
+    "esta",
+  ]);
+
+  return limparPontuacao(texto)
+    .split(" ")
+    .filter((palavra) => palavra.length >= 3 && !stopwords.has(palavra))
+    .join(" ");
+}
+
+function calcularDistanciaLevenshtein(a: string, b: string) {
+  const matriz = Array.from({ length: a.length + 1 }, () =>
+    Array(b.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= a.length; i++) matriz[i][0] = i;
+  for (let j = 0; j <= b.length; j++) matriz[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const custo = a[i - 1] === b[j - 1] ? 0 : 1;
+
+      matriz[i][j] = Math.min(
+        matriz[i - 1][j] + 1,
+        matriz[i][j - 1] + 1,
+        matriz[i - 1][j - 1] + custo
+      );
+    }
+  }
+
+  return matriz[a.length][b.length];
+}
+
+function termosSaoParecidos(a: string, b: string) {
+  const termoA = limparPontuacao(a);
+  const termoB = limparPontuacao(b);
+
+  if (!termoA || !termoB) return false;
+
+  if (termoA === termoB) return true;
+  if (termoA.includes(termoB) || termoB.includes(termoA)) return true;
+
+  const maior = Math.max(termoA.length, termoB.length);
+  const distancia = calcularDistanciaLevenshtein(termoA, termoB);
+  const similaridade = 1 - distancia / maior;
+
+  return similaridade >= 0.78;
+}
+
+function perguntaCombinaComTermo(pergunta: string, termo: string) {
+  const perguntaLimpa = removerStopwords(pergunta);
+  const termoLimpo = removerStopwords(termo);
+
+  if (!perguntaLimpa || !termoLimpo) return false;
+
+  if (perguntaLimpa === termoLimpo) return true;
+
+  if (perguntaLimpa.includes(termoLimpo) || termoLimpo.includes(perguntaLimpa)) {
+    return true;
+  }
+
+  const palavrasPergunta = perguntaLimpa.split(" ");
+  const palavrasTermo = termoLimpo.split(" ");
+
+  let palavrasCombinadas = 0;
+
+  for (const palavraTermo of palavrasTermo) {
+    const combinou = palavrasPergunta.some((palavraPergunta) =>
+      termosSaoParecidos(palavraPergunta, palavraTermo)
+    );
+
+    if (combinou) {
+      palavrasCombinadas++;
+    }
+  }
+
+  if (palavrasTermo.length === 1) {
+    return palavrasCombinadas === 1;
+  }
+
+  const proporcao = palavrasCombinadas / palavrasTermo.length;
+
+  return proporcao >= 0.67;
+}
+
 function contarSeparadorForaAspas(linha: string, separador: string) {
   let total = 0;
   let dentroDeAspas = false;
@@ -269,6 +403,29 @@ function calcularPontuacao(
     pontuacao += 12;
   }
 
+  const topicosGeraisFortes = [
+    "titulacao",
+    "titulante",
+    "titulado",
+    "analito",
+    "estequiometria",
+    "concentracao molar",
+  ];
+  
+  const topicoGeralForte =
+    linhaEhGeral && topicosGeraisFortes.includes(removerStopwords(linha.topico));
+  
+  if (
+    topicoGeralForte &&
+    termosSaoParecidos(
+      removerStopwords(pergunta),
+      removerStopwords(linha.topico)
+    )
+  ) {
+    pontuacao += 35;
+    evidenciaPergunta += 20;
+  }
+
   if (linhaEhDeOutroModulo) {
     pontuacao -= 35;
   }
@@ -277,21 +434,12 @@ function calcularPontuacao(
     pontuacao += 18;
   }
 
-  if (
-    topicoLinha &&
-    perguntaNormalizada.length >= 3 &&
-    (perguntaNormalizada.includes(topicoLinha) ||
-      topicoLinha.includes(perguntaNormalizada))
-  ) {
-    pontuacao += 10;
-    evidenciaPergunta += 10;
+  if (topicoLinha && perguntaCombinaComTermo(pergunta, linha.topico)) {
+    pontuacao += 12;
+    evidenciaPergunta += 12;
   }
 
-  if (
-    perguntaBaseLinha &&
-    (perguntaNormalizada.includes(perguntaBaseLinha) ||
-      perguntaBaseLinha.includes(perguntaNormalizada))
-  ) {
+  if (perguntaBaseLinha && perguntaCombinaComTermo(pergunta, linha.pergunta_base)) {
     pontuacao += 15;
     evidenciaPergunta += 15;
   }
@@ -301,12 +449,12 @@ function calcularPontuacao(
     .map((termo) => termo.trim())
     .filter(Boolean);
 
-  for (const palavra of palavrasChave) {
-    if (palavra.length >= 3 && perguntaNormalizada.includes(palavra)) {
-      pontuacao += 6;
-      evidenciaPergunta += 6;
+    for (const palavra of palavrasChave) {
+      if (palavra.length >= 3 && perguntaCombinaComTermo(pergunta, palavra)) {
+        pontuacao += 7;
+        evidenciaPergunta += 7;
+      }
     }
-  }
 
   const termosContexto = termosContextoLinha
     .split(",")
@@ -324,12 +472,12 @@ function calcularPontuacao(
     .map((termo) => termo.trim())
     .filter(Boolean);
 
-  for (const termo of termosQuandoUsar) {
-    if (termo.length >= 3 && perguntaNormalizada.includes(termo)) {
-      pontuacao += 3;
-      evidenciaPergunta += 3;
+    for (const termo of termosQuandoUsar) {
+      if (termo.length >= 3 && perguntaCombinaComTermo(pergunta, termo)) {
+        pontuacao += 3;
+        evidenciaPergunta += 3;
+      }
     }
-  }
 
   const termosQuandoNaoUsar = quandoNaoUsarLinha
     .split(",")
