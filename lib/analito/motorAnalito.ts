@@ -87,6 +87,92 @@ function detectarAssunto(pergunta: string) {
   const p = normalizarTexto(pergunta);
 
   if (
+    p.includes("ponto final") &&
+    (p.includes("ponto de equivalencia") ||
+      p.includes("equivalencia") ||
+      p.includes(" pe "))
+  ) {
+    return "ponto_final_equivalencia";
+  }
+  
+  if (
+    p.includes("ponto final") ||
+    p.includes("fim da titulacao") ||
+    p.includes("momento de parar") ||
+    p.includes("sinal experimental")
+  ) {
+    return "ponto_final";
+  }
+  
+  if (
+    p.includes("ponto de equivalencia") ||
+    p.includes("volume de equivalencia") ||
+    p.includes(" pe ") ||
+    p.endsWith(" pe")
+  ) {
+    return "ponto_equivalencia";
+  }
+  
+  if (
+    p.includes("curva de titulacao") ||
+    p.includes("grafico da titulacao") ||
+    p.includes("grafico de titulacao")
+  ) {
+    return "curva";
+  }
+  
+  if (
+    p.includes("concentracao molar") ||
+    p.includes("molaridade") ||
+    p.includes("mol por litro") ||
+    p.includes("mol/l")
+  ) {
+    return "concentracao_molar";
+  }
+  
+  if (
+    p.includes("estequiometria") ||
+    p.includes("relacao molar") ||
+    p.includes("proporcao entre reagentes")
+  ) {
+    return "estequiometria";
+  }
+  
+  if (
+    p.includes("volume de equivalencia") ||
+    p.includes("volume do pe") ||
+    p.includes("volume pe")
+  ) {
+    return "volume_equivalencia";
+  }
+  
+  if (
+    p.includes("erro de titulacao") ||
+    p.includes("erro experimental") ||
+    p.includes("resultado errado")
+  ) {
+    return "erro_titulacao";
+  }
+  
+  if (
+    p.includes("unidades") ||
+    p.includes("mol por litro") ||
+    p.includes("ml") ||
+    p.includes("litro") ||
+    p.includes("mililitro")
+  ) {
+    return "unidades";
+  }
+  
+  if (
+    p.includes("arredondamento") ||
+    p.includes("casas decimais") ||
+    p.includes("valor aproximado")
+  ) {
+    return "arredondamento";
+  }
+
+  if (
     p.includes("complexante auxiliar") ||
     p.includes("ligante auxiliar") ||
     p.includes("agente auxiliar") ||
