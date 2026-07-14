@@ -1012,6 +1012,39 @@ function montarComplementoComDados(item: ItemConhecimento, contexto: string) {
       return `\n\nPara este sistema, o status da titulação foi ${status}.${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}${kfEfetivo ? ` O Kf efetivo calculado foi ${kfEfetivo}.` : ""}`;
     }
   }
+
+  if (item.assunto === "sistema_quantitativo") {
+    const kfEfetivo = extrairValorDoContexto(contexto, "Kf efetivo");
+    const status = extrairValorDoContexto(contexto, "Status da titulação");
+    const mensagem = extrairValorDoContexto(contexto, "Mensagem do sistema");
+    const resumo = extrairValorDoContexto(contexto, "Resumo químico");
+  
+    const statusNormalizado = normalizarTexto(status);
+  
+    if (
+      statusNormalizado.includes("ruim") ||
+      statusNormalizado.includes("nao quantit") ||
+      statusNormalizado.includes("inviavel")
+    ) {
+      return `\n\nNeste sistema, a titulação não deve ser interpretada como quantitativa.${status ? ` Status calculado: ${status}.` : ""}${kfEfetivo ? ` Kf efetivo: ${kfEfetivo}.` : ""}${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}${resumo ? ` Resumo químico: ${resumo}.` : ""}`;
+    }
+  
+    if (
+      statusNormalizado.includes("parcial") ||
+      statusNormalizado.includes("intermedi")
+    ) {
+      return `\n\nNeste sistema, a titulação deve ser interpretada como parcialmente quantitativa, não como totalmente quantitativa.${status ? ` Status calculado: ${status}.` : ""}${kfEfetivo ? ` Kf efetivo: ${kfEfetivo}.` : ""}${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}${resumo ? ` Resumo químico: ${resumo}.` : ""}`;
+    }
+  
+    if (statusNormalizado.includes("quantit")) {
+      return `\n\nNeste sistema, a titulação foi classificada como quantitativa.${status ? ` Status calculado: ${status}.` : ""}${kfEfetivo ? ` Kf efetivo: ${kfEfetivo}.` : ""}${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}`;
+    }
+  
+    if (kfEfetivo || mensagem || resumo) {
+      return `\n\nPara este sistema específico, a avaliação deve considerar os dados calculados.${kfEfetivo ? ` Kf efetivo: ${kfEfetivo}.` : ""}${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}${resumo ? ` Resumo químico: ${resumo}.` : ""}`;
+    }
+  }
+  
   const dados = extrairDadosDaPlataforma(contexto);
 
   if (item.assunto === "indicador" && dados.indicador) {
