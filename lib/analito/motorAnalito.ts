@@ -86,6 +86,25 @@ function detectarIntencao(pergunta: string): IntencaoAnalito | "" {
 function detectarAssunto(pergunta: string) {
   const p = normalizarTexto(pergunta);
 
+  // Autoria e criação do Analito
+if (
+  p.includes("quem te criou") ||
+  p.includes("quem criou voce") ||
+  p.includes("quem criou você") ||
+  p.includes("quem criou o analito") ||
+  p.includes("quem desenvolveu o analito") ||
+  p.includes("quem programou o analito") ||
+  p.includes("quem fez o analito") ||
+  p.includes("quem criou o analitcalc") ||
+  p.includes("quem desenvolveu o analitcalc") ||
+  p.includes("quem programou o analitcalc") ||
+  p.includes("criadores do analito") ||
+  p.includes("autoria do analito") ||
+  p.includes("equipe do analito")
+) {
+  return "criadores_analito";
+}
+
   const pSemPontuacao = p
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")

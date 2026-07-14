@@ -3565,4 +3565,48 @@ export const baseConhecimento: ItemConhecimento[] = [
       "Uma boa forma de estudar com o AnalitCalc é alterar um parâmetro por vez e observar como o resultado muda. Por exemplo, em complexometria, compare diferentes pHs, metais e indicadores. Em ácido-base, compare ácidos fortes, fracos, sistemas monopróticos e polipróticos. Depois, use o Analito para explicar o significado químico dos resultados. Assim, a plataforma funciona como apoio ao raciocínio, não apenas como uma calculadora.",
     prioridade: 10,
   },
+  {
+    id: "geral_criadores_analito_institucional",
+    modulo: "geral",
+    topico: "Criação do Analito",
+    assunto: "criadores_analito",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "Quem te criou?",
+      "Quem criou o Analito?",
+      "Quem desenvolveu o Analito?",
+      "Quem fez o AnalitCalc?",
+    ],
+    palavrasChave: [
+      "quem te criou",
+      "quem criou voce",
+      "quem criou você",
+      "quem criou o analito",
+      "quem desenvolveu o analito",
+      "quem programou o analito",
+      "quem fez o analito",
+      "quem criou o analitcalc",
+      "quem desenvolveu o analitcalc",
+      "quem programou o analitcalc",
+      "criadores do analito",
+      "autoria do analito",
+      "equipe do analito",
+    ],
+    termosContexto: [
+      "AnalitCalc",
+      "Analito",
+      "GQAA",
+      "UFMG",
+    ],
+    termosEvitar: [
+      "quem criou o edta",
+      "quem criou a titulação",
+      "quem descobriu",
+    ],
+    respostaCurta:
+      "O Analito foi desenvolvido no contexto do AnalitCalc, com orientação acadêmica da Profa. Dra. Adriana Ferreira Faria.",
+    respostaCompleta:
+      "O Analito foi criado no contexto do projeto AnalitCalc. A orientação acadêmica foi da Profa. Dra. Adriana Ferreira Faria. O sistema foi analisado e avaliado por Luíza Silva de Farias. Toda a lógica, estrutura de funcionamento e programação foram desenvolvidas por Pedro Siqueira Neves de Araujo.",
+    prioridade: 10,
+  },
 ];
