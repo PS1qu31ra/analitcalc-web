@@ -100,6 +100,76 @@ if (
 ) {
   return "pm";
 }
+if (
+  (p.includes("qual") ||
+    p.includes("me diga") ||
+    p.includes("valor")) &&
+  p.includes("kf efetivo")
+) {
+  return "kf_efetivo_contexto";
+}
+
+if (
+  (p.includes("qual") ||
+    p.includes("me diga") ||
+    p.includes("valor")) &&
+  (p.includes("ph avaliado") ||
+    p.includes("ph do sistema") ||
+    p.includes("ph eu usei") ||
+    p.includes("ph"))
+) {
+  return "ph_contexto";
+}
+
+if (
+  (p.includes("qual") ||
+    p.includes("me diga")) &&
+  (p.includes("metal estou titulando") ||
+    p.includes("metal principal") ||
+    p.includes("metal escolhido") ||
+    p.includes("metal selecionado"))
+) {
+  return "metal_contexto";
+}
+
+if (
+  (p.includes("qual") ||
+    p.includes("me diga")) &&
+  (p.includes("indicador foi recomendado") ||
+    p.includes("indicador recomendado") ||
+    p.includes("indicador escolhido") ||
+    p.includes("indicador selecionado") ||
+    p.includes("indicador o sistema escolheu"))
+) {
+  return "indicador_contexto";
+}
+
+if (
+  (p.includes("qual") ||
+    p.includes("quais") ||
+    p.includes("me diga") ||
+    p.includes("tem")) &&
+  (p.includes("interferente foi avaliado") ||
+    p.includes("interferentes foram avaliados") ||
+    p.includes("interferentes avaliados") ||
+    p.includes("tem interferente") ||
+    p.includes("interferente neste sistema"))
+) {
+  return "interferente_contexto";
+}
+
+if (
+  (p.includes("qual") ||
+    p.includes("como") ||
+    p.includes("classificacao") ||
+    p.includes("classificou")) &&
+  (p.includes("status da titulacao") ||
+    p.includes("como ficou a titulacao") ||
+    p.includes("sistema classificou") ||
+    p.includes("classificacao da titulacao"))
+) {
+  return "status_contexto";
+}
 
 if (
   p.includes("sistema quantitativo") ||
@@ -534,6 +604,66 @@ function extrairDadosDaPlataforma(contexto: string) {
 }
 
 function montarComplementoComDados(item: ItemConhecimento, contexto: string) {
+  if (item.assunto === "kf_efetivo_contexto") {
+    const kfEfetivo = extrairValorDoContexto(contexto, "Kf efetivo");
+    const metal = extrairValorDoContexto(contexto, "Metal principal");
+    const ph = extrairValorDoContexto(contexto, "pH avaliado");
+    const status = extrairValorDoContexto(contexto, "Status da titulação");
+
+    if (kfEfetivo) {
+      return `\n\nPara este sistema, o Kf efetivo calculado é ${kfEfetivo}.${metal ? ` O metal principal é ${metal}.` : ""}${ph ? ` O pH avaliado foi ${ph}.` : ""}${status ? ` O status da titulação foi ${status}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "ph_contexto") {
+    const ph = extrairValorDoContexto(contexto, "pH avaliado");
+    const alfaEdta = extrairValorDoContexto(contexto, "α(Y⁴⁻)");
+    const kfCondicional = extrairValorDoContexto(contexto, "Kf condicional");
+    const kfEfetivo = extrairValorDoContexto(contexto, "Kf efetivo");
+
+    if (ph) {
+      return `\n\nPara este sistema, o pH avaliado foi ${ph}.${alfaEdta ? ` Nesse pH, α(Y⁴⁻) = ${alfaEdta}.` : ""}${kfCondicional ? ` O Kf condicional é ${kfCondicional}.` : ""}${kfEfetivo ? ` O Kf efetivo é ${kfEfetivo}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "metal_contexto") {
+    const metal = extrairValorDoContexto(contexto, "Metal principal");
+    const complexo = extrairValorDoContexto(contexto, "Complexo formado");
+    const indicador = extrairValorDoContexto(contexto, "Indicador mais compatível");
+
+    if (metal) {
+      return `\n\nNeste sistema, o metal principal titulado é ${metal}.${complexo ? ` O complexo formado é ${complexo}.` : ""}${indicador ? ` O indicador mais compatível indicado foi ${indicador}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "indicador_contexto") {
+    const indicador = extrairValorDoContexto(contexto, "Indicador mais compatível");
+    const metal = extrairValorDoContexto(contexto, "Metal principal");
+    const ph = extrairValorDoContexto(contexto, "pH avaliado");
+
+    if (indicador) {
+      return `\n\nPara este sistema, o indicador recomendado foi ${indicador}.${metal ? ` Essa escolha considera o metal principal ${metal}.` : ""}${ph ? ` O pH avaliado foi ${ph}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "interferente_contexto") {
+    const interferentes = extrairValorDoContexto(contexto, "Interferentes avaliados");
+    const metal = extrairValorDoContexto(contexto, "Metal principal");
+
+    if (interferentes) {
+      return `\n\nNeste sistema, os interferentes avaliados foram: ${interferentes}.${metal ? ` A avaliação considera o metal principal ${metal}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "status_contexto") {
+    const status = extrairValorDoContexto(contexto, "Status da titulação");
+    const mensagem = extrairValorDoContexto(contexto, "Mensagem do sistema");
+    const kfEfetivo = extrairValorDoContexto(contexto, "Kf efetivo");
+
+    if (status) {
+      return `\n\nPara este sistema, o status da titulação foi ${status}.${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}${kfEfetivo ? ` O Kf efetivo calculado foi ${kfEfetivo}.` : ""}`;
+    }
+  }
   const dados = extrairDadosDaPlataforma(contexto);
 
   if (item.assunto === "indicador" && dados.indicador) {
