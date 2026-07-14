@@ -501,6 +501,90 @@ function detectarAssunto(pergunta: string) {
   ) {
     return "poliprotico";
   }
+  // Interpretações ácido-base
+if (
+  p.includes("ph no ponto de equivalencia") ||
+  p.includes("ph no pe") ||
+  p.includes("pe nao ficou em ph 7") ||
+  p.includes("pe não ficou em ph 7") ||
+  p.includes("ponto de equivalencia nao e 7") ||
+  p.includes("ponto de equivalencia não é 7") ||
+  p.includes("ph da equivalencia") ||
+  p.includes("sempre e 7") ||
+  p.includes("sempre é 7")
+) {
+  return "ph_pe_interpretacao";
+}
+
+if (
+  p.includes("regiao tampao") ||
+  p.includes("região tampão") ||
+  p.includes("zona tampao") ||
+  p.includes("zona tampão") ||
+  p.includes("tamponamento") ||
+  p.includes("curva com tampao") ||
+  p.includes("curva com tampão")
+) {
+  return "regiao_tampao";
+}
+
+if (
+  p.includes("acido fraco com base forte") ||
+  p.includes("ácido fraco com base forte") ||
+  p.includes("acido fraco titulado com base forte") ||
+  p.includes("pe basico") ||
+  p.includes("pe básico") ||
+  p.includes("ponto de equivalencia acima de 7") ||
+  p.includes("ponto de equivalência acima de 7") ||
+  p.includes("equivalencia basica") ||
+  p.includes("equivalência básica")
+) {
+  return "acido_fraco_base_forte";
+}
+
+if (
+  p.includes("base fraca com acido forte") ||
+  p.includes("base fraca com ácido forte") ||
+  p.includes("base fraca titulada com acido forte") ||
+  p.includes("base fraca titulada com ácido forte") ||
+  p.includes("pe acido") ||
+  p.includes("pe ácido") ||
+  p.includes("ponto de equivalencia abaixo de 7") ||
+  p.includes("ponto de equivalência abaixo de 7") ||
+  p.includes("equivalencia acida") ||
+  p.includes("equivalência ácida")
+) {
+  return "base_fraca_acido_forte";
+}
+
+if (
+  p.includes("como escolher indicador acido-base") ||
+  p.includes("como escolher indicador ácido-base") ||
+  p.includes("qual indicador acido-base devo usar") ||
+  p.includes("qual indicador ácido-base devo usar") ||
+  p.includes("indicador deve virar") ||
+  p.includes("faixa de viragem do indicador") ||
+  p.includes("indicador adequado") ||
+  p.includes("indicador correto") ||
+  p.includes("escolha do indicador")
+) {
+  return "indicador_escolha_acido_base";
+}
+
+if (
+  p.includes("mais de um ponto de equivalencia") ||
+  p.includes("mais de um ponto de equivalência") ||
+  p.includes("por que tem pe1 e pe2") ||
+  p.includes("pe1 e pe2") ||
+  p.includes("multiplas equivalencias") ||
+  p.includes("múltiplas equivalências") ||
+  p.includes("varios pontos de equivalencia") ||
+  p.includes("vários pontos de equivalência") ||
+  p.includes("mais de uma equivalencia") ||
+  p.includes("mais de uma equivalência")
+) {
+  return "multiplas_equivalencias";
+}
 
   // Conceitos gerais
   if (
@@ -1111,7 +1195,30 @@ export function responderAnalito(
   }
 
   const assuntoPergunta = detectarAssunto(pergunta);
-  const contextoNormalizado = normalizarTexto(contexto);
+
+if (assuntoPergunta) {
+  const itemDireto = baseConhecimento.find(
+    (item) => item.assunto === assuntoPergunta
+  );
+
+  if (itemDireto) {
+    const respostaBase = montarResposta(itemDireto, pergunta);
+    const complemento = montarComplementoComDados(itemDireto, contexto);
+
+    return {
+      encontrou: true,
+      id: itemDireto.id,
+      modulo: itemDireto.modulo,
+      topico: itemDireto.topico,
+      assunto: itemDireto.assunto,
+      intencao: itemDireto.intencao,
+      pontuacao: 999,
+      resposta: `${respostaBase}${complemento}`,
+    };
+  }
+}
+
+const contextoNormalizado = normalizarTexto(contexto);
 
   const contextoComplexometria =
     contextoNormalizado.includes("complexometria") ||
