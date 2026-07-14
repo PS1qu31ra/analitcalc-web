@@ -441,7 +441,7 @@ Volume de equivalência: ${formatarNumeroBR(avaliacao.volumePE, 2)} mL.
 Concentração no ponto de equivalência: ${formatarNumeroBR(
     avaliacao.concentracaoNoPE,
     5
-  )} mol/L.
+  )} mol·L⁻¹.
 Resumo calculado: ${avaliacao.resumo}
 Equação global: ${avaliacao.reacao?.equacaoExibicao ?? "Não cadastrada"}.
 Observação da reação: ${avaliacao.reacao?.obs ?? "Sem observação cadastrada"}.
@@ -676,7 +676,7 @@ const tabelaSegundaDerivadaMono =
               </label>
 
               <label>
-                Concentração do titulante mol/L
+              Concentração do titulante mol·L⁻¹
                 <input
                   value={concTitulanteMono}
                   onChange={(event) => {
@@ -688,7 +688,7 @@ const tabelaSegundaDerivadaMono =
               </label>
 
               <label>
-                Concentração do titulado mol/L
+                Concentração do titulado mol·L⁻¹
                 <input
                   value={concTituladoMono}
                   onChange={(event) => {
@@ -779,7 +779,7 @@ const tabelaSegundaDerivadaMono =
                   <div className="resultCard">
                     <span>Concentração no PE</span>
                     <strong>
-                      {formatarNumeroBR(resultadoMono.concentracaoNoPE, 5)} mol/L
+                      {formatarNumeroBR(resultadoMono.concentracaoNoPE, 5)} mol·L⁻¹
                     </strong>
                   </div>
 
@@ -2175,7 +2175,7 @@ const tabelaSegundaDerivada =
               </label>
 
               <label>
-                Concentração do titulante mol/L
+                Concentração do titulante mol·L⁻¹
                 <input
                   value={concTitulante}
                   onChange={(event) => {
@@ -2187,7 +2187,7 @@ const tabelaSegundaDerivada =
               </label>
 
               <label>
-                Concentração do titulado mol/L
+                Concentração do titulado mol·L⁻¹
                 <input
                   value={concTitulado}
                   onChange={(event) => {
@@ -2246,7 +2246,7 @@ const tabelaSegundaDerivada =
                 <span>Dica de entrada</span>
                 <strong>Use valores positivos</strong>
                 <p>
-                  As concentrações devem estar em mol/L e os volumes em mL. Você
+                  As concentrações devem estar em mol·L⁻¹ e os volumes em mL. Você
                   pode usar vírgula ou ponto decimal.
                 </p>
               </div>

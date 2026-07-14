@@ -540,7 +540,7 @@ export const baseConhecimento: ItemConhecimento[] = [
     respostaCurta:
       "Concentração molar é a quantidade de matéria do soluto dividida pelo volume da solução em litros.",
     respostaCompleta:
-      "A concentração molar, também chamada de molaridade, indica quantos mols de soluto existem em cada litro de solução. Ela é expressa por C = n/V, em que n é a quantidade de matéria em mol e V é o volume da solução em litros. Sua unidade usual é mol/L.",
+      "A concentração molar, também chamada de molaridade, indica quantos mols de soluto existem em cada litro de solução. Ela é expressa por C = n/V, em que n é a quantidade de matéria em mol e V é o volume da solução em litros. Sua unidade usual é mol·L⁻¹.",
     prioridade: 10,
   },
   {
@@ -682,7 +682,7 @@ export const baseConhecimento: ItemConhecimento[] = [
     respostaCurta:
       "As unidades devem seguir exatamente o que cada campo da interface solicita.",
     respostaCompleta:
-      "Em geral, concentrações molares são expressas em mol/L, enquanto volumes podem ser informados em mL ou L, dependendo do campo. É importante seguir a unidade indicada pela interface, porque uma conversão incorreta pode alterar muito o resultado.",
+      "Em geral, concentrações molares são expressas em mol·L⁻¹, enquanto volumes podem ser informados em mL ou L, dependendo do campo. É importante seguir a unidade indicada pela interface, porque uma conversão incorreta pode alterar muito o resultado.",
     prioridade: 9,
   },
   {

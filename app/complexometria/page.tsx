@@ -712,10 +712,10 @@ const nomeComplexanteAuxiliar =
               >
                 <option value="">Selecione o metal...</option>
                 {metaisEdta.map((metal) => (
-                  <option key={metal.idMetal} value={metal.idMetal}>
-                    {metal.metal} — {metal.nome}
-                  </option>
-                ))}
+  <option key={metal.idMetal} value={metal.idMetal}>
+    {formatarFormulaQuimica(metal.metal)} — {metal.nome}
+  </option>
+))}
               </select>
             </label>
 
@@ -738,7 +738,7 @@ const nomeComplexanteAuxiliar =
                 onChange={(event) => setConcMetal(event.target.value)}
                 placeholder="Ex: 0,010"
               />
-              <small>mol/L</small>
+              <small>mol·L⁻¹</small>
             </label>
 
             <label>
@@ -758,7 +758,7 @@ const nomeComplexanteAuxiliar =
                 onChange={(event) => setConcEDTA(event.target.value)}
                 placeholder="Ex: 0,010"
               />
-              <small>mol/L</small>
+              <small>mol·L⁻¹</small>
             </label>
 
             <label>
@@ -815,7 +815,7 @@ const nomeComplexanteAuxiliar =
                     }
                     placeholder="Ex: 0,10"
                   />
-                  <small>mol/L</small>
+                  <small>mol·L⁻¹</small>
                 </label>
               </>
             )}
@@ -1200,7 +1200,7 @@ const nomeComplexanteAuxiliar =
                 {concentracaoAuxiliarNumero !== null
                   ? `${formatarCientificoBR(
                       concentracaoAuxiliarNumero
-                    )} mol/L`
+                    )} mol·L⁻¹`
                   : "-"}
               </strong>
             </div>
