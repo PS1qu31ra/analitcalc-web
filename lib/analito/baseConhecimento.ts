@@ -1,11 +1,17 @@
-import type { LinhaConhecimento } from "./tipos";
+import type { ItemConhecimento } from "./tipos";
 
-export const baseConhecimento: LinhaConhecimento[] = [
+export const baseConhecimento: ItemConhecimento[] = [
   {
+    id: "geral_titulacao_conceito",
     modulo: "geral",
     topico: "Titulação",
-    intencao: "conceito",
     assunto: "titulacao",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é titulação?",
+      "O que é uma titulção?",
+      "O que significa análise volumétrica?",
+    ],
     palavrasChave: [
       "titulação",
       "titulacao",
@@ -13,39 +19,121 @@ export const baseConhecimento: LinhaConhecimento[] = [
       "titulcao",
       "análise volumétrica",
       "analise volumetrica",
-      "o que é titulação",
-      "oque é titulação",
-      "o que é titulacao",
-      "oque é titulacao",
+      "método volumétrico",
+      "metodo volumetrico",
     ],
-    termosContexto: [
-      "titulante",
-      "titulado",
-      "curva de titulação",
-      "ponto de equivalência",
+    termosContexto: ["titulante", "titulado", "ponto de equivalência"],
+    termosEvitar: [
+      "curva ácido-base",
+      "curva complexométrica",
+      "indicador",
+      "interferente",
     ],
-    perguntaBase: "O que é uma titulação?",
     respostaCurta:
       "Titulação é um método analítico usado para determinar a quantidade ou concentração de uma substância por meio de uma reação química.",
     respostaCompleta:
-      "Na titulação, uma solução de concentração conhecida é adicionada gradualmente à amostra até que a reação entre elas atinja o ponto de equivalência. Esse método é amplamente utilizado em diferentes tipos de análises químicas para determinar concentrações de forma precisa.",
-    quandoUsar: [
-      "significado de titulação",
-      "análise volumétrica",
-      "método de determinação de concentração",
-    ],
-    quandoNaoUsar: [
-      "curva de titulação específica",
-      "indicador",
-      "ponto de equivalência específico",
-    ],
+      "Titulação é um método analítico em que uma solução de concentração conhecida é adicionada gradualmente à amostra até atingir uma condição relacionada à estequiometria da reação. O volume gasto permite determinar a quantidade ou concentração do analito.",
     prioridade: 10,
   },
   {
+    id: "geral_titulante_conceito",
+    modulo: "geral",
+    topico: "Titulante",
+    assunto: "titulante",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é titulante?",
+      "Quem fica na bureta?",
+      "O que é solução titulante?",
+    ],
+    palavrasChave: [
+      "titulante",
+      "solução titulante",
+      "solucao titulante",
+      "reagente de concentração conhecida",
+      "quem fica na bureta",
+    ],
+    termosContexto: ["titulante", "volume adicionado"],
+    termosEvitar: ["titulado", "analito", "edta especificamente"],
+    respostaCurta:
+      "Titulante é a solução adicionada durante a titulação, geralmente com concentração conhecida ou padronizada.",
+    respostaCompleta:
+      "O titulante é a solução adicionada progressivamente à amostra durante a titulação. Ele reage com o analito segundo uma relação estequiométrica conhecida, e o volume utilizado é usado para calcular a quantidade da espécie analisada.",
+    prioridade: 10,
+  },
+  {
+    id: "geral_analito_conceito",
+    modulo: "geral",
+    topico: "Analito",
+    assunto: "analito",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é analito?",
+      "O que está sendo medido?",
+      "Qual é a espécie analisada?",
+    ],
+    palavrasChave: [
+      "analito",
+      "espécie analisada",
+      "especie analisada",
+      "substância analisada",
+      "substancia analisada",
+      "componente de interesse",
+    ],
+    termosContexto: ["analito", "amostra"],
+    termosEvitar: ["titulante", "indicador", "interferente"],
+    respostaCurta:
+      "Analito é a espécie química cuja quantidade ou concentração se deseja determinar.",
+    respostaCompleta:
+      "O analito é o componente de interesse da amostra. Em uma titulação, sua quantidade é determinada a partir da reação com o titulante e da relação estequiométrica entre as espécies envolvidas.",
+    prioridade: 10,
+  },
+  {
+    id: "complexometria_edta_conceito",
+    modulo: "complexometria",
+    topico: "EDTA",
+    assunto: "edta",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é EDTA?",
+      "O que é titulante EDTA?",
+      "EDTA é o quê na complexometria?",
+    ],
+    palavrasChave: [
+      "edta",
+      "titulante edta",
+      "agente quelante edta",
+      "ligante edta",
+      "ácido etilenodiaminotetracético",
+      "acido etilenodiaminotetracetico",
+    ],
+    termosContexto: ["EDTA", "complexo metal–EDTA", "metal principal"],
+    termosEvitar: [
+      "complexante auxiliar",
+      "ligante auxiliar",
+      "amônia",
+      "amonia",
+      "mascarante",
+      "indicador",
+      "interferente",
+    ],
+    respostaCurta:
+      "O EDTA é um ligante polidentado usado para formar complexos estáveis com íons metálicos.",
+    respostaCompleta:
+      "Em titulações complexométricas, o EDTA geralmente atua como titulante. Ele possui vários átomos doadores e forma complexos estáveis com muitos íons metálicos, normalmente em proporção molar 1:1.",
+    prioridade: 10,
+  },
+  {
+    id: "complexometria_ligante_auxiliar_conceito",
     modulo: "complexometria",
     topico: "Ligante auxiliar",
-    intencao: "conceito",
     assunto: "ligante_auxiliar",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é complexante auxiliar?",
+      "O que seria um ligante auxiliar?",
+      "O que é complexante secundário?",
+    ],
     palavrasChave: [
       "complexante auxiliar",
       "ligante auxiliar",
@@ -64,64 +152,157 @@ export const baseConhecimento: LinhaConhecimento[] = [
       "denominador β",
       "Kf efetivo",
     ],
-    perguntaBase: "O que é um complexante auxiliar?",
+    termosEvitar: [
+      "EDTA como titulante principal",
+      "indicador",
+      "mascarante",
+      "interferente metálico",
+    ],
     respostaCurta:
       "Complexante auxiliar é uma espécie que também se liga ao metal e altera sua disponibilidade para reagir com o EDTA.",
     respostaCompleta:
-      "Um complexante auxiliar, também chamado de ligante auxiliar, é uma espécie adicionada ou considerada no sistema porque pode se ligar ao metal principal. Ele pode ajudar a manter o metal em solução, evitar precipitação ou controlar a concentração de metal livre. Porém, como também compete com o EDTA, ele pode alterar o Kf efetivo e precisa ser considerado na interpretação da titulação.",
-    quandoUsar: [
-      "complexante auxiliar",
-      "ligante auxiliar",
-      "agente auxiliar",
-      "amônia",
-      "outro ligante ligado ao metal",
-    ],
-    quandoNaoUsar: [
-      "EDTA como titulante principal",
-      "mascarante",
-      "indicador",
-      "interferente metálico",
-    ],
+      "Um complexante auxiliar, também chamado de ligante auxiliar, é uma espécie que pode se ligar ao metal principal além do EDTA. Ele pode ajudar a manter o metal dissolvido, evitar precipitação ou controlar a concentração de metal livre. Porém, como também compete com o EDTA, pode alterar o Kf efetivo e precisa ser considerado no equilíbrio do sistema.",
     prioridade: 10,
   },
   {
+    id: "complexometria_ligante_auxiliar_interpretacao",
     modulo: "complexometria",
     topico: "Ligante auxiliar",
-    intencao: "interpretacao",
     assunto: "ligante_auxiliar",
+    intencao: "interpretacao",
+    perguntasExemplo: [
+      "Por que se usa complexante auxiliar?",
+      "Para que serve o ligante auxiliar?",
+      "Por que usar amônia na complexometria?",
+    ],
     palavrasChave: [
       "por que usa complexante auxiliar",
       "pq usa complexante auxiliar",
       "para que serve complexante auxiliar",
-      "por que usar ligante auxiliar",
       "função do complexante auxiliar",
       "funcao do complexante auxiliar",
+      "por que usar ligante auxiliar",
+      "complexante auxiliar atrapalha",
     ],
     termosContexto: [
       "complexante auxiliar",
       "ligante auxiliar",
-      "α(M livre)",
-      "denominador β",
       "Kf efetivo",
+      "denominador β",
+      "α(M livre)",
       "precipitação",
     ],
-    perguntaBase: "Por que se usa um complexante auxiliar?",
+    termosEvitar: [
+      "Kf efetivo isolado",
+      "EDTA como titulante",
+      "indicador",
+      "interferente metálico",
+    ],
     respostaCurta:
       "Usa-se um complexante auxiliar para controlar a disponibilidade do metal e melhorar as condições da titulação.",
     respostaCompleta:
-      "Um complexante auxiliar pode ser usado para manter o metal dissolvido, evitar precipitação, controlar a concentração de metal livre ou melhorar a seletividade da titulação. Ao mesmo tempo, ele pode competir com o EDTA pelo metal, alterando o Kf efetivo. Por isso, seu efeito precisa ser considerado no equilíbrio do sistema.",
-    quandoUsar: [
-      "por que usar complexante auxiliar",
-      "função do ligante auxiliar",
-      "efeito da amônia",
-      "controle de metal livre",
+      "Um complexante auxiliar pode ser usado para manter o metal em solução, evitar precipitação, controlar a concentração de metal livre ou melhorar a seletividade da titulação. Ao mesmo tempo, ele pode competir com o EDTA pelo metal, reduzindo a disponibilidade do metal livre e alterando o Kf efetivo. Por isso, seu efeito pode ajudar ou atrapalhar dependendo do sistema.",
+    prioridade: 10,
+  },
+  {
+    id: "complexometria_kf_efetivo_conceito",
+    modulo: "complexometria",
+    topico: "Kf efetivo",
+    assunto: "kf_efetivo",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é Kf efetivo?",
+      "O que significa constante efetiva?",
+      "Definição de Kf efetivo",
     ],
-    quandoNaoUsar: [
-      "Kf efetivo isolado",
-      "EDTA como titulante",
-      "mascarante",
-      "interferente metálico",
+    palavrasChave: [
+      "kf efetivo",
+      "constante efetiva",
+      "constante de formação efetiva",
+      "constante de formacao efetiva",
+      "kf efetivo da complexometria",
     ],
+    termosContexto: [
+      "Kf efetivo",
+      "Kf condicional",
+      "α(Y⁴⁻)",
+      "α(M livre)",
+      "pH avaliado",
+    ],
+    termosEvitar: [
+      "complexante auxiliar",
+      "indicador",
+      "ponto de equivalência",
+      "curva",
+    ],
+    respostaCurta:
+      "Kf efetivo representa a força de formação do complexo metal–EDTA nas condições consideradas pelo sistema.",
+    respostaCompleta:
+      "O Kf efetivo é uma constante ajustada às condições reais avaliadas na titulação. Ele pode considerar a fração ativa do EDTA, o pH e equilíbrios paralelos que alteram a disponibilidade do metal ou do ligante. Quanto maior seu valor, mais favorecida tende a ser a formação do complexo metal–EDTA.",
+    prioridade: 10,
+  },
+  {
+    id: "complexometria_indicador_decisao",
+    modulo: "complexometria",
+    topico: "Indicador",
+    assunto: "indicador",
+    intencao: "decisao",
+    perguntasExemplo: [
+      "Qual indicador devo usar?",
+      "Qual é o melhor indicador?",
+      "Qual indicador o sistema recomenda?",
+    ],
+    palavrasChave: [
+      "qual indicador devo usar",
+      "qual indicador usar",
+      "melhor indicador",
+      "indicador recomendado",
+      "indicador mais compatível",
+      "indicador mais compativel",
+    ],
+    termosContexto: [
+      "indicador mais compatível",
+      "compatibilidade do indicador",
+      "pH avaliado",
+      "metal principal",
+    ],
+    termosEvitar: ["indicador ácido-base", "indicador acido-base", "Kf efetivo"],
+    respostaCurta:
+      "Use como referência o indicador com maior compatibilidade calculada para o metal e o pH avaliados.",
+    respostaCompleta:
+      "Na complexometria, o indicador deve ser compatível com o metal principal, com o pH e com a região próxima ao ponto de equivalência. O indicador apontado pelo sistema representa a melhor opção entre os indicadores cadastrados e avaliados para aquela condição.",
+    prioridade: 10,
+  },
+  {
+    id: "complexometria_interferente_conceito",
+    modulo: "complexometria",
+    topico: "Interferente",
+    assunto: "interferente",
+    intencao: "conceito",
+    perguntasExemplo: [
+      "O que é interferente?",
+      "O que é metal interferente?",
+      "O que atrapalha a titulação com EDTA?",
+    ],
+    palavrasChave: [
+      "interferente",
+      "metal interferente",
+      "interferência",
+      "interferencia",
+      "competição pelo edta",
+      "competicao pelo edta",
+    ],
+    termosContexto: [
+      "interferentes avaliados",
+      "risco de interferência",
+      "metal principal",
+      "Kf efetivo do interferente",
+    ],
+    termosEvitar: ["mascarante", "complexante auxiliar", "indicador"],
+    respostaCurta:
+      "Interferentes são espécies que podem competir com o metal principal pelo EDTA ou alterar o equilíbrio da titulação.",
+    respostaCompleta:
+      "Na complexometria, um interferente pode reagir com o EDTA, consumir parte do titulante, modificar a disponibilidade do metal principal ou afetar a detecção do ponto final. Seu impacto depende da afinidade pelo EDTA, da concentração e das condições do meio.",
     prioridade: 10,
   },
 ];

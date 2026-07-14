@@ -40,6 +40,7 @@ export function normalizarTexto(texto: string) {
       "que",
       "e",
       "eh",
+      "é",
       "oq",
       "oque",
       "qual",
@@ -55,6 +56,7 @@ export function normalizarTexto(texto: string) {
       "este",
       "esta",
       "seria",
+      "significa",
     ]);
   
     return limparPontuacao(texto)
@@ -95,6 +97,8 @@ export function normalizarTexto(texto: string) {
     if (termoA.includes(termoB) || termoB.includes(termoA)) return true;
   
     if (termoA.length < 4 || termoB.length < 4) return false;
+    if (termoA.length > 35 || termoB.length > 35) return false;
+    if (Math.abs(termoA.length - termoB.length) > 8) return false;
   
     const maior = Math.max(termoA.length, termoB.length);
     const distancia = calcularDistanciaLevenshtein(termoA, termoB);
@@ -117,6 +121,10 @@ export function normalizarTexto(texto: string) {
   
     const palavrasPergunta = perguntaLimpa.split(" ");
     const palavrasTermo = termoLimpo.split(" ");
+  
+    if (palavrasPergunta.length > 12 || palavrasTermo.length > 8) {
+      return false;
+    }
   
     let palavrasCombinadas = 0;
   

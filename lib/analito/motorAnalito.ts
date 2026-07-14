@@ -1,5 +1,9 @@
 import { baseConhecimento } from "./baseConhecimento";
-import type { LinhaConhecimento, ResultadoAnalito } from "./tipos";
+import type {
+  IntencaoAnalito,
+  ItemConhecimento,
+  ResultadoAnalito,
+} from "./tipos";
 import {
   normalizarTexto,
   perguntaCombinaComTermo,
@@ -7,7 +11,7 @@ import {
   termosSaoParecidos,
 } from "./normalizacao";
 
-function detectarIntencao(pergunta: string) {
+function detectarIntencao(pergunta: string): IntencaoAnalito | "" {
   const p = normalizarTexto(pergunta);
 
   if (
@@ -15,6 +19,7 @@ function detectarIntencao(pergunta: string) {
     p.includes("oque e") ||
     p.includes("significa") ||
     p.includes("defina") ||
+    p.includes("definicao") ||
     p.includes("conceito") ||
     p.includes("seria")
   ) {
@@ -23,8 +28,8 @@ function detectarIntencao(pergunta: string) {
 
   if (
     p.includes("por que") ||
-    p.includes("pq") ||
     p.includes("porque") ||
+    p.includes("pq") ||
     p.includes("para que") ||
     p.includes("pra que") ||
     p.includes("funcao") ||
@@ -37,58 +42,22 @@ function detectarIntencao(pergunta: string) {
     p.includes("qual devo") ||
     p.includes("qual usar") ||
     p.includes("qual e o melhor") ||
-    p.includes("melhor indicador") ||
+    p.includes("melhor") ||
+    p.includes("recomendado") ||
     p.includes("devo usar")
   ) {
     return "decisao";
   }
 
   if (
-    p.includes("bom") ||
-    p.includes("ruim") ||
-    p.includes("viavel") ||
-    p.includes("quantitativo") ||
-    p.includes("adequado") ||
-    p.includes("serve") ||
-    p.includes("confiavel")
+    p.includes("comparar") ||
+    p.includes("comparacao") ||
+    p.includes("maior") ||
+    p.includes("menor") ||
+    p.includes("diferença") ||
+    p.includes("diferenca")
   ) {
-    return "interpretacao";
-  }
-
-  if (
-    p.includes("indicador") ||
-    p.includes("viragem") ||
-    p.includes("cor")
-  ) {
-    return "indicador";
-  }
-
-  if (
-    p.includes("interferente") ||
-    p.includes("interferencia") ||
-    p.includes("atrapalha") ||
-    p.includes("mascarante") ||
-    p.includes("compet")
-  ) {
-    return "interferente";
-  }
-
-  if (
-    p.includes("ponto de equivalencia") ||
-    p.includes("equivalencia") ||
-    p.includes(" pe ") ||
-    p.endsWith(" pe") ||
-    p.includes("volume de equivalencia")
-  ) {
-    return "ponto_equivalencia";
-  }
-
-  if (
-    p.includes("curva") ||
-    p.includes("grafico") ||
-    p.includes("regiao")
-  ) {
-    return "curva";
+    return "comparacao";
   }
 
   if (
@@ -99,6 +68,16 @@ function detectarIntencao(pergunta: string) {
     p.includes("como foi calculado")
   ) {
     return "calculo";
+  }
+
+  if (
+    p.includes("erro") ||
+    p.includes("errado") ||
+    p.includes("nao aceita") ||
+    p.includes("invalido") ||
+    p.includes("inválido")
+  ) {
+    return "erro";
   }
 
   return "";
@@ -119,10 +98,60 @@ function detectarAssunto(pergunta: string) {
     return "ligante_auxiliar";
   }
 
+  if (p.includes("kf efetivo") || p.includes("constante efetiva")) {
+    return "kf_efetivo";
+  }
+
+  if (p.includes("kf condicional")) {
+    return "kf_condicional";
+  }
+
+  if (
+    p.includes("indicador") ||
+    p.includes("viragem") ||
+    p.includes("mudanca de cor") ||
+    p.includes("cor")
+  ) {
+    return "indicador";
+  }
+
+  if (
+    p.includes("interferente") ||
+    p.includes("interferencia") ||
+    p.includes("atrapalha") ||
+    p.includes("competicao") ||
+    p.includes("competir")
+  ) {
+    return "interferente";
+  }
+
+  if (p.includes("mascarante") || p.includes("mascaramento")) {
+    return "mascarante";
+  }
+
+  if (
+    p.includes("edta") ||
+    p.includes("agente quelante edta") ||
+    p.includes("titulante edta") ||
+    p.includes("ligante edta")
+  ) {
+    return "edta";
+  }
+
+  if (
+    p.includes("metal principal") ||
+    p.includes("metal analisado") ||
+    p.includes("ion metalico") ||
+    p.includes("cation")
+  ) {
+    return "metal_principal";
+  }
+
   if (
     perguntaCombinaComTermo(pergunta, "titulação") ||
     perguntaCombinaComTermo(pergunta, "titulacao") ||
-    perguntaCombinaComTermo(pergunta, "análise volumétrica")
+    perguntaCombinaComTermo(pergunta, "análise volumétrica") ||
+    perguntaCombinaComTermo(pergunta, "analise volumetrica")
   ) {
     return "titulacao";
   }
@@ -139,329 +168,199 @@ function detectarAssunto(pergunta: string) {
     return "analito";
   }
 
-  if (p.includes("ponto final")) {
-    return "ponto_final";
-  }
-
-  if (
-    p.includes("ponto de equivalencia") ||
-    p.includes("equivalencia") ||
-    p.includes("volume de equivalencia") ||
-    p.includes(" pe ") ||
-    p.endsWith(" pe")
-  ) {
-    return "ponto_equivalencia";
-  }
-
-  if (
-    perguntaCombinaComTermo(pergunta, "indicador") ||
-    p.includes("viragem") ||
-    p.includes("mudanca de cor") ||
-    p.includes("cor")
-  ) {
-    return "indicador";
-  }
-
-  if (
-    perguntaCombinaComTermo(pergunta, "curva") ||
-    p.includes("grafico") ||
-    p.includes("regiao")
-  ) {
-    return "curva";
-  }
-
-  if (
-    p.includes("kf") ||
-    p.includes("constante de formacao") ||
-    p.includes("constante efetiva") ||
-    p.includes("constante condicional")
-  ) {
-    return "kf";
-  }
-
-  if (
-    p.includes("edta") ||
-    p.includes("agente complexante edta") ||
-    p.includes("quelante edta") ||
-    p.includes("ligante edta")
-  ) {
-    return "edta";
-  }
-
-  if (
-    p.includes("metal principal") ||
-    p.includes("metal analisado") ||
-    p.includes("ion metalico") ||
-    p.includes("cation")
-  ) {
-    return "metal_principal";
-  }
-
-  if (
-    p.includes("interferente") ||
-    p.includes("interferencia") ||
-    p.includes("atrapalha")
-  ) {
-    return "interferente";
-  }
-
-  if (
-    p.includes("mascarante") ||
-    p.includes("mascaramento")
-  ) {
-    return "mascarante";
-  }
-
-  if (
-    p.includes("concentracao") ||
-    p.includes("molaridade") ||
-    p.includes("mol/l")
-  ) {
-    return "concentracao";
-  }
-
-  if (
-    p.includes("estequiometria") ||
-    p.includes("proporcao") ||
-    p.includes("relacao molar")
-  ) {
-    return "estequiometria";
-  }
-
   return "";
 }
 
 function calcularPontuacao(
-  linha: LinhaConhecimento,
+  item: ItemConhecimento,
   pergunta: string,
   contexto: string
 ) {
   const perguntaNormalizada = normalizarTexto(pergunta);
   const contextoNormalizado = normalizarTexto(contexto);
 
-  const moduloLinha = normalizarTexto(linha.modulo);
-  const topicoLinha = normalizarTexto(linha.topico);
-  const intencaoLinha = normalizarTexto(linha.intencao);
-  const assuntoLinha = normalizarTexto(linha.assunto ?? "");
-
-  const intencaoPergunta = normalizarTexto(detectarIntencao(pergunta));
-  const assuntoPergunta = normalizarTexto(detectarAssunto(pergunta));
+  const moduloItem = normalizarTexto(item.modulo);
+  const assuntoPergunta = detectarAssunto(pergunta);
+  const intencaoPergunta = detectarIntencao(pergunta);
 
   let pontuacao = 0;
-  let evidenciaPergunta = 0;
+  let evidencia = 0;
 
-  const contextoEhComplexometria =
+  const contextoComplexometria =
     contextoNormalizado.includes("complexometria") ||
     contextoNormalizado.includes("edta");
 
-  const contextoEhAcidoBase =
+  const contextoAcidoBase =
     contextoNormalizado.includes("acido-base") ||
-    contextoNormalizado.includes("acido base") ||
-    contextoNormalizado.includes("titulacoes acido-base") ||
-    contextoNormalizado.includes("titulacao acido-base");
+    contextoNormalizado.includes("acido base");
 
-  const linhaEhGeral =
-    moduloLinha === "geral" ||
-    moduloLinha === "analitcalc" ||
-    moduloLinha === "todos";
+  const itemGeral = moduloItem === "geral";
 
-  const linhaEhDoModuloAtual =
-    (contextoEhComplexometria && moduloLinha.includes("complexometria")) ||
-    (contextoEhAcidoBase &&
-      (moduloLinha.includes("acido-base") ||
-        moduloLinha.includes("acido base") ||
-        moduloLinha.includes("acidobase")));
+  const itemDoModuloAtual =
+    (contextoComplexometria && moduloItem === "complexometria") ||
+    (contextoAcidoBase && moduloItem === "acido-base");
 
-  const linhaEhDeOutroModulo =
-    !linhaEhGeral &&
-    ((contextoEhComplexometria && moduloLinha.includes("acido")) ||
-      (contextoEhAcidoBase && moduloLinha.includes("complexometria")));
+  const itemDeOutroModulo =
+    !itemGeral &&
+    ((contextoComplexometria && moduloItem === "acido-base") ||
+      (contextoAcidoBase && moduloItem === "complexometria"));
 
-  if (linhaEhDoModuloAtual) pontuacao += 25;
-  if (linhaEhGeral) pontuacao += 12;
-  if (linhaEhDeOutroModulo) pontuacao -= 35;
+  if (itemDoModuloAtual) pontuacao += 25;
+  if (itemGeral) pontuacao += 10;
+  if (itemDeOutroModulo) pontuacao -= 40;
 
-  if (intencaoLinha && intencaoLinha === intencaoPergunta) {
-    pontuacao += 16;
+  if (assuntoPergunta && assuntoPergunta === item.assunto) {
+    pontuacao += 45;
+    evidencia += 30;
   }
 
-  if (assuntoPergunta && assuntoLinha && assuntoPergunta === assuntoLinha) {
-    pontuacao += 35;
-    evidenciaPergunta += 25;
+  if (intencaoPergunta && intencaoPergunta === item.intencao) {
+    pontuacao += 18;
   }
 
-  if (
-    topicoLinha &&
-    perguntaCombinaComTermo(pergunta, linha.topico)
-  ) {
-    pontuacao += 12;
-    evidenciaPergunta += 12;
-  }
-
-  if (
-    linha.perguntaBase &&
-    perguntaCombinaComTermo(pergunta, linha.perguntaBase)
-  ) {
-    pontuacao += 15;
-    evidenciaPergunta += 15;
-  }
-
-  for (const palavra of linha.palavrasChave) {
-    if (perguntaCombinaComTermo(pergunta, palavra)) {
-      pontuacao += 8;
-      evidenciaPergunta += 8;
+  for (const exemplo of item.perguntasExemplo) {
+    if (perguntaCombinaComTermo(pergunta, exemplo)) {
+      pontuacao += 18;
+      evidencia += 18;
     }
   }
 
-  for (const termo of linha.termosContexto) {
+  for (const palavra of item.palavrasChave) {
+    if (perguntaCombinaComTermo(pergunta, palavra)) {
+      pontuacao += 10;
+      evidencia += 10;
+    }
+  }
+
+  for (const termo of item.termosContexto ?? []) {
     if (contextoNormalizado.includes(normalizarTexto(termo))) {
       pontuacao += 3;
     }
   }
 
-  for (const termo of linha.quandoUsar) {
-    if (perguntaCombinaComTermo(pergunta, termo)) {
-      pontuacao += 4;
-      evidenciaPergunta += 4;
+  for (const termo of item.termosEvitar ?? []) {
+    if (perguntaNormalizada.includes(normalizarTexto(termo))) {
+      pontuacao -= 35;
     }
   }
 
-  for (const termo of linha.quandoNaoUsar) {
-    if (
-      perguntaNormalizada.includes(normalizarTexto(termo)) ||
-      contextoNormalizado.includes(normalizarTexto(termo))
-    ) {
-      pontuacao -= 25;
-    }
+  if (
+    assuntoPergunta &&
+    item.assunto &&
+    assuntoPergunta !== item.assunto &&
+    termosSaoParecidos(removerStopwords(pergunta), removerStopwords(item.topico))
+  ) {
+    pontuacao -= 20;
   }
 
-  if (assuntoPergunta && assuntoLinha && assuntoPergunta !== assuntoLinha) {
-    if (
-      termosSaoParecidos(
-        removerStopwords(pergunta),
-        removerStopwords(linha.topico)
-      )
-    ) {
-      pontuacao -= 15;
-    }
-  }
+  pontuacao += item.prioridade;
 
-  pontuacao += linha.prioridade;
-
-  if (evidenciaPergunta < 8) {
+  if (evidencia < 8) {
     return -999;
   }
 
   return pontuacao;
 }
 
-function montarResposta(linha: LinhaConhecimento, pergunta: string) {
+function montarResposta(item: ItemConhecimento, pergunta: string) {
   const intencao = detectarIntencao(pergunta);
 
-  if (intencao === "conceito" && linha.respostaCompleta) {
-    return linha.respostaCompleta;
+  if (
+    intencao === "conceito" ||
+    intencao === "interpretacao" ||
+    intencao === "decisao"
+  ) {
+    return item.respostaCompleta;
   }
 
-  if (intencao === "interpretacao" && linha.respostaCompleta) {
-    return linha.respostaCompleta;
-  }
+  return item.respostaCompleta || item.respostaCurta;
+}
 
-  return linha.respostaCompleta || linha.respostaCurta;
+function escaparRegex(texto: string) {
+  return texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function extrairValorDoContexto(contexto: string, rotulo: string) {
-  const regex = new RegExp(`${rotulo}:\\s*([^\\n]+)`, "i");
+  const rotulosConhecidos = [
+    "Módulo",
+    "Tipo de sistema",
+    "Metal principal",
+    "Complexo formado",
+    "pH avaliado",
+    "Volume de equivalência",
+    "α(Y⁴⁻)",
+    "Kf condicional",
+    "Kf efetivo",
+    "Status da titulação",
+    "Mensagem do sistema",
+    "Resumo químico",
+    "Interferentes avaliados",
+    "Indicador mais compatível",
+    "Titulante",
+    "Titulado",
+    "Tipo de titulação",
+    "Número de equivalências",
+    "Volumes de equivalência",
+  ];
+
+  const proximosRotulos = rotulosConhecidos
+    .filter((item) => item !== rotulo)
+    .map(escaparRegex)
+    .join("|");
+
+  const regex = new RegExp(
+    `${escaparRegex(rotulo)}:\\s*([\\s\\S]*?)(?=\\s*[.;]?\\s*(?:${proximosRotulos}):|$)`,
+    "i"
+  );
+
   const resultado = contexto.match(regex);
 
-  return resultado?.[1]?.trim().replace(/\.$/, "") ?? "";
+  return resultado?.[1]?.trim().replace(/[.;]$/, "") ?? "";
 }
 
 function extrairDadosDaPlataforma(contexto: string) {
   return {
     metalPrincipal: extrairValorDoContexto(contexto, "Metal principal"),
-    complexoFormado: extrairValorDoContexto(contexto, "Complexo formado"),
     pH: extrairValorDoContexto(contexto, "pH avaliado"),
+    indicador: extrairValorDoContexto(contexto, "Indicador mais compatível"),
+    kfEfetivo: extrairValorDoContexto(contexto, "Kf efetivo"),
+    status: extrairValorDoContexto(contexto, "Status da titulação"),
     volumeEquivalencia: extrairValorDoContexto(
       contexto,
       "Volume de equivalência"
     ),
-    alfaEDTA: extrairValorDoContexto(contexto, "α\\(Y⁴⁻\\)"),
-    kfEfetivo: extrairValorDoContexto(contexto, "Kf efetivo"),
-    status: extrairValorDoContexto(contexto, "Status da titulação"),
-    indicador: extrairValorDoContexto(contexto, "Indicador mais compatível"),
-    interferentes: extrairValorDoContexto(contexto, "Interferentes avaliados"),
   };
 }
 
-function montarComplementoComDados(
-  linha: LinhaConhecimento,
-  contexto: string,
-  pergunta: string
-) {
+function montarComplementoComDados(item: ItemConhecimento, contexto: string) {
   const dados = extrairDadosDaPlataforma(contexto);
-  const assunto = linha.assunto ?? "";
-  const intencao = detectarIntencao(pergunta);
 
-  if (assunto === "indicador" || intencao === "indicador") {
-    if (dados.indicador) {
-      return `
+  if (item.assunto === "indicador" && dados.indicador) {
+    return `
 
 Para este sistema, o indicador mais recomendado é ${dados.indicador}.${
-        dados.metalPrincipal || dados.pH
-          ? ` Essa escolha considera${
-              dados.metalPrincipal
-                ? ` o metal principal ${dados.metalPrincipal}`
-                : ""
-            }${dados.metalPrincipal && dados.pH ? "," : ""}${
-              dados.pH ? ` o pH ${dados.pH}` : ""
-            } e a compatibilidade calculada para a titulação.`
-          : ""
-      }`;
-    }
+      dados.metalPrincipal || dados.pH
+        ? ` Essa escolha considera${
+            dados.metalPrincipal ? ` o metal principal ${dados.metalPrincipal}` : ""
+          }${dados.metalPrincipal && dados.pH ? "," : ""}${
+            dados.pH ? ` o pH ${dados.pH}` : ""
+          }.`
+        : ""
+    }`;
   }
 
-  if (assunto === "kf" || pergunta.toLowerCase().includes("quantitativo")) {
-    if (dados.kfEfetivo || dados.status) {
-      return `
+  if (item.assunto === "kf_efetivo" && (dados.kfEfetivo || dados.status)) {
+    return `
 
 No sistema atual, o Kf efetivo calculado foi ${
-        dados.kfEfetivo || "não informado"
-      } e o status da titulação foi ${dados.status || "não informado"}.`;
-    }
+      dados.kfEfetivo || "não informado"
+    } e o status da titulação foi ${dados.status || "não informado"}.`;
   }
 
-  if (assunto === "ph") {
-    if (dados.pH || dados.alfaEDTA || dados.kfEfetivo) {
-      return `
-
-No sistema atual, o pH avaliado foi ${
-        dados.pH || "não informado"
-      }. A fração ativa do EDTA, α(Y⁴⁻), foi ${
-        dados.alfaEDTA || "não informada"
-      }, e o Kf efetivo foi ${dados.kfEfetivo || "não informado"}.`;
-    }
-  }
-
-  if (assunto === "ponto_equivalencia") {
-    if (dados.volumeEquivalencia) {
-      return `
+  if (item.assunto === "ponto_equivalencia" && dados.volumeEquivalencia) {
+    return `
 
 No sistema atual, o volume de equivalência calculado foi ${dados.volumeEquivalencia}.`;
-    }
-  }
-
-  if (assunto === "metal_principal") {
-    if (dados.metalPrincipal || dados.complexoFormado) {
-      return `
-
-No sistema atual, o metal principal é ${
-        dados.metalPrincipal || "não informado"
-      }${
-        dados.complexoFormado
-          ? ` e o complexo formado é ${dados.complexoFormado}`
-          : ""
-      }.`;
-    }
   }
 
   return "";
@@ -472,15 +371,15 @@ export function responderAnalito(
   contexto: string
 ): ResultadoAnalito {
   const ranking = baseConhecimento
-    .map((linha) => ({
-      linha,
-      pontuacao: calcularPontuacao(linha, pergunta, contexto),
+    .map((item) => ({
+      item,
+      pontuacao: calcularPontuacao(item, pergunta, contexto),
     }))
     .sort((a, b) => b.pontuacao - a.pontuacao);
 
-  const melhorLinha = ranking[0];
+  const melhor = ranking[0];
 
-  if (!melhorLinha || melhorLinha.pontuacao < 18) {
+  if (!melhor || melhor.pontuacao < 18) {
     return {
       encontrou: false,
       resposta:
@@ -488,34 +387,17 @@ export function responderAnalito(
     };
   }
 
-  const respostaBase = montarResposta(melhorLinha.linha, pergunta);
-  const complementoDados = montarComplementoComDados(
-    melhorLinha.linha,
-    contexto,
-    pergunta
-  );
-
-  const intencaoResposta = detectarIntencao(pergunta);
-
-  const devePriorizarDados =
-    intencaoResposta === "indicador" ||
-    intencaoResposta === "interpretacao" ||
-    intencaoResposta === "interferente" ||
-    intencaoResposta === "ponto_equivalencia" ||
-    intencaoResposta === "decisao";
-
-  const resposta =
-    devePriorizarDados && complementoDados
-      ? `${complementoDados.trim()}\n\n${respostaBase}`
-      : `${respostaBase}${complementoDados}`;
+  const respostaBase = montarResposta(melhor.item, pergunta);
+  const complemento = montarComplementoComDados(melhor.item, contexto);
 
   return {
     encontrou: true,
-    modulo: melhorLinha.linha.modulo,
-    topico: melhorLinha.linha.topico,
-    intencao: melhorLinha.linha.intencao,
-    assunto: melhorLinha.linha.assunto,
-    pontuacao: melhorLinha.pontuacao,
-    resposta,
+    id: melhor.item.id,
+    modulo: melhor.item.modulo,
+    topico: melhor.item.topico,
+    assunto: melhor.item.assunto,
+    intencao: melhor.item.intencao,
+    pontuacao: melhor.pontuacao,
+    resposta: `${respostaBase}${complemento}`,
   };
 }

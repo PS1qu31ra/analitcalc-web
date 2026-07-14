@@ -17,9 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const resposta = responderAnalito(pergunta, contexto);
-
-    return Response.json(resposta);
+    return Response.json(responderAnalito(pergunta, contexto));
   } catch (erro) {
     return Response.json(
       {
