@@ -87,27 +87,28 @@ function detectarAssunto(pergunta: string) {
   const p = normalizarTexto(pergunta);
 
   const pSemPontuacao = p
-  .replace(/[^a-z0-9\s]/g, " ")
-  .replace(/\s+/g, " ")
-  .trim();
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-const palavras = pSemPontuacao.split(" ");
+  const palavras = pSemPontuacao.split(" ");
 
-if (
-  palavras.includes("pm") ||
-  pSemPontuacao.includes("menos log do metal livre") ||
-  pSemPontuacao.includes("escala de metal livre")
-) {
-  return "pm";
-}
-if (
-  (p.includes("qual") ||
-    p.includes("me diga") ||
-    p.includes("valor")) &&
-  p.includes("kf efetivo")
-) {
-  return "kf_efetivo_contexto";
-}
+  if (
+    palavras.includes("pm") ||
+    pSemPontuacao.includes("menos log do metal livre") ||
+    pSemPontuacao.includes("escala de metal livre")
+  ) {
+    return "pm";
+  }
+
+  if (
+    (p.includes("qual") ||
+      p.includes("me diga") ||
+      p.includes("valor")) &&
+    p.includes("kf efetivo")
+  ) {
+    return "kf_efetivo_contexto";
+  }
 
 if (
   (p.includes("qual") ||
@@ -170,7 +171,69 @@ if (
 ) {
   return "status_contexto";
 }
+if (
+  p.includes("como melhorar esse sistema") ||
+  p.includes("melhorar a titulacao") ||
+  p.includes("deixar a titulacao mais confiavel") ||
+  p.includes("o que posso ajustar") ||
+  p.includes("melhorar o resultado")
+) {
+  return "melhorar_sistema";
+}
 
+if (
+  p.includes("devo mudar o ph") ||
+  p.includes("mudar o ph") ||
+  p.includes("ajustar o ph") ||
+  p.includes("alterar o ph") ||
+  p.includes("melhor ph")
+) {
+  return "mudar_ph";
+}
+
+if (
+  p.includes("devo usar outro indicador") ||
+  p.includes("usar outro indicador") ||
+  p.includes("trocar indicador") ||
+  p.includes("trocar o indicador") ||
+  p.includes("indicador ruim") ||
+  p.includes("indicador nao e bom")
+) {
+  return "trocar_indicador";
+}
+
+if (
+  p.includes("o que fazer se o kf efetivo estiver baixo") ||
+  p.includes("corrigir kf efetivo baixo") ||
+  p.includes("aumentar kf efetivo") ||
+  p.includes("melhorar kf efetivo") ||
+  p.includes("kf efetivo baixo o que fazer") ||
+  p.includes("resolver kf efetivo baixo")
+) {
+  return "kf_baixo_o_que_fazer";
+}
+
+if (
+  p.includes("como reduzir interferencia") ||
+  p.includes("reduzir interferencia") ||
+  p.includes("diminuir interferente") ||
+  p.includes("efeito do interferente") ||
+  p.includes("interferente alto") ||
+  p.includes("risco alto de interferencia")
+) {
+  return "reduzir_interferencia";
+}
+
+if (
+  p.includes("quando usar mascarante") ||
+  p.includes("devo usar mascarante") ||
+  p.includes("mascarante e necessario") ||
+  p.includes("usar agente mascarante") ||
+  p.includes("precisa de mascarante") ||
+  p.includes("necessario mascarar")
+) {
+  return "quando_usar_mascarante";
+}
 if (
   p.includes("sistema quantitativo") ||
   p.includes("titulacao quantitativa") ||
