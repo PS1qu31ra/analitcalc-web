@@ -86,6 +86,21 @@ function detectarIntencao(pergunta: string): IntencaoAnalito | "" {
 function detectarAssunto(pergunta: string) {
   const p = normalizarTexto(pergunta);
 
+  const pSemPontuacao = p
+  .replace(/[^a-z0-9\s]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
+const palavras = pSemPontuacao.split(" ");
+
+if (
+  palavras.includes("pm") ||
+  pSemPontuacao.includes("menos log do metal livre") ||
+  pSemPontuacao.includes("escala de metal livre")
+) {
+  return "pm";
+}
+
   if (
     p.includes("ponto final") &&
     (p.includes("ponto de equivalencia") ||
@@ -130,6 +145,19 @@ function detectarAssunto(pergunta: string) {
     return "concentracao_molar";
   }
   
+  if (
+    (p.includes("estequiometria") ||
+      p.includes("relacao molar") ||
+      p.includes("proporcao")) &&
+    (p.includes("edta") ||
+      p.includes("metal edta") ||
+      p.includes("complexometria") ||
+      p.includes("complexometrica") ||
+      p.includes("complexometrico"))
+  ) {
+    return "estequiometria_metal_edta";
+  }
+
   if (
     p.includes("estequiometria") ||
     p.includes("relacao molar") ||
