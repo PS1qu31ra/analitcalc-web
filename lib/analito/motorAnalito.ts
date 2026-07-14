@@ -101,6 +101,7 @@ function detectarAssunto(pergunta: string) {
     return "pm";
   }
 
+  // Perguntas contextuais ácido-base
   if (
     p.includes("quantas equivalencias") ||
     p.includes("quantas equivalencia") ||
@@ -116,175 +117,28 @@ function detectarAssunto(pergunta: string) {
   }
 
   if (
-    p.includes("quantas equivalencias") ||
-    p.includes("quantos pontos de equivalencia") ||
-    p.includes("numero de equivalencias") ||
-    p.includes("tem quantas equivalencias")
-  ) {
-    return "numero_equivalencias_contexto";
-  }
-
-  if (
-    p.includes("titulacao acido-base") ||
-    p.includes("titulacao acido base") ||
-    p.includes("titulacao de neutralizacao") ||
-    p.includes("neutralizacao acido-base") ||
-    p.includes("neutralizacao acido base")
-  ) {
-    return "titulacao_acido_base";
-  }
-  
-  if (
-    palavras.includes("ph") ||
-    p.includes("potencial hidrogenionico") ||
-    p.includes("concentracao de h")
-  ) {
-    return "ph";
-  }
-  
-  if (
-    palavras.includes("ka") ||
-    p.includes("constante de acidez") ||
-    p.includes("constante acida") ||
-    p.includes("dissociacao acida")
-  ) {
-    return "ka";
-  }
-  
-  if (
-    palavras.includes("pka") ||
-    p.includes("menos log de ka") ||
-    p.includes("relacao entre pka e ka")
-  ) {
-    return "pka";
-  }
-  
-  if (
-    p.includes("acido forte") ||
-    p.includes("ioniza completamente") ||
-    p.includes("dissociacao completa")
-  ) {
-    return "acido_forte";
-  }
-  
-  if (
-    p.includes("acido fraco") ||
-    p.includes("ioniza parcialmente") ||
-    p.includes("dissociacao parcial") ||
-    p.includes("ka pequeno")
-  ) {
-    return "acido_fraco";
-  }
-  
-  if (
-    p.includes("base forte") ||
-    p.includes("hidroxido forte") ||
-    p.includes("libera oh") ||
-    p.includes("base totalmente dissociada")
-  ) {
-    return "base_forte";
-  }
-  
-  if (
-    p.includes("base fraca") ||
-    p.includes("kb") ||
-    p.includes("equilibrio da base") ||
-    p.includes("amonia base fraca")
-  ) {
-    return "base_fraca";
-  }
-  
-  if (
-    p.includes("ponto de equivalencia acido-base") ||
-    p.includes("ponto de equivalencia acido base") ||
-    p.includes("pe acido-base") ||
-    p.includes("pe acido base") ||
-    p.includes("equivalencia acido-base") ||
-    p.includes("neutralizacao estequiometrica")
-  ) {
-    return "ponto_equivalencia_acido_base";
-  }
-  
-  if (
-    p.includes("indicador acido-base") ||
-    p.includes("indicador acido base") ||
-    p.includes("indicador de ph") ||
-    p.includes("faixa de viragem") ||
-    p.includes("viragem acido-base")
-  ) {
-    return "indicador_acido_base";
-  }
-  
-  if (
-    p.includes("curva de ph") ||
-    p.includes("curva acido-base") ||
-    p.includes("curva acido base") ||
-    p.includes("grafico de ph") ||
-    p.includes("curva de titulacao acido-base")
-  ) {
-    return "curva_ph";
-  }
-  
-  if (
-    p.includes("monoprotico") ||
-    p.includes("acido monoprotico") ||
-    p.includes("uma equivalencia") ||
-    p.includes("um proton")
-  ) {
-    return "monoprotico";
-  }
-  
-  if (
-    p.includes("poliprotico") ||
-    p.includes("acido poliprotico") ||
-    p.includes("mais de uma equivalencia") ||
-    p.includes("multiplas equivalencias") ||
-    p.includes("varios protons")
-  ) {
-    return "poliprotico";
-  }
-  if (
-    (p.includes("qual") ||
-      p.includes("quem") ||
-      p.includes("me diga")) &&
-    (p.includes("titulante") ||
-      p.includes("titulante usado") ||
-      p.includes("titulante neste sistema"))
+    (p.includes("qual") || p.includes("quem") || p.includes("me diga")) &&
+    p.includes("titulante")
   ) {
     return "titulante_contexto";
   }
-  
+
   if (
-    (p.includes("qual") ||
-      p.includes("quem") ||
-      p.includes("me diga")) &&
-    (p.includes("titulado") ||
-      p.includes("titulado usado") ||
-      p.includes("titulado neste sistema"))
+    (p.includes("qual") || p.includes("quem") || p.includes("me diga")) &&
+    p.includes("titulado")
   ) {
     return "titulado_contexto";
   }
-  
+
   if (
-    (p.includes("qual") ||
-      p.includes("me diga") ||
-      p.includes("valor")) &&
+    (p.includes("qual") || p.includes("me diga") || p.includes("valor")) &&
     (p.includes("volume de equivalencia") ||
       p.includes("volume do pe") ||
       p.includes("volume pe"))
   ) {
     return "volume_equivalencia_contexto";
   }
-  
-  if (
-    p.includes("quantas equivalencias") ||
-    p.includes("quantos pontos de equivalencia") ||
-    p.includes("numero de equivalencias") ||
-    p.includes("tem quantas equivalencias")
-  ) {
-    return "numero_equivalencias_contexto";
-  }
-  
+
   if (
     p.includes("tipo de sistema") ||
     p.includes("monoprotico ou poliprotico") ||
@@ -293,7 +147,7 @@ function detectarAssunto(pergunta: string) {
   ) {
     return "tipo_sistema_contexto";
   }
-  
+
   if (
     p.includes("quais sao os volumes de equivalencia") ||
     p.includes("quais são os volumes de equivalência") ||
@@ -306,225 +160,349 @@ function detectarAssunto(pergunta: string) {
   }
 
   if (
-    (p.includes("qual") ||
-      p.includes("me diga") ||
-      p.includes("valor")) &&
+    p.includes("analise o modulo") ||
+    p.includes("analisar modulo") ||
+    p.includes("analise esse sistema") ||
+    p.includes("analisar sistema") ||
+    p.includes("faca uma analise do modulo") ||
+    p.includes("fazer analise do modulo")
+  ) {
+    return "analise_modulo_acido_base";
+  }
+
+  // Decisões de complexometria antes de conceitos genéricos
+  if (
+    p.includes("como melhorar esse sistema") ||
+    p.includes("melhorar a titulacao") ||
+    p.includes("deixar a titulacao mais confiavel") ||
+    p.includes("o que posso ajustar") ||
+    p.includes("melhorar o resultado")
+  ) {
+    return "melhorar_sistema";
+  }
+
+  if (
+    p.includes("devo mudar o ph") ||
+    p.includes("mudar o ph") ||
+    p.includes("ajustar o ph") ||
+    p.includes("alterar o ph") ||
+    p.includes("melhor ph")
+  ) {
+    return "mudar_ph";
+  }
+
+  if (
+    p.includes("devo usar outro indicador") ||
+    p.includes("usar outro indicador") ||
+    p.includes("trocar indicador") ||
+    p.includes("trocar o indicador") ||
+    p.includes("indicador ruim") ||
+    p.includes("indicador nao e bom")
+  ) {
+    return "trocar_indicador";
+  }
+
+  if (
+    p.includes("o que fazer se o kf efetivo estiver baixo") ||
+    p.includes("corrigir kf efetivo baixo") ||
+    p.includes("aumentar kf efetivo") ||
+    p.includes("melhorar kf efetivo") ||
+    p.includes("kf efetivo baixo o que fazer") ||
+    p.includes("resolver kf efetivo baixo")
+  ) {
+    return "kf_baixo_o_que_fazer";
+  }
+
+  if (
+    p.includes("como reduzir interferencia") ||
+    p.includes("reduzir interferencia") ||
+    p.includes("diminuir interferente") ||
+    p.includes("efeito do interferente") ||
+    p.includes("interferente alto") ||
+    p.includes("risco alto de interferencia")
+  ) {
+    return "reduzir_interferencia";
+  }
+
+  if (
+    p.includes("quando usar mascarante") ||
+    p.includes("devo usar mascarante") ||
+    p.includes("mascarante e necessario") ||
+    p.includes("usar agente mascarante") ||
+    p.includes("precisa de mascarante") ||
+    p.includes("necessario mascarar")
+  ) {
+    return "quando_usar_mascarante";
+  }
+
+  // Dados contextuais de complexometria
+  if (
+    (p.includes("qual") || p.includes("me diga") || p.includes("valor")) &&
     p.includes("kf efetivo")
   ) {
     return "kf_efetivo_contexto";
   }
 
-if (
-  (p.includes("qual") ||
-    p.includes("me diga") ||
-    p.includes("valor")) &&
-  (p.includes("ph avaliado") ||
-    p.includes("ph do sistema") ||
-    p.includes("ph eu usei") ||
-    p.includes("ph"))
-) {
-  return "ph_contexto";
-}
+  if (
+    (p.includes("qual") || p.includes("me diga") || p.includes("valor")) &&
+    (p.includes("ph avaliado") ||
+      p.includes("ph do sistema") ||
+      p.includes("ph eu usei"))
+  ) {
+    return "ph_contexto";
+  }
 
-if (
-  (p.includes("qual") ||
-    p.includes("me diga")) &&
-  (p.includes("metal estou titulando") ||
-    p.includes("metal principal") ||
-    p.includes("metal escolhido") ||
-    p.includes("metal selecionado"))
-) {
-  return "metal_contexto";
-}
+  if (
+    (p.includes("qual") || p.includes("me diga")) &&
+    (p.includes("metal estou titulando") ||
+      p.includes("metal principal") ||
+      p.includes("metal escolhido") ||
+      p.includes("metal selecionado"))
+  ) {
+    return "metal_contexto";
+  }
 
-if (
-  (p.includes("qual") ||
-    p.includes("me diga")) &&
-  (p.includes("indicador foi recomendado") ||
+  if (
+    (p.includes("qual") || p.includes("me diga")) &&
+    (p.includes("indicador foi recomendado") ||
+      p.includes("indicador recomendado") ||
+      p.includes("indicador escolhido") ||
+      p.includes("indicador selecionado") ||
+      p.includes("indicador o sistema escolheu"))
+  ) {
+    return "indicador_contexto";
+  }
+
+  if (
+    (p.includes("qual") ||
+      p.includes("quais") ||
+      p.includes("me diga") ||
+      p.includes("tem")) &&
+    (p.includes("interferente foi avaliado") ||
+      p.includes("interferentes foram avaliados") ||
+      p.includes("interferentes avaliados") ||
+      p.includes("tem interferente") ||
+      p.includes("interferente neste sistema"))
+  ) {
+    return "interferente_contexto";
+  }
+
+  if (
+    (p.includes("qual") ||
+      p.includes("como") ||
+      p.includes("classificacao") ||
+      p.includes("classificou")) &&
+    (p.includes("status da titulacao") ||
+      p.includes("como ficou a titulacao") ||
+      p.includes("sistema classificou") ||
+      p.includes("classificacao da titulacao"))
+  ) {
+    return "status_contexto";
+  }
+
+  // Interpretações de complexometria
+  if (
+    p.includes("sistema quantitativo") ||
+    p.includes("titulacao quantitativa") ||
+    p.includes("resultado quantitativo") ||
+    p.includes("bom para titular") ||
+    p.includes("da para titular")
+  ) {
+    return "sistema_quantitativo";
+  }
+
+  if (
+    p.includes("kf efetivo baixo") ||
+    p.includes("kf efetivo ficou baixo") ||
+    p.includes("constante efetiva baixa") ||
+    p.includes("sistema nao quantitativo") ||
+    p.includes("complexo pouco favorecido")
+  ) {
+    return "kf_efetivo_baixo";
+  }
+
+  if (
+    p.includes("ph adequado") ||
+    p.includes("ph esta adequado") ||
+    p.includes("ph bom") ||
+    p.includes("por que o ph importa") ||
+    p.includes("importancia do ph")
+  ) {
+    return "ph_adequado";
+  }
+
+  if (
+    p.includes("indicador confiavel") ||
     p.includes("indicador recomendado") ||
-    p.includes("indicador escolhido") ||
-    p.includes("indicador selecionado") ||
-    p.includes("indicador o sistema escolheu"))
-) {
-  return "indicador_contexto";
-}
+    p.includes("esse indicador e bom") ||
+    p.includes("posso confiar no indicador") ||
+    p.includes("indicador sugerido")
+  ) {
+    return "indicador_confiavel";
+  }
 
-if (
-  (p.includes("qual") ||
-    p.includes("quais") ||
-    p.includes("me diga") ||
-    p.includes("tem")) &&
-  (p.includes("interferente foi avaliado") ||
-    p.includes("interferentes foram avaliados") ||
-    p.includes("interferentes avaliados") ||
-    p.includes("tem interferente") ||
-    p.includes("interferente neste sistema"))
-) {
-  return "interferente_contexto";
-}
+  if (
+    p.includes("interferente atrapalha") ||
+    p.includes("interferente interfere") ||
+    p.includes("risco de interferencia") ||
+    p.includes("por que aparece risco") ||
+    p.includes("competicao com edta")
+  ) {
+    return "interferente_atrapalha";
+  }
 
-if (
-  (p.includes("qual") ||
-    p.includes("como") ||
-    p.includes("classificacao") ||
-    p.includes("classificou")) &&
-  (p.includes("status da titulacao") ||
-    p.includes("como ficou a titulacao") ||
-    p.includes("sistema classificou") ||
-    p.includes("classificacao da titulacao"))
-) {
-  return "status_contexto";
-}
-if (
-  p.includes("como melhorar esse sistema") ||
-  p.includes("melhorar a titulacao") ||
-  p.includes("deixar a titulacao mais confiavel") ||
-  p.includes("o que posso ajustar") ||
-  p.includes("melhorar o resultado")
-) {
-  return "melhorar_sistema";
-}
+  if (
+    p.includes("titulacao parcial") ||
+    p.includes("parcialmente quantitativo") ||
+    p.includes("resultado parcial")
+  ) {
+    return "titulacao_parcial";
+  }
 
-if (
-  p.includes("devo mudar o ph") ||
-  p.includes("mudar o ph") ||
-  p.includes("ajustar o ph") ||
-  p.includes("alterar o ph") ||
-  p.includes("melhor ph")
-) {
-  return "mudar_ph";
-}
+  if (
+    p.includes("titulacao ruim") ||
+    p.includes("sistema ruim") ||
+    p.includes("nao serve para titular") ||
+    p.includes("titulacao inviavel") ||
+    p.includes("complexacao insuficiente")
+  ) {
+    return "titulacao_ruim";
+  }
+  
+  if (
+    p.includes("curva complexometrica") ||
+    p.includes("curva com edta") ||
+    p.includes("curva de pm") ||
+    p.includes("grafico pm") ||
+    p.includes("interpretar curva complexometrica")
+  ) {
+    return "curva_complexometrica";
+  }
 
-if (
-  p.includes("devo usar outro indicador") ||
-  p.includes("usar outro indicador") ||
-  p.includes("trocar indicador") ||
-  p.includes("trocar o indicador") ||
-  p.includes("indicador ruim") ||
-  p.includes("indicador nao e bom")
-) {
-  return "trocar_indicador";
-}
+  // Conceitos ácido-base
+  if (
+    p.includes("titulacao acido-base") ||
+    p.includes("titulacao acido base") ||
+    p.includes("titulacao de neutralizacao") ||
+    p.includes("neutralizacao acido-base") ||
+    p.includes("neutralizacao acido base")
+  ) {
+    return "titulacao_acido_base";
+  }
 
-if (
-  p.includes("o que fazer se o kf efetivo estiver baixo") ||
-  p.includes("corrigir kf efetivo baixo") ||
-  p.includes("aumentar kf efetivo") ||
-  p.includes("melhorar kf efetivo") ||
-  p.includes("kf efetivo baixo o que fazer") ||
-  p.includes("resolver kf efetivo baixo")
-) {
-  return "kf_baixo_o_que_fazer";
-}
+  if (
+    p.includes("o que e ph") ||
+    p.includes("oque e ph") ||
+    p.includes("significa ph") ||
+    p.includes("potencial hidrogenionico") ||
+    p.includes("concentracao de h")
+  ) {
+    return "ph";
+  }
 
-if (
-  p.includes("como reduzir interferencia") ||
-  p.includes("reduzir interferencia") ||
-  p.includes("diminuir interferente") ||
-  p.includes("efeito do interferente") ||
-  p.includes("interferente alto") ||
-  p.includes("risco alto de interferencia")
-) {
-  return "reduzir_interferencia";
-}
+  if (
+    palavras.includes("pka") ||
+    p.includes("menos log de ka") ||
+    p.includes("relacao entre pka e ka")
+  ) {
+    return "pka";
+  }
 
-if (
-  p.includes("quando usar mascarante") ||
-  p.includes("devo usar mascarante") ||
-  p.includes("mascarante e necessario") ||
-  p.includes("usar agente mascarante") ||
-  p.includes("precisa de mascarante") ||
-  p.includes("necessario mascarar")
-) {
-  return "quando_usar_mascarante";
-}
-if (
-  p.includes("sistema quantitativo") ||
-  p.includes("titulacao quantitativa") ||
-  p.includes("resultado quantitativo") ||
-  p.includes("bom para titular") ||
-  p.includes("da para titular")
-) {
-  return "sistema_quantitativo";
-}
+  if (
+    palavras.includes("ka") ||
+    p.includes("constante de acidez") ||
+    p.includes("constante acida") ||
+    p.includes("dissociacao acida")
+  ) {
+    return "ka";
+  }
 
-if (
-  p.includes("kf efetivo baixo") ||
-  p.includes("kf efetivo ficou baixo") ||
-  p.includes("constante efetiva baixa") ||
-  p.includes("sistema nao quantitativo") ||
-  p.includes("complexo pouco favorecido")
-) {
-  return "kf_efetivo_baixo";
-}
+  if (
+    p.includes("acido forte") ||
+    p.includes("ioniza completamente") ||
+    p.includes("dissociacao completa")
+  ) {
+    return "acido_forte";
+  }
 
-if (
-  p.includes("ph adequado") ||
-  p.includes("ph esta adequado") ||
-  p.includes("ph bom") ||
-  p.includes("por que o ph importa") ||
-  p.includes("importancia do ph")
-) {
-  return "ph_adequado";
-}
+  if (
+    p.includes("acido fraco") ||
+    p.includes("ioniza parcialmente") ||
+    p.includes("dissociacao parcial") ||
+    p.includes("ka pequeno")
+  ) {
+    return "acido_fraco";
+  }
 
-if (
-  p.includes("indicador confiavel") ||
-  p.includes("indicador recomendado") ||
-  p.includes("esse indicador e bom") ||
-  p.includes("posso confiar no indicador") ||
-  p.includes("indicador sugerido")
-) {
-  return "indicador_confiavel";
-}
+  if (
+    p.includes("base forte") ||
+    p.includes("hidroxido forte") ||
+    p.includes("libera oh") ||
+    p.includes("base totalmente dissociada")
+  ) {
+    return "base_forte";
+  }
 
-if (
-  p.includes("interferente atrapalha") ||
-  p.includes("interferente interfere") ||
-  p.includes("risco de interferencia") ||
-  p.includes("por que aparece risco") ||
-  p.includes("competicao com edta")
-) {
-  return "interferente_atrapalha";
-}
+  if (
+    p.includes("base fraca") ||
+    p.includes("kb") ||
+    p.includes("equilibrio da base") ||
+    p.includes("amonia base fraca")
+  ) {
+    return "base_fraca";
+  }
 
-if (
-  p.includes("titulacao parcial") ||
-  p.includes("parcialmente quantitativo") ||
-  p.includes("resultado parcial")
-) {
-  return "titulacao_parcial";
-}
+  if (
+    p.includes("ponto de equivalencia acido-base") ||
+    p.includes("ponto de equivalencia acido base") ||
+    p.includes("pe acido-base") ||
+    p.includes("pe acido base") ||
+    p.includes("equivalencia acido-base") ||
+    p.includes("neutralizacao estequiometrica")
+  ) {
+    return "ponto_equivalencia_acido_base";
+  }
 
-if (
-  p.includes("titulacao ruim") ||
-  p.includes("sistema ruim") ||
-  p.includes("nao serve para titular") ||
-  p.includes("titulacao inviavel") ||
-  p.includes("complexacao insuficiente")
-) {
-  return "titulacao_ruim";
-}
+  if (
+    p.includes("indicador acido-base") ||
+    p.includes("indicador acido base") ||
+    p.includes("indicador de ph") ||
+    p.includes("faixa de viragem") ||
+    p.includes("viragem acido-base")
+  ) {
+    return "indicador_acido_base";
+  }
 
-if (
-  p.includes("mascarante") ||
-  p.includes("agente mascarante") ||
-  p.includes("mascaramento") ||
-  p.includes("mascarar interferente")
-) {
-  return "mascarante";
-}
+  if (
+    p.includes("curva de ph") ||
+    p.includes("curva acido-base") ||
+    p.includes("curva acido base") ||
+    p.includes("grafico de ph") ||
+    p.includes("curva de titulacao acido-base")
+  ) {
+    return "curva_ph";
+  }
 
-if (
-  p.includes("curva complexometrica") ||
-  p.includes("curva com edta") ||
-  p.includes("curva de pm") ||
-  p.includes("grafico pm") ||
-  p.includes("interpretar curva complexometrica")
-) {
-  return "curva_complexometrica";
-}
+  if (
+    p.includes("monoprotico") ||
+    p.includes("acido monoprotico") ||
+    p.includes("uma equivalencia") ||
+    p.includes("um proton")
+  ) {
+    return "monoprotico";
+  }
 
+  if (
+    p.includes("poliprotico") ||
+    p.includes("acido poliprotico") ||
+    p.includes("mais de uma equivalencia") ||
+    p.includes("multiplas equivalencias") ||
+    p.includes("varios protons")
+  ) {
+    return "poliprotico";
+  }
+
+  // Conceitos gerais
   if (
     p.includes("ponto final") &&
     (p.includes("ponto de equivalencia") ||
@@ -533,7 +511,7 @@ if (
   ) {
     return "ponto_final_equivalencia";
   }
-  
+
   if (
     p.includes("ponto final") ||
     p.includes("fim da titulacao") ||
@@ -542,7 +520,7 @@ if (
   ) {
     return "ponto_final";
   }
-  
+
   if (
     p.includes("ponto de equivalencia") ||
     p.includes("volume de equivalencia") ||
@@ -551,7 +529,7 @@ if (
   ) {
     return "ponto_equivalencia";
   }
-  
+
   if (
     p.includes("curva de titulacao") ||
     p.includes("grafico da titulacao") ||
@@ -559,7 +537,7 @@ if (
   ) {
     return "curva";
   }
-  
+
   if (
     p.includes("concentracao molar") ||
     p.includes("molaridade") ||
@@ -568,7 +546,7 @@ if (
   ) {
     return "concentracao_molar";
   }
-  
+
   if (
     (p.includes("estequiometria") ||
       p.includes("relacao molar") ||
@@ -589,7 +567,7 @@ if (
   ) {
     return "estequiometria";
   }
-  
+
   if (
     p.includes("volume de equivalencia") ||
     p.includes("volume do pe") ||
@@ -597,7 +575,7 @@ if (
   ) {
     return "volume_equivalencia";
   }
-  
+
   if (
     p.includes("erro de titulacao") ||
     p.includes("erro experimental") ||
@@ -605,7 +583,7 @@ if (
   ) {
     return "erro_titulacao";
   }
-  
+
   if (
     p.includes("unidades") ||
     p.includes("mol por litro") ||
@@ -615,7 +593,7 @@ if (
   ) {
     return "unidades";
   }
-  
+
   if (
     p.includes("arredondamento") ||
     p.includes("casas decimais") ||
@@ -624,6 +602,7 @@ if (
     return "arredondamento";
   }
 
+  // Conceitos essenciais de complexometria
   if (
     p.includes("complexante auxiliar") ||
     p.includes("ligante auxiliar") ||
@@ -1044,7 +1023,7 @@ function montarComplementoComDados(item: ItemConhecimento, contexto: string) {
       return `\n\nPara este sistema específico, a avaliação deve considerar os dados calculados.${kfEfetivo ? ` Kf efetivo: ${kfEfetivo}.` : ""}${mensagem ? ` Mensagem do sistema: ${mensagem}.` : ""}${resumo ? ` Resumo químico: ${resumo}.` : ""}`;
     }
   }
-  
+
   const dados = extrairDadosDaPlataforma(contexto);
 
   if (item.assunto === "indicador" && dados.indicador) {
@@ -1082,41 +1061,53 @@ export function responderAnalito(
   pergunta: string,
   contexto: string
 ): ResultadoAnalito {
-  const assuntoDireto = detectarAssunto(pergunta);
+  const perguntaNormalizada = normalizarTexto(pergunta);
+  const contextoNormalizadoDireto = normalizarTexto(contexto);
 
-  if (assuntoDireto === "numero_equivalencias_contexto") {
+  if (
+    perguntaNormalizada.includes("quantas equivalencias") ||
+    perguntaNormalizada.includes("quantas equivalencia") ||
+    perguntaNormalizada.includes("numero de equivalencias") ||
+    perguntaNormalizada.includes("numero de equivalencia") ||
+    perguntaNormalizada.includes("quantos pontos de equivalencia")
+  ) {
     const item = baseConhecimento.find(
       (registro) => registro.assunto === "numero_equivalencias_contexto"
     );
 
-    if (item) {
-      const numero = extrairValorDoContexto(
-        contexto,
-        "Número de equivalências"
-      );
-      const volumes = extrairValorDoContexto(
-        contexto,
-        "Volumes de equivalência"
-      );
-      const tipoSistema = extrairValorDoContexto(contexto, "Tipo de sistema");
+    const numero =
+      contextoNormalizadoDireto.match(/numero de equivalencias:\s*([^.;\n]+)/)
+        ?.[1] ??
+      contextoNormalizadoDireto.match(/numero de equivalencia:\s*([^.;\n]+)/)
+        ?.[1] ??
+      "";
 
-      return {
-        encontrou: true,
-        id: item.id,
-        modulo: item.modulo,
-        topico: item.topico,
-        assunto: item.assunto,
-        intencao: item.intencao,
-        pontuacao: 999,
-        resposta: `${item.respostaCompleta}${
-          numero
-            ? `\n\nNeste sistema, o número de equivalências é ${numero}.${
-                tipoSistema ? ` Tipo de sistema: ${tipoSistema}.` : ""
-              }${volumes ? ` Volumes de equivalência: ${volumes}.` : ""}`
-            : ""
-        }`,
-      };
-    }
+      const tipoSistema =
+      contextoNormalizadoDireto.match(/tipo de sistema:\s*([^.;\n]+)/)?.[1] ?? "";
+    
+    const volumes =
+      contextoNormalizadoDireto.match(/volumes de equivalencia:\s*([^.\n]+)/)?.[1] ??
+      "";
+
+    return {
+      encontrou: true,
+      id: item?.id ?? "acido_base_numero_equivalencias_contexto",
+      modulo: item?.modulo ?? "acido-base",
+      topico: item?.topico ?? "Número de equivalências",
+      assunto: "numero_equivalencias_contexto",
+      intencao: item?.intencao ?? "interpretacao",
+      pontuacao: 999,
+      resposta: `${
+        item?.respostaCompleta ??
+        "O número de equivalências indica quantos pontos estequiométricos principais aparecem no sistema."
+      }${
+        numero
+          ? `\n\nNeste sistema, o número de equivalências é ${numero.trim()}.${
+              tipoSistema ? ` Tipo de sistema: ${tipoSistema}.` : ""
+            }${volumes ? ` Volumes de equivalência: ${volumes}.` : ""}`
+          : "\n\nNão encontrei o valor numérico de equivalências no contexto atual."
+      }`,
+    };
   }
 
   const assuntoPergunta = detectarAssunto(pergunta);
