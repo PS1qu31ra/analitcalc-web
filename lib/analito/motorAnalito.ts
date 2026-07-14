@@ -235,6 +235,124 @@ function detectarAssunto(pergunta: string) {
     return "quando_usar_mascarante";
   }
 
+  // Diagnóstico de problemas e limitações
+if (
+  p.includes("resultado deu ruim") ||
+  p.includes("resultado ficou ruim") ||
+  p.includes("resultado ruim") ||
+  p.includes("por que deu ruim") ||
+  p.includes("pq deu ruim") ||
+  p.includes("resultado estranho") ||
+  p.includes("resultado nao ficou bom") ||
+  p.includes("resultado não ficou bom")
+) {
+  return "resultado_ruim_diagnostico";
+}
+
+if (
+  p.includes("titulacao nao confiavel") ||
+  p.includes("titulação não confiável") ||
+  p.includes("pouco confiavel") ||
+  p.includes("pouco confiável") ||
+  p.includes("nao posso confiar") ||
+  p.includes("não posso confiar") ||
+  p.includes("resultado nao confiavel") ||
+  p.includes("resultado não confiável") ||
+  p.includes("confiabilidade da titulacao") ||
+  p.includes("confiabilidade da titulação")
+) {
+  return "titulacao_nao_confiavel";
+}
+
+if (
+  p.includes("sistema nao recomenda indicador") ||
+  p.includes("sistema não recomenda indicador") ||
+  p.includes("nao apareceu indicador") ||
+  p.includes("não apareceu indicador") ||
+  p.includes("nenhum indicador") ||
+  p.includes("nenhum indicador compativel") ||
+  p.includes("nenhum indicador compatível") ||
+  p.includes("sem indicador recomendado") ||
+  p.includes("indicador nao encontrado") ||
+  p.includes("indicador não encontrado")
+) {
+  return "sem_indicador_recomendado";
+}
+
+if (
+  p.includes("ph atrapalhou") ||
+  p.includes("ph prejudicou") ||
+  p.includes("ph deixou ruim") ||
+  p.includes("ph pode atrapalhar") ||
+  p.includes("ph inadequado") ||
+  p.includes("ph ruim") ||
+  p.includes("como o ph prejudicou") ||
+  p.includes("ph nao favorece") ||
+  p.includes("ph não favorece")
+) {
+  return "ph_atrapalhou";
+}
+
+if (
+  (p.includes("ponto de equivalencia estranho") ||
+    p.includes("ponto de equivalência estranho") ||
+    p.includes("pe estranho") ||
+    p.includes("pe ficou estranho") ||
+    p.includes("pe pouco definido") ||
+    p.includes("ponto de equivalencia pouco definido") ||
+    p.includes("ponto de equivalência pouco definido")) &&
+  (p.includes("complexometria") ||
+    p.includes("edta") ||
+    p.includes("kf") ||
+    p.includes("metal"))
+) {
+  return "pe_estranho_complexometria";
+}
+
+if (
+  (p.includes("ponto de equivalencia estranho") ||
+    p.includes("ponto de equivalência estranho") ||
+    p.includes("pe ficou diferente") ||
+    p.includes("pe diferente do esperado") ||
+    p.includes("curva acido-base estranha") ||
+    p.includes("curva ácido-base estranha") ||
+    p.includes("curva de ph estranha") ||
+    p.includes("salto de ph pequeno") ||
+    p.includes("salto de pH pequeno")) &&
+  (p.includes("acido-base") ||
+    p.includes("ácido-base") ||
+    p.includes("ph") ||
+    p.includes("curva"))
+) {
+  return "pe_estranho_acido_base";
+}
+
+if (
+  p.includes("revisar dados de entrada") ||
+  p.includes("dados de entrada") ||
+  p.includes("quais dados devo conferir") ||
+  p.includes("o que devo revisar") ||
+  p.includes("preenchi errado") ||
+  p.includes("preenchi algo errado") ||
+  p.includes("entrada errada") ||
+  p.includes("valor informado errado") ||
+  p.includes("dados informados")
+) {
+  return "revisar_dados_entrada";
+}
+
+if (
+  p.includes("resultado limitado") ||
+  p.includes("limitacao do resultado") ||
+  p.includes("limitação do resultado") ||
+  p.includes("resultado com limitacao") ||
+  p.includes("resultado com limitação") ||
+  p.includes("limite do resultado") ||
+  p.includes("interpretar com cautela")
+) {
+  return "resultado_limitado";
+}
+
   // Dados contextuais de complexometria
   if (
     (p.includes("qual") || p.includes("me diga") || p.includes("valor")) &&
