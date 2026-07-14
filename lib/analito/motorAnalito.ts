@@ -102,6 +102,126 @@ function detectarAssunto(pergunta: string) {
   }
 
   if (
+    p.includes("titulacao acido-base") ||
+    p.includes("titulacao acido base") ||
+    p.includes("titulacao de neutralizacao") ||
+    p.includes("neutralizacao acido-base") ||
+    p.includes("neutralizacao acido base")
+  ) {
+    return "titulacao_acido_base";
+  }
+  
+  if (
+    palavras.includes("ph") ||
+    p.includes("potencial hidrogenionico") ||
+    p.includes("concentracao de h")
+  ) {
+    return "ph";
+  }
+  
+  if (
+    palavras.includes("ka") ||
+    p.includes("constante de acidez") ||
+    p.includes("constante acida") ||
+    p.includes("dissociacao acida")
+  ) {
+    return "ka";
+  }
+  
+  if (
+    palavras.includes("pka") ||
+    p.includes("menos log de ka") ||
+    p.includes("relacao entre pka e ka")
+  ) {
+    return "pka";
+  }
+  
+  if (
+    p.includes("acido forte") ||
+    p.includes("ioniza completamente") ||
+    p.includes("dissociacao completa")
+  ) {
+    return "acido_forte";
+  }
+  
+  if (
+    p.includes("acido fraco") ||
+    p.includes("ioniza parcialmente") ||
+    p.includes("dissociacao parcial") ||
+    p.includes("ka pequeno")
+  ) {
+    return "acido_fraco";
+  }
+  
+  if (
+    p.includes("base forte") ||
+    p.includes("hidroxido forte") ||
+    p.includes("libera oh") ||
+    p.includes("base totalmente dissociada")
+  ) {
+    return "base_forte";
+  }
+  
+  if (
+    p.includes("base fraca") ||
+    p.includes("kb") ||
+    p.includes("equilibrio da base") ||
+    p.includes("amonia base fraca")
+  ) {
+    return "base_fraca";
+  }
+  
+  if (
+    p.includes("ponto de equivalencia acido-base") ||
+    p.includes("ponto de equivalencia acido base") ||
+    p.includes("pe acido-base") ||
+    p.includes("pe acido base") ||
+    p.includes("equivalencia acido-base") ||
+    p.includes("neutralizacao estequiometrica")
+  ) {
+    return "ponto_equivalencia_acido_base";
+  }
+  
+  if (
+    p.includes("indicador acido-base") ||
+    p.includes("indicador acido base") ||
+    p.includes("indicador de ph") ||
+    p.includes("faixa de viragem") ||
+    p.includes("viragem acido-base")
+  ) {
+    return "indicador_acido_base";
+  }
+  
+  if (
+    p.includes("curva de ph") ||
+    p.includes("curva acido-base") ||
+    p.includes("curva acido base") ||
+    p.includes("grafico de ph") ||
+    p.includes("curva de titulacao acido-base")
+  ) {
+    return "curva_ph";
+  }
+  
+  if (
+    p.includes("monoprotico") ||
+    p.includes("acido monoprotico") ||
+    p.includes("uma equivalencia") ||
+    p.includes("um proton")
+  ) {
+    return "monoprotico";
+  }
+  
+  if (
+    p.includes("poliprotico") ||
+    p.includes("acido poliprotico") ||
+    p.includes("mais de uma equivalencia") ||
+    p.includes("multiplas equivalencias") ||
+    p.includes("varios protons")
+  ) {
+    return "poliprotico";
+  }
+
+  if (
     (p.includes("qual") ||
       p.includes("me diga") ||
       p.includes("valor")) &&
