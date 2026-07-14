@@ -102,6 +102,29 @@ function detectarAssunto(pergunta: string) {
   }
 
   if (
+    p.includes("quantas equivalencias") ||
+    p.includes("quantas equivalencia") ||
+    p.includes("quantos pontos de equivalencia") ||
+    p.includes("numero de equivalencias") ||
+    p.includes("numero de equivalencia") ||
+    p.includes("tem quantas equivalencias") ||
+    p.includes("tem quantas equivalencia") ||
+    p.includes("qtd equivalencias") ||
+    p.includes("quantidade de equivalencias")
+  ) {
+    return "numero_equivalencias_contexto";
+  }
+
+  if (
+    p.includes("quantas equivalencias") ||
+    p.includes("quantos pontos de equivalencia") ||
+    p.includes("numero de equivalencias") ||
+    p.includes("tem quantas equivalencias")
+  ) {
+    return "numero_equivalencias_contexto";
+  }
+
+  if (
     p.includes("titulacao acido-base") ||
     p.includes("titulacao acido base") ||
     p.includes("titulacao de neutralizacao") ||
@@ -219,6 +242,67 @@ function detectarAssunto(pergunta: string) {
     p.includes("varios protons")
   ) {
     return "poliprotico";
+  }
+  if (
+    (p.includes("qual") ||
+      p.includes("quem") ||
+      p.includes("me diga")) &&
+    (p.includes("titulante") ||
+      p.includes("titulante usado") ||
+      p.includes("titulante neste sistema"))
+  ) {
+    return "titulante_contexto";
+  }
+  
+  if (
+    (p.includes("qual") ||
+      p.includes("quem") ||
+      p.includes("me diga")) &&
+    (p.includes("titulado") ||
+      p.includes("titulado usado") ||
+      p.includes("titulado neste sistema"))
+  ) {
+    return "titulado_contexto";
+  }
+  
+  if (
+    (p.includes("qual") ||
+      p.includes("me diga") ||
+      p.includes("valor")) &&
+    (p.includes("volume de equivalencia") ||
+      p.includes("volume do pe") ||
+      p.includes("volume pe"))
+  ) {
+    return "volume_equivalencia_contexto";
+  }
+  
+  if (
+    p.includes("quantas equivalencias") ||
+    p.includes("quantos pontos de equivalencia") ||
+    p.includes("numero de equivalencias") ||
+    p.includes("tem quantas equivalencias")
+  ) {
+    return "numero_equivalencias_contexto";
+  }
+  
+  if (
+    p.includes("tipo de sistema") ||
+    p.includes("monoprotico ou poliprotico") ||
+    p.includes("sistema e de qual tipo") ||
+    p.includes("sistema é de qual tipo")
+  ) {
+    return "tipo_sistema_contexto";
+  }
+  
+  if (
+    p.includes("quais sao os volumes de equivalencia") ||
+    p.includes("quais são os volumes de equivalência") ||
+    p.includes("quais sao os pes") ||
+    p.includes("quais são os pes") ||
+    p.includes("me diga os volumes de equivalencia") ||
+    p.includes("volumes de equivalencia")
+  ) {
+    return "volumes_equivalencia_contexto";
   }
 
   if (
@@ -734,6 +818,14 @@ function escaparRegex(texto: string) {
   return texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function criarVariantesRotulo(rotulo: string) {
+  const semAcento = normalizarTexto(rotulo)
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return Array.from(new Set([rotulo, semAcento]));
+}
+
 function extrairValorDoContexto(contexto: string, rotulo: string) {
   const rotulosConhecidos = [
     "Módulo",
@@ -757,13 +849,22 @@ function extrairValorDoContexto(contexto: string, rotulo: string) {
     "Volumes de equivalência",
   ];
 
+  const variantesRotuloAtual = criarVariantesRotulo(rotulo);
+
+  const rotuloAtualNormalizado = new Set(
+    variantesRotuloAtual.map((item) => normalizarTexto(item))
+  );
+
+  const alvo = variantesRotuloAtual.map(escaparRegex).join("|");
+
   const proximosRotulos = rotulosConhecidos
-    .filter((item) => item !== rotulo)
+    .flatMap(criarVariantesRotulo)
+    .filter((item) => !rotuloAtualNormalizado.has(normalizarTexto(item)))
     .map(escaparRegex)
     .join("|");
 
   const regex = new RegExp(
-    `${escaparRegex(rotulo)}:\\s*([\\s\\S]*?)(?=\\s*[.;]?\\s*(?:${proximosRotulos}):|$)`,
+    `(?:${alvo}):\\s*([\\s\\S]*?)(?=\\s*[.;]?\\s*(?:${proximosRotulos}):|$)`,
     "i"
   );
 
@@ -787,6 +888,70 @@ function extrairDadosDaPlataforma(contexto: string) {
 }
 
 function montarComplementoComDados(item: ItemConhecimento, contexto: string) {
+
+  if (item.assunto === "titulante_contexto") {
+    const titulante = extrairValorDoContexto(contexto, "Titulante");
+    const titulado = extrairValorDoContexto(contexto, "Titulado");
+    const tipo = extrairValorDoContexto(contexto, "Tipo de titulação");
+
+    if (titulante) {
+      return `\n\nNeste sistema, o titulante é ${titulante}.${titulado ? ` Ele está reagindo com o titulado ${titulado}.` : ""}${tipo ? ` Tipo de titulação: ${tipo}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "titulado_contexto") {
+    const titulado = extrairValorDoContexto(contexto, "Titulado");
+    const titulante = extrairValorDoContexto(contexto, "Titulante");
+    const tipo = extrairValorDoContexto(contexto, "Tipo de titulação");
+
+    if (titulado) {
+      return `\n\nNeste sistema, o titulado é ${titulado}.${titulante ? ` Ele está sendo titulado com ${titulante}.` : ""}${tipo ? ` Tipo de titulação: ${tipo}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "volume_equivalencia_contexto") {
+    const volume = extrairValorDoContexto(contexto, "Volume de equivalência");
+    const volumes = extrairValorDoContexto(contexto, "Volumes de equivalência");
+    const titulante = extrairValorDoContexto(contexto, "Titulante");
+
+    if (volume) {
+      return `\n\nNeste sistema, o volume de equivalência é ${volume}.${titulante ? ` Esse volume se refere ao titulante ${titulante}.` : ""}`;
+    }
+
+    if (volumes) {
+      return `\n\nNeste sistema, os volumes de equivalência são: ${volumes}.`;
+    }
+  }
+
+  if (item.assunto === "numero_equivalencias_contexto") {
+    const numero = extrairValorDoContexto(contexto, "Número de equivalências");
+    const volumes = extrairValorDoContexto(contexto, "Volumes de equivalência");
+    const tipoSistema = extrairValorDoContexto(contexto, "Tipo de sistema");
+
+    if (numero) {
+      return `\n\nNeste sistema, o número de equivalências é ${numero}.${tipoSistema ? ` Tipo de sistema: ${tipoSistema}.` : ""}${volumes ? ` Volumes de equivalência: ${volumes}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "tipo_sistema_contexto") {
+    const tipoSistema = extrairValorDoContexto(contexto, "Tipo de sistema");
+    const numero = extrairValorDoContexto(contexto, "Número de equivalências");
+    const volumes = extrairValorDoContexto(contexto, "Volumes de equivalência");
+
+    if (tipoSistema) {
+      return `\n\nNeste cálculo, o tipo de sistema é ${tipoSistema}.${numero ? ` Número de equivalências: ${numero}.` : ""}${volumes ? ` Volumes de equivalência: ${volumes}.` : ""}`;
+    }
+  }
+
+  if (item.assunto === "volumes_equivalencia_contexto") {
+    const volumes = extrairValorDoContexto(contexto, "Volumes de equivalência");
+    const numero = extrairValorDoContexto(contexto, "Número de equivalências");
+    const tipoSistema = extrairValorDoContexto(contexto, "Tipo de sistema");
+
+    if (volumes) {
+      return `\n\nNeste sistema, os volumes de equivalência são: ${volumes}.${numero ? ` Número de equivalências: ${numero}.` : ""}${tipoSistema ? ` Tipo de sistema: ${tipoSistema}.` : ""}`;
+    }
+  }
   if (item.assunto === "kf_efetivo_contexto") {
     const kfEfetivo = extrairValorDoContexto(contexto, "Kf efetivo");
     const metal = extrairValorDoContexto(contexto, "Metal principal");
@@ -884,7 +1049,74 @@ export function responderAnalito(
   pergunta: string,
   contexto: string
 ): ResultadoAnalito {
-  const ranking = baseConhecimento
+  const assuntoDireto = detectarAssunto(pergunta);
+
+  if (assuntoDireto === "numero_equivalencias_contexto") {
+    const item = baseConhecimento.find(
+      (registro) => registro.assunto === "numero_equivalencias_contexto"
+    );
+
+    if (item) {
+      const numero = extrairValorDoContexto(
+        contexto,
+        "Número de equivalências"
+      );
+      const volumes = extrairValorDoContexto(
+        contexto,
+        "Volumes de equivalência"
+      );
+      const tipoSistema = extrairValorDoContexto(contexto, "Tipo de sistema");
+
+      return {
+        encontrou: true,
+        id: item.id,
+        modulo: item.modulo,
+        topico: item.topico,
+        assunto: item.assunto,
+        intencao: item.intencao,
+        pontuacao: 999,
+        resposta: `${item.respostaCompleta}${
+          numero
+            ? `\n\nNeste sistema, o número de equivalências é ${numero}.${
+                tipoSistema ? ` Tipo de sistema: ${tipoSistema}.` : ""
+              }${volumes ? ` Volumes de equivalência: ${volumes}.` : ""}`
+            : ""
+        }`,
+      };
+    }
+  }
+
+  const assuntoPergunta = detectarAssunto(pergunta);
+  const contextoNormalizado = normalizarTexto(contexto);
+
+  const contextoComplexometria =
+    contextoNormalizado.includes("complexometria") ||
+    contextoNormalizado.includes("edta");
+
+  const contextoAcidoBase =
+    contextoNormalizado.includes("acido-base") ||
+    contextoNormalizado.includes("acido base") ||
+    contextoNormalizado.includes("titulacoes acido-base") ||
+    contextoNormalizado.includes("titulacoes acido base");
+
+  const candidatos = baseConhecimento.filter((item) => {
+    if (assuntoPergunta) {
+      return (
+        item.assunto === assuntoPergunta ||
+        item.modulo === "geral" ||
+        (contextoComplexometria && item.modulo === "complexometria") ||
+        (contextoAcidoBase && item.modulo === "acido-base")
+      );
+    }
+
+    return (
+      item.modulo === "geral" ||
+      (contextoComplexometria && item.modulo === "complexometria") ||
+      (contextoAcidoBase && item.modulo === "acido-base")
+    );
+  });
+
+  const ranking = candidatos
     .map((item) => ({
       item,
       pontuacao: calcularPontuacao(item, pergunta, contexto),
