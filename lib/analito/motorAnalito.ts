@@ -101,6 +101,93 @@ if (
   return "pm";
 }
 
+if (
+  p.includes("sistema quantitativo") ||
+  p.includes("titulacao quantitativa") ||
+  p.includes("resultado quantitativo") ||
+  p.includes("bom para titular") ||
+  p.includes("da para titular")
+) {
+  return "sistema_quantitativo";
+}
+
+if (
+  p.includes("kf efetivo baixo") ||
+  p.includes("kf efetivo ficou baixo") ||
+  p.includes("constante efetiva baixa") ||
+  p.includes("sistema nao quantitativo") ||
+  p.includes("complexo pouco favorecido")
+) {
+  return "kf_efetivo_baixo";
+}
+
+if (
+  p.includes("ph adequado") ||
+  p.includes("ph esta adequado") ||
+  p.includes("ph bom") ||
+  p.includes("por que o ph importa") ||
+  p.includes("importancia do ph")
+) {
+  return "ph_adequado";
+}
+
+if (
+  p.includes("indicador confiavel") ||
+  p.includes("indicador recomendado") ||
+  p.includes("esse indicador e bom") ||
+  p.includes("posso confiar no indicador") ||
+  p.includes("indicador sugerido")
+) {
+  return "indicador_confiavel";
+}
+
+if (
+  p.includes("interferente atrapalha") ||
+  p.includes("interferente interfere") ||
+  p.includes("risco de interferencia") ||
+  p.includes("por que aparece risco") ||
+  p.includes("competicao com edta")
+) {
+  return "interferente_atrapalha";
+}
+
+if (
+  p.includes("titulacao parcial") ||
+  p.includes("parcialmente quantitativo") ||
+  p.includes("resultado parcial")
+) {
+  return "titulacao_parcial";
+}
+
+if (
+  p.includes("titulacao ruim") ||
+  p.includes("sistema ruim") ||
+  p.includes("nao serve para titular") ||
+  p.includes("titulacao inviavel") ||
+  p.includes("complexacao insuficiente")
+) {
+  return "titulacao_ruim";
+}
+
+if (
+  p.includes("mascarante") ||
+  p.includes("agente mascarante") ||
+  p.includes("mascaramento") ||
+  p.includes("mascarar interferente")
+) {
+  return "mascarante";
+}
+
+if (
+  p.includes("curva complexometrica") ||
+  p.includes("curva com edta") ||
+  p.includes("curva de pm") ||
+  p.includes("grafico pm") ||
+  p.includes("interpretar curva complexometrica")
+) {
+  return "curva_complexometrica";
+}
+
   if (
     p.includes("ponto final") &&
     (p.includes("ponto de equivalencia") ||
