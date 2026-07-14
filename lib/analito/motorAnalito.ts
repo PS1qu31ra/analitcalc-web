@@ -101,6 +101,126 @@ function detectarAssunto(pergunta: string) {
     return "pm";
   }
 
+  // Boas práticas de uso do AnalitCalc
+if (
+  p.includes("como usar o analitcalc") ||
+  p.includes("usar o analitcalc corretamente") ||
+  p.includes("como devo usar o sistema") ||
+  p.includes("melhor forma de usar") ||
+  p.includes("como usar a plataforma") ||
+  p.includes("orientacao de uso") ||
+  p.includes("orientação de uso")
+) {
+  return "como_usar_analitcalc";
+}
+
+if (
+  p.includes("o que devo preencher primeiro") ||
+  p.includes("por onde começo") ||
+  p.includes("por onde comeco") ||
+  p.includes("começar o cálculo") ||
+  p.includes("comecar o calculo") ||
+  p.includes("qual dado informar primeiro") ||
+  p.includes("primeiro dado") ||
+  p.includes("preenchimento inicial")
+) {
+  return "preencher_primeiro";
+}
+
+if (
+  p.includes("como evitar erro no calculo") ||
+  p.includes("como evitar erro no cálculo") ||
+  p.includes("evitar resultado errado") ||
+  p.includes("nao errar o preenchimento") ||
+  p.includes("não errar o preenchimento") ||
+  p.includes("evitar erro de preenchimento") ||
+  p.includes("resultado errado") ||
+  p.includes("calculo errado") ||
+  p.includes("cálculo errado")
+) {
+  return "evitar_erro_calculo";
+}
+
+if (
+  p.includes("posso confiar no resultado") ||
+  p.includes("resultado confiavel") ||
+  p.includes("resultado confiável") ||
+  p.includes("o resultado é confiável") ||
+  p.includes("o resultado e confiavel") ||
+  p.includes("quando posso confiar") ||
+  p.includes("confiar no calculo") ||
+  p.includes("confiar no cálculo")
+) {
+  return "confiar_resultado";
+}
+
+if (
+  p.includes("como interpretar os alertas") ||
+  p.includes("alertas do sistema") ||
+  p.includes("mensagem do sistema") ||
+  p.includes("o que significam os alertas") ||
+  p.includes("devo prestar atencao") ||
+  p.includes("devo prestar atenção") ||
+  p.includes("aviso do sistema") ||
+  p.includes("observacao do sistema") ||
+  p.includes("observação do sistema")
+) {
+  return "alertas_sistema";
+}
+
+if (
+  p.includes("analito faz calculo") ||
+  p.includes("analito faz cálculo") ||
+  p.includes("analito calcula") ||
+  p.includes("analito calcula sozinho") ||
+  p.includes("chat faz calculo") ||
+  p.includes("chat faz cálculo") ||
+  p.includes("o bot calcula") ||
+  p.includes("assistente calcula") ||
+  p.includes("calcular sozinho")
+) {
+  return "analito_nao_calcula";
+}
+
+if (
+  p.includes("resultado substitui validacao") ||
+  p.includes("resultado substitui validação") ||
+  p.includes("usar resultado como definitivo") ||
+  p.includes("resultado definitivo") ||
+  p.includes("resultado absoluto") ||
+  p.includes("garantia absoluta") ||
+  p.includes("validacao experimental") ||
+  p.includes("validação experimental") ||
+  p.includes("substitui experimento")
+) {
+  return "resultado_nao_substitui_validacao";
+}
+
+if (
+  p.includes("usar resultado com cautela") ||
+  p.includes("interpretar com cautela") ||
+  p.includes("resultado com cautela") ||
+  p.includes("quando devo ter cautela") ||
+  p.includes("por que ter cautela") ||
+  p.includes("cuidado ao interpretar") ||
+  p.includes("interpretacao cuidadosa") ||
+  p.includes("interpretação cuidadosa")
+) {
+  return "usar_resultado_com_cautela";
+}
+
+if (
+  p.includes("como estudar usando o analitcalc") ||
+  p.includes("usar analitcalc para estudar") ||
+  p.includes("usar analitcalc para aprender") ||
+  p.includes("como aprender com o analitcalc") ||
+  p.includes("analitcalc ajuda no estudo") ||
+  p.includes("estudar com o analitcalc") ||
+  p.includes("aprendizado com analitcalc")
+) {
+  return "estudar_com_analitcalc";
+}
+
   // Perguntas contextuais ácido-base
   if (
     p.includes("quantas equivalencias") ||
