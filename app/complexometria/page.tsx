@@ -815,7 +815,7 @@ const nomeComplexanteAuxiliar =
                     }
                     placeholder="Ex: 0,10"
                   />
-                  <small>mol·L⁻¹</small>
+                  <small>mol·L⁻¹L</small>
                 </label>
               </>
             )}
@@ -929,66 +929,66 @@ const nomeComplexanteAuxiliar =
       </section>
 
       {resultado && (
-        <section className="container tabsSection">
-          <div className="moduleTabs">
-            <button
-              type="button"
-              className={abaAtiva === "visao" ? "active" : ""}
-              onClick={() => setAbaAtiva("visao")}
-            >
-              Visão geral
-            </button>
+  <section className="container tabsSection">
+    <div className="moduleTabs">
+      <button
+        type="button"
+        className={abaAtiva === "visao" ? "active" : ""}
+        onClick={() => setAbaAtiva("visao")}
+      >
+        Visão geral
+      </button>
 
-            <button
-  type="button"
-  className={abaAtiva === "baseCalculo" ? "active" : ""}
-  onClick={() => setAbaAtiva("baseCalculo")}
->
-  Base do cálculo
-</button>
+      <button
+        type="button"
+        className={abaAtiva === "interferentes" ? "active" : ""}
+        onClick={() => setAbaAtiva("interferentes")}
+      >
+        Interferentes
+      </button>
 
-            <button
-              type="button"
-              className={abaAtiva === "curva" ? "active" : ""}
-              onClick={() => setAbaAtiva("curva")}
-            >
-              Curva
-            </button>
+      <button
+        type="button"
+        className={abaAtiva === "baseCalculo" ? "active" : ""}
+        onClick={() => setAbaAtiva("baseCalculo")}
+      >
+        Base do cálculo
+      </button>
 
-            <button
-              type="button"
-              className={abaAtiva === "indicadores" ? "active" : ""}
-              onClick={() => setAbaAtiva("indicadores")}
-            >
-              Indicadores
-            </button>
+      <button
+        type="button"
+        className={abaAtiva === "curva" ? "active" : ""}
+        onClick={() => setAbaAtiva("curva")}
+      >
+        Curva
+      </button>
 
-            <button
-              type="button"
-              className={abaAtiva === "interferentes" ? "active" : ""}
-              onClick={() => setAbaAtiva("interferentes")}
-            >
-              Interferentes
-            </button>
+      <button
+        type="button"
+        className={abaAtiva === "indicadores" ? "active" : ""}
+        onClick={() => setAbaAtiva("indicadores")}
+      >
+        Indicadores
+      </button>
 
-            <button
-  type="button"
-  className={abaAtiva === "tempoReal" ? "active" : ""}
-  onClick={() => setAbaAtiva("tempoReal")}
->
-  Tempo real
-</button>
+      <button
+        type="button"
+        className={abaAtiva === "tempoReal" ? "active" : ""}
+        onClick={() => setAbaAtiva("tempoReal")}
+      >
+        Tempo real
+      </button>
 
-            <button
-              type="button"
-              className={abaAtiva === "derivadas" ? "active" : ""}
-              onClick={() => setAbaAtiva("derivadas")}
-            >
-              Derivadas
-            </button>
-          </div>
-        </section>
-      )}
+      <button
+        type="button"
+        className={abaAtiva === "derivadas" ? "active" : ""}
+        onClick={() => setAbaAtiva("derivadas")}
+      >
+        Derivadas
+      </button>
+    </div>
+  </section>
+)}
 
       {resultado && abaAtiva === "visao" && (
         <section className="container calculatorSection">
@@ -1216,7 +1216,7 @@ const nomeComplexanteAuxiliar =
 
             <div className="resultCard">
               <span>
-                K<sub>f</sub> antes da correção
+              K<sub>f</sub> condicional
               </span>
               <strong>
                 {formatarCientifico(resultado.metalPrincipal.kfCondicional)}
@@ -1225,7 +1225,7 @@ const nomeComplexanteAuxiliar =
 
             <div className="resultCard">
               <span>
-                K<sub>f</sub> efetivo após correção
+              K<sub>f</sub> efetivo
               </span>
               <strong>
                 {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}

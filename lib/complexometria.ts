@@ -322,7 +322,7 @@ function avaliarFaixaPHEdta(
     mensagem = `O pH informado está dentro da faixa recomendada para ${metalPrincipal.metal}.`;
   } else {
     status = "pH fora da faixa";
-    mensagem = `O pH informado está fora da faixa recomendada para ${metalPrincipal.metal}. Sugestão: usar pH próximo de ${pHIdeal}.`;
+    mensagem = `O pH informado está fora da faixa recomendada para ${metalPrincipal.metal}. Sugestão: na ausênica de agente complexante auxiliar, usar pH próximo de ${pHIdeal}.`;
   }
 
   if (kfEfetivo < 1e8) {
