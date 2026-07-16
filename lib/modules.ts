@@ -18,9 +18,17 @@ export const modules: AnalitCalcModule[] = [
   {
     title: "Titulações ácido-base",
     description:
-  "Estrutura para titulações de ácidos monopróticos, bases monobásicas, ácidos polipróticos e bases polibásicas, com curvas de pH, regiões tampão, indicadores e base do cálculo.",
+      "Estrutura para titulações de ácidos monopróticos, bases monobásicas, ácidos polipróticos e bases polibásicas, com curvas de pH, regiões tampão, indicadores e base do cálculo.",
     href: "/acido-base",
     status: "Disponível",
     area: "Equilíbrio ácido-base",
+  },
+  {
+    title: "Volumetria de precipitação",
+    description:
+      "Módulo em desenvolvimento para equilíbrio de solubilidade, Kps, produto iônico, efeito do íon comum, curvas de titulação por precipitação, métodos e interferências.",
+    href: "/precipitacao",
+    status: "Em desenvolvimento",
+    area: "Equilíbrio e titulação",
   },
 ];

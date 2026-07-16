@@ -4860,3 +4860,256 @@ section.container.calculatorSection + section.container.calculatorSection {
   border-color: rgba(168, 0, 0, 0.34);
   box-shadow: 0 14px 28px rgba(122, 0, 0, 0.1);
 }
+
+.stepInputRow {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 54px;
+  gap: 10px;
+  align-items: center;
+}
+
+.stepInputRow input {
+  width: 100%;
+}
+
+.stepInputButton {
+  height: 52px;
+  min-width: 54px;
+  padding: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.piKpsGraphicBox {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 42px;
+}
+
+.piKpsScale {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 12px 1fr;
+  height: 64px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid #d9d9d9;
+  background: #ffffff;
+}
+
+.piKpsZone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.piKpsZoneLeft {
+  background: #eef6ff;
+  color: #1d4ed8;
+}
+
+.piKpsZoneCenter {
+  background: #fff7e6;
+  color: transparent;
+  position: relative;
+}
+
+.piKpsZoneCenter::after {
+  content: "Saturada";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #b45309;
+  font-weight: 800;
+}
+
+.piKpsZoneRight {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.piKpsAxisLabels {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #667085;
+  text-align: center;
+}
+
+.piKpsTrack {
+  position: relative;
+  height: 86px;
+  border-radius: 999px;
+  overflow: visible;
+  border: 1px solid #eadede;
+  background: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 10px 28px rgba(120, 40, 40, 0.06);
+}
+
+.piKpsTrackBackground {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #eef6ff 0%,
+    #dfeafa 49%,
+    #fbf4dd 49%,
+    #efe2b9 51%,
+    #fff0f1 51%,
+    #f6dddd 100%
+  );
+  overflow: hidden;
+}
+
+.piKpsEquilibriumBand {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, #fbf4dd 0%, #efe2b9 100%);
+  box-shadow:
+    0 0 0 1px rgba(154, 100, 32, 0.12),
+    0 0 18px rgba(154, 100, 32, 0.16);
+}
+
+.piKpsZoneLabel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.piKpsZoneLabel strong {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.piKpsZoneLabel small {
+  font-size: 0.82rem;
+  font-weight: 800;
+  opacity: 0.82;
+}
+
+.piKpsZoneLabelLeft {
+  left: 24%;
+  color: #2f56a6;
+}
+
+.piKpsZoneLabelCenter {
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #9a6420;
+}
+
+.piKpsZoneLabelRight {
+  right: 22%;
+  color: #a13b52;
+}
+
+.piKpsMarker {
+  position: absolute;
+  top: 0;
+  height: 86px;
+  width: 0;
+  transform: translateX(-50%);
+  z-index: 6;
+  transition: left 0.25s ease;
+  pointer-events: none;
+}
+
+.piKpsMarkerTriangle {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-bottom: 16px solid #b0893f;
+  filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.14));
+  z-index: 7;
+}
+
+.piKpsMarkerTriangle.insaturada {
+  border-bottom-color: #3559a8;
+}
+
+.piKpsMarkerTriangle.equilibrio {
+  border-bottom-color: #b0893f;
+}
+
+.piKpsMarkerTriangle.precipitacao {
+  border-bottom-color: #a14b63;
+}
+
+.piKpsMarkerBadge {
+  position: absolute;
+  left: 50%;
+  top: -38px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 900;
+  background: #ffffff;
+  border: 1px solid transparent;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+  z-index: 6;
+}
+
+.piKpsMarkerBadge.insaturada {
+  color: #2f56a6;
+  border-color: #cdddff;
+}
+
+.piKpsMarkerBadge.equilibrio {
+  color: #9a6420;
+  border-color: #ead8a4;
+}
+
+.piKpsMarkerBadge.precipitacao {
+  color: #a13b52;
+  border-color: #f0c5cf;
+}
+
+.piKpsResumoGrid .resultCard {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.piKpsResumoGrid .resultCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+}
+
+.piKpsResumoGrid .resultCard.estado-insaturada {
+  border-left: 5px solid #5e86d6;
+}
+
+.piKpsResumoGrid .resultCard.estado-equilibrio {
+  border-left: 5px solid #c49a42;
+}
+
+.piKpsResumoGrid .resultCard.estado-precipitacao {
+  border-left: 5px solid #c45a73;
+}
