@@ -435,6 +435,16 @@ const formulaTitulanteSeletividade =
       })
     : null;
 
+    const volumesEquivalenciaIsoladosSeletividade =
+  curvaSeletividade?.seriesIsoladas.map((serie) => serie.volumeEquivalencia) ??
+  [];
+
+const curvasIsoladasComMesmoVolumeEquivalencia =
+  volumesEquivalenciaIsoladosSeletividade.length > 1 &&
+  Math.max(...volumesEquivalenciaIsoladosSeletividade) -
+    Math.min(...volumesEquivalenciaIsoladosSeletividade) <
+    1e-6;
+
 const curvaTitulacaoDireta =
   resultadoTitulacaoDireta && resultadoTitulacaoDireta.status !== "dados_invalidos"
     ? gerarCurvaTitulacaoDireta({
@@ -1735,14 +1745,47 @@ const curvaTitulacaoDireta =
       <p>
       A curva preta mostra a mistura completa, com todos os íons competindo pelo
 mesmo titulante. As curvas tracejadas mostram como cada íon se comportaria
-isoladamente. As linhas verticais indicam o fim da precipitação de cada
-espécie na mistura. Para quantificação seletiva confiável, também é avaliado
-o critério de diferença de 10⁸ entre os Kps.
+isoladamente. Quando a diferença entre os Kps atende ao critério 10⁸, o gráfico
+pode indicar um término seletivo mais confiável. Quando esse critério não é
+atendido, o gráfico mostra apenas uma região estimada de transição, sem afirmar
+separação quantitativa definitiva.
 </p>
     </div>
 
     {curvaSeletividade && (
   <GraficoPrecipitacaoSeletiva curva={curvaSeletividade} />
+)}
+
+{curvaSeletividade && (
+  <div className="explanationBox">
+    <h3>Leitura das curvas pontilhadas</h3>
+
+    <p>
+      As curvas pontilhadas representam titulações hipotéticas dos íons
+      isolados. Elas não indicam a sequência real da mistura; servem como
+      referência para comparar o comportamento de cada precipitado sozinho.
+    </p>
+
+    {curvasIsoladasComMesmoVolumeEquivalencia ? (
+      <p>
+        Neste caso, as curvas isoladas apresentam o mesmo volume de
+        equivalência porque as quantidades equivalentes de analito são iguais
+        nas condições informadas. A diferença entre as curvas aparece
+        principalmente antes da equivalência, pois cada precipitado possui um
+        Kps diferente e, portanto, controla uma concentração livre diferente de{" "}
+        {curvaSeletividade.formulaTitulante}.
+      </p>
+    ) : (
+      <p>
+        Neste caso, as curvas isoladas não apresentam o mesmo volume de
+        equivalência, porque as quantidades equivalentes de analito não são
+        iguais nas condições informadas. Espécies em maior concentração, maior
+        volume efetivo ou com estequiometria diferente exigem mais titulante
+        para atingir a equivalência. Além disso, a altura inicial de cada curva
+        também muda conforme o Kps do precipitado.
+      </p>
+    )}
+  </div>
 )}
 
 {curvaSeletividade && curvaSeletividade.comparacoesKps.length > 0 && (
@@ -1770,6 +1813,12 @@ o critério de diferença de 10⁸ entre os Kps.
         <small>
           log₁₀ da diferença: {formatarNumeroBR(comparacao.logRazaoKps, 2)}
         </small>
+
+        <small>
+  {comparacao.atendeCriterioConfiabilidade
+    ? "Os Kps são suficientemente diferentes para favorecer uma separação seletiva mais confiável."
+    : "Os Kps não são suficientemente diferentes para garantir separação quantitativa limpa; pode haver sobreposição entre as precipitações."}
+</small>
       </div>
     ))}
   </div>
@@ -2814,7 +2863,20 @@ function GraficoPrecipitacaoSeletiva({
       }[];
     }[];
     volumeMaximo: number;
-    formulaTitulante: string;
+formulaTitulante: string;
+comparacoesKps: {
+  primeiroSal: {
+    id: string;
+    formulaExibicao: string;
+  };
+  segundoSal: {
+    id: string;
+    formulaExibicao: string;
+  };
+  atendeCriterioConfiabilidade: boolean;
+  razaoKps: number;
+  logRazaoKps: number;
+}[];
   };
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -2923,6 +2985,15 @@ function GraficoPrecipitacaoSeletiva({
 
   const coresIsoladas = ["#a80000", "#2563eb", "#047857"];
 
+  const saisSemSeparacaoConfiavel = new Set<string>();
+
+curva.comparacoesKps.forEach((comparacao) => {
+  if (!comparacao.atendeCriterioConfiabilidade) {
+    saisSemSeparacaoConfiavel.add(comparacao.primeiroSal.id);
+    saisSemSeparacaoConfiavel.add(comparacao.segundoSal.id);
+  }
+});
+
   const marcadoresAcumulados = seriesIsoladasValidas.reduce<
     {
       serie: (typeof seriesIsoladasValidas)[number];
@@ -3025,6 +3096,90 @@ function GraficoPrecipitacaoSeletiva({
       )} ${yScale(primeiroProximo.pTitulante)}`;
     }
   });
+
+  function limitar(valor: number, minimo: number, maximo: number) {
+    return Math.max(minimo, Math.min(maximo, valor));
+  }
+
+  function calcularLayoutCaixaCurva({
+    xPonto,
+    yPonto,
+    deslocarParaBaixo = false,
+  }: {
+    xPonto: number;
+    yPonto: number;
+    deslocarParaBaixo?: boolean;
+  }) {
+    const larguraCaixa = 230;
+    const alturaCaixa = 38;
+    const offsetHorizontal = 34;
+    const offsetVertical = 18;
+    const margemInterna = 10;
+
+    const limiteEsquerdo = margem.left + margemInterna;
+    const limiteDireito =
+      margem.left + larguraGrafico - larguraCaixa - margemInterna;
+
+    const limiteSuperior = margem.top + margemInterna;
+    const limiteInferior =
+      margem.top + alturaGrafico - alturaCaixa - margemInterna;
+
+    let lado: "direita" | "esquerda" =
+      xPonto < margem.left + larguraGrafico * 0.68 ? "direita" : "esquerda";
+
+    if (
+      xPonto + offsetHorizontal + larguraCaixa >
+      margem.left + larguraGrafico
+    ) {
+      lado = "esquerda";
+    }
+
+    if (xPonto - offsetHorizontal - larguraCaixa < margem.left) {
+      lado = "direita";
+    }
+
+    let xCaixa =
+      lado === "direita"
+        ? xPonto + offsetHorizontal
+        : xPonto - larguraCaixa - offsetHorizontal;
+
+        let yCaixa = deslocarParaBaixo
+        ? yPonto + offsetVertical + 10
+        : yPonto - alturaCaixa - offsetVertical;
+
+    if (yPonto < margem.top + 70) {
+      yCaixa = yPonto + 18;
+    }
+
+    if (yPonto > margem.top + alturaGrafico - 70) {
+      yCaixa = yPonto - alturaCaixa - 18;
+    }
+    
+    if (deslocarParaBaixo) {
+      yCaixa = yPonto + offsetVertical + 10;
+    }
+
+    xCaixa = limitar(xCaixa, limiteEsquerdo, limiteDireito);
+    yCaixa = limitar(yCaixa, limiteSuperior, limiteInferior);
+
+    const yCentroCaixa = yCaixa + alturaCaixa / 2;
+
+    const xFimSeta =
+      lado === "direita" ? xCaixa - 10 : xCaixa + larguraCaixa + 10;
+
+    const xInicioSeta = lado === "direita" ? xPonto + 8 : xPonto - 8;
+
+    return {
+      larguraCaixa,
+      alturaCaixa,
+      xCaixa,
+      yCaixa,
+      xInicioSeta,
+      yInicioSeta: yPonto,
+      xFimSeta,
+      yFimSeta: yCentroCaixa,
+    };
+  }
 
   return (
     <div className="chartBox acidBaseChartBox">
@@ -3175,77 +3330,136 @@ function GraficoPrecipitacaoSeletiva({
           />
         )}
 
-{marcadoresAcumulados.map((marcador) => {
+{marcadoresAcumulados.map((marcador, index) => {
   const segmentoCorrespondente = segmentosMistura.find(
     (segmento) => segmento.serie.sal.id === marcador.serie.sal.id
   );
 
-  if (!segmentoCorrespondente || segmentoCorrespondente.pontosSegmento.length === 0) {
+  if (
+    !segmentoCorrespondente ||
+    segmentoCorrespondente.pontosSegmento.length === 0
+  ) {
     return null;
   }
 
-  const pontoMisturaEquivalente =
-    segmentoCorrespondente.pontosSegmento[
-      segmentoCorrespondente.pontosSegmento.length - 1
-    ];
+  const pontoMisturaEquivalente = encontrarPontoMaisProximo(
+    segmentoCorrespondente.pontosSegmento,
+    marcador.volumeAcumulado
+  );
 
   if (!Number.isFinite(pontoMisturaEquivalente.pTitulante)) {
     return null;
   }
 
+  const semConfiabilidade = saisSemSeparacaoConfiavel.has(
+    marcador.serie.sal.id
+  );
+
+  const xMarcador = xScale(marcador.volumeAcumulado);
+  const xPonto = xScale(pontoMisturaEquivalente.volumeAdicionado);
+  const yPonto = yScale(pontoMisturaEquivalente.pTitulante);
+  const ehUltimoMarcador = index === marcadoresAcumulados.length - 1;
+
+  const layoutCaixa = calcularLayoutCaixaCurva({
+    xPonto,
+    yPonto,
+    deslocarParaBaixo: ehUltimoMarcador,
+  });
+
   return (
     <g key={`mistura-marcador-${marcador.serie.sal.id}`}>
-              <line
-                x1={xScale(marcador.volumeAcumulado)}
-                x2={xScale(marcador.volumeAcumulado)}
-                y1={margem.top}
-                y2={margem.top + alturaGrafico}
-                stroke="#111111"
-                strokeWidth="1.5"
-                strokeDasharray="5 5"
-                opacity="0.42"
-              />
+      <line
+        x1={xMarcador}
+        x2={xMarcador}
+        y1={margem.top}
+        y2={margem.top + alturaGrafico}
+        stroke="#111111"
+        strokeWidth="1.5"
+        strokeDasharray="5 5"
+        opacity={semConfiabilidade ? "0.28" : "0.42"}
+      />
 
-              <circle
-                cx={xScale(pontoMisturaEquivalente.volumeAdicionado)}
-                cy={yScale(pontoMisturaEquivalente.pTitulante)}
-                r="5"
-                fill="#111111"
-                stroke="#ffffff"
-                strokeWidth="2"
-              />
+      {semConfiabilidade ? (
+        <>
+          <circle
+            cx={xPonto}
+            cy={yPonto}
+            r="4"
+            fill="#111111"
+            opacity="0.5"
+          />
 
-              <rect
-                x={Math.min(
-                  xScale(marcador.volumeAcumulado) + 8,
-                  margem.left + larguraGrafico - 150
-                )}
-                y={yScale(pontoMisturaEquivalente.pTitulante) - 34}
-                width="132"
-                height="28"
-                rx="10"
-                fill="#ffffff"
-                stroke="#111111"
-                strokeWidth="1"
-                opacity="0.92"
-              />
+<line
+  x1={layoutCaixa.xInicioSeta}
+  y1={layoutCaixa.yInicioSeta}
+  x2={layoutCaixa.xFimSeta}
+  y2={layoutCaixa.yFimSeta}
+  stroke="#111111"
+  strokeWidth="1.5"
+  opacity="0.65"
+/>
 
-              <text
-                x={Math.min(
-                  xScale(marcador.volumeAcumulado) + 18,
-                  margem.left + larguraGrafico - 140
-                )}
-                y={yScale(pontoMisturaEquivalente.pTitulante) - 15}
-                fill="#111111"
-                fontSize="12"
-                fontWeight="900"
-                fontFamily="Arial, Helvetica, sans-serif"
-              >
-                fim {marcador.serie.formulaPrecipitado}
-              </text>
-            </g>
-          );
-        })}
+          <rect
+            x={layoutCaixa.xCaixa}
+            y={layoutCaixa.yCaixa}
+            width={layoutCaixa.larguraCaixa}
+            height={layoutCaixa.alturaCaixa}
+            rx="12"
+            fill="#ffffff"
+            stroke="#111111"
+            strokeWidth="1"
+            opacity="0.95"
+          />
+
+          <text
+            x={layoutCaixa.xCaixa + 14}
+            y={layoutCaixa.yCaixa + 24}
+            fill="#111111"
+            fontSize="12"
+            fontWeight="900"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            região estimada {marcador.serie.formulaPrecipitado}
+          </text>
+        </>
+      ) : (
+        <>
+          <circle
+            cx={xPonto}
+            cy={yPonto}
+            r="5"
+            fill="#111111"
+            stroke="#ffffff"
+            strokeWidth="2"
+          />
+
+          <rect
+            x={Math.min(xPonto + 8, margem.left + larguraGrafico - 150)}
+            y={yPonto - 34}
+            width="132"
+            height="28"
+            rx="10"
+            fill="#ffffff"
+            stroke="#111111"
+            strokeWidth="1"
+            opacity="0.92"
+          />
+
+          <text
+            x={Math.min(xPonto + 18, margem.left + larguraGrafico - 140)}
+            y={yPonto - 15}
+            fill="#111111"
+            fontSize="12"
+            fontWeight="900"
+            fontFamily="Arial, Helvetica, sans-serif"
+          >
+            fim {marcador.serie.formulaPrecipitado}
+          </text>
+        </>
+      )}
+    </g>
+  );
+})}
 
         <g>
           <rect
