@@ -98,6 +98,7 @@ export type RegiaoCurvaPrecipitacao =
   | "Antes do PE"
   | "No PE"
   | "Após o PE"
+  | "Fora da curva"
   | "Dados inválidos";
 
 export type PontoCurvaTitulacaoDiretaPrecipitacao = {
@@ -153,4 +154,116 @@ export type InterferenciaPrecipitacao = {
   risco: RiscoInterferenciaPrecipitacao;
   motivo: string;
   razaoKps: number;
+};
+
+export type EntradaTitulacaoRetornoPrecipitacao = {
+  salPrincipal: SalPrecipitacao;
+
+  especieAnalito: EspecieAnalitoPrecipitacao;
+
+  volumeAmostra: number;
+
+  concentracaoPrecipitanteExcesso: number;
+  volumePrecipitanteExcesso: number;
+
+  concentracaoTitulanteRetorno: number;
+  volumeTitulanteRetorno: number;
+
+  volumeMaximoBuretaRetorno: number;
+};
+
+export type ResultadoTitulacaoRetornoPrecipitacao = {
+  salPrincipal: SalPrecipitacao;
+
+  especieAnalito: EspecieAnalitoPrecipitacao;
+  especiePrecipitante: EspecieAnalitoPrecipitacao;
+
+  volumeAmostra: number;
+
+  concentracaoPrecipitanteExcesso: number;
+  volumePrecipitanteExcesso: number;
+
+  concentracaoTitulanteRetorno: number;
+  volumeTitulanteRetorno: number;
+
+  molPrecipitanteAdicionado: number;
+  molPrecipitanteEmExcesso: number;
+  molPrecipitanteConsumidoPeloAnalito: number;
+
+  molAnalito: number;
+  concentracaoAnalito: number;
+
+  relacaoPrincipal: string;
+  relacaoRetorno: string;
+
+  status:
+    | "adequado"
+    | "excesso_insuficiente"
+    | "fora_da_bureta"
+    | "dados_invalidos";
+
+  mensagem: string;
+};
+
+export type IonMisturaSeletividadePrecipitacao = {
+  sal: SalPrecipitacao;
+  especieAnalito: EspecieAnalitoPrecipitacao;
+  concentracaoAnalito: number;
+};
+
+export type EntradaSeletividadePrecipitacao = {
+  especieTitulante: EspecieAnalitoPrecipitacao;
+  itens: IonMisturaSeletividadePrecipitacao[];
+};
+
+export type ResultadoItemSeletividadePrecipitacao = {
+  sal: SalPrecipitacao;
+  especieAnalito: EspecieAnalitoPrecipitacao;
+  concentracaoAnalito: number;
+
+  especieTitulante: EspecieAnalitoPrecipitacao;
+  concentracaoTitulanteInicioPrecipitacao: number;
+  pTitulanteInicioPrecipitacao: number;
+
+  ordemPrecipitacao: number;
+
+  criterio: string;
+  interpretacao: string;
+};
+
+export type ResultadoSeletividadePrecipitacao = {
+  especieTitulante: EspecieAnalitoPrecipitacao;
+  itens: ResultadoItemSeletividadePrecipitacao[];
+
+  status: "adequado" | "dados_invalidos" | "mistura_insuficiente";
+
+  mensagem: string;
+};
+
+export type RegiaoCurvaTitulacaoRetornoPrecipitacao =
+  | "Antes do retorno"
+  | "No ponto final do retorno"
+  | "Após o retorno"
+  | "Dados inválidos";
+
+export type PontoCurvaTitulacaoRetornoPrecipitacao = {
+  volumeAdicionado: number;
+  volumeTotal: number;
+  regiao: RegiaoCurvaTitulacaoRetornoPrecipitacao;
+
+  molPrecipitanteRestante: number;
+  molTitulanteRetornoLivre: number;
+
+  concentracaoPrecipitanteLivre: number;
+  concentracaoTitulanteRetornoLivre: number;
+
+  pPrecipitante: number;
+  percentualRetorno: number;
+};
+
+export type CurvaTitulacaoRetornoPrecipitacao = {
+  pontos: PontoCurvaTitulacaoRetornoPrecipitacao[];
+  volumePontoFinalRetorno: number;
+  volumeMaximo: number;
+  passo: number;
 };
