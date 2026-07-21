@@ -444,6 +444,23 @@ const curvasIsoladasComMesmoVolumeEquivalencia =
   Math.max(...volumesEquivalenciaIsoladosSeletividade) -
     Math.min(...volumesEquivalenciaIsoladosSeletividade) <
     1e-6;
+    const formulaTitulanteCurvaSeletividade =
+  curvaSeletividade?.formulaTitulante ?? formulaTitulanteSeletividade;
+
+  const rotuloPTitulanteCurvaSeletividade =
+  formulaTitulanteCurvaSeletividade.replace(/[⁺⁻+-]/g, "");
+
+  const comparacoesSeletividadeNaoConfiaveis =
+  curvaSeletividade?.comparacoesKps.filter(
+    (comparacao) => !comparacao.atendeCriterioConfiabilidade
+  ) ?? [];
+
+const seletividadeAtendeCriterioKps =
+  curvaSeletividade !== null &&
+  curvaSeletividade.comparacoesKps.length > 0 &&
+  curvaSeletividade.comparacoesKps.every(
+    (comparacao) => comparacao.atendeCriterioConfiabilidade
+  );
 
 const curvaTitulacaoDireta =
   resultadoTitulacaoDireta && resultadoTitulacaoDireta.status !== "dados_invalidos"
@@ -1815,10 +1832,11 @@ separação quantitativa definitiva.
         </small>
 
         <small>
-  {comparacao.atendeCriterioConfiabilidade
-    ? "Os Kps são suficientemente diferentes para favorecer uma separação seletiva mais confiável."
-    : "Os Kps não são suficientemente diferentes para garantir separação quantitativa limpa; pode haver sobreposição entre as precipitações."}
-</small>
+          Interpretação:{" "}
+          {comparacao.atendeCriterioConfiabilidade
+            ? "os Kps são suficientemente diferentes para favorecer uma separação seletiva mais confiável."
+            : "os Kps não são suficientemente diferentes para garantir separação quantitativa limpa; pode haver sobreposição entre as precipitações."}
+        </small>
       </div>
     ))}
   </div>
@@ -1832,16 +1850,18 @@ separação quantitativa definitiva.
           </div>
 
           <div className="indicatorRankMain">
-            <strong>
-              {item.sal.formulaExibicao} começa em [Ag⁺] ={" "}
-              {formatarCientificoBR(
-                item.concentracaoTitulanteInicioPrecipitacao
-              )}{" "}
-              mol·L⁻¹
-            </strong>
+          <strong>
+  Início teórico de {item.sal.formulaExibicao} em [
+  {formulaTitulanteCurvaSeletividade}] ={" "}
+  {formatarCientificoBR(
+    item.concentracaoTitulanteInicioPrecipitacao
+  )}{" "}
+  mol·L⁻¹
+</strong>
 
             <p className="indicatorJustification">
-              pAg = {formatarNumeroBR(item.pTitulanteInicioPrecipitacao, 2)}.
+            p{rotuloPTitulanteCurvaSeletividade} ={" "}
+{formatarNumeroBR(item.pTitulanteInicioPrecipitacao, 2)}.
               Esse ponto representa o início previsto da formação de{" "}
               {item.sal.nome}.
             </p>
@@ -2186,10 +2206,32 @@ separação quantitativa definitiva.
     {tipoEstudo === "seletividade" && resultadoSeletividade && (
       <>
         <p>
-          Para precipitação seletiva, o método não é escolhido apenas pelo ponto
-          final, mas pela diferença entre as concentrações de Ag⁺ necessárias
-          para iniciar cada precipitação.
-        </p>
+  Para precipitação seletiva, o método não é escolhido apenas pelo ponto final.
+  A confiabilidade depende da diferença entre os Kps dos precipitados que
+  competem pelo mesmo titulante,{" "}
+  <strong>{formulaTitulanteCurvaSeletividade}</strong>.
+</p>
+
+<div className="explanationBox">
+  <h3>Critério de confiabilidade</h3>
+
+  <p>
+    O sistema usa o critério de diferença de 10⁸ entre Kps para avaliar se a
+    separação tende a ser quantitativamente confiável. Quando esse critério não
+    é atingido, a precipitação pode ocorrer em regiões próximas, com
+    sobreposição entre espécies.
+  </p>
+
+  <p>
+    Status da mistura atual:{" "}
+    <strong>
+      {seletividadeAtendeCriterioKps
+        ? "separação seletiva mais confiável pelo critério 10⁸"
+        : "separação não totalmente confiável pelo critério 10⁸"}
+    </strong>
+    .
+  </p>
+</div>
 
         <div className="indicatorRankingList">
           <div className="indicatorRankingItem">
@@ -2199,17 +2241,18 @@ separação quantitativa definitiva.
               <strong>Precipitação fracionada</strong>
 
               <p className="indicatorJustification">
-                O sistema compara os valores de início de precipitação e ordena
-                os precipitados do mais seletivo para o menos seletivo.
-              </p>
+  O sistema ordena os precipitados pela menor concentração de{" "}
+  {formulaTitulanteCurvaSeletividade} necessária para iniciar a precipitação.
+</p>
 
-              <p className="indicatorJustification">
-                Para a mistura atual, o primeiro precipitado previsto é{" "}
-                <strong>
-                  {resultadoSeletividade.itens[0]?.sal.formulaExibicao ?? "-"}
-                </strong>
-                .
-              </p>
+<p className="indicatorJustification">
+  Para a mistura atual, o primeiro precipitado previsto é{" "}
+  <strong>
+    {resultadoSeletividade.itens[0]?.sal.formulaExibicao ?? "-"}
+  </strong>
+  . Porém, a confiabilidade da separação depende do critério de diferença de
+  10⁸ entre Kps.
+</p>
             </div>
 
             <div className="indicatorRankScore">OK</div>
@@ -2222,10 +2265,10 @@ separação quantitativa definitiva.
               <strong>Controle de interferentes</strong>
 
               <p className="indicatorJustification">
-                Íons que precipitam antes podem consumir Ag⁺ e interferir na
-                determinação dos demais. Por isso, a ordem de precipitação deve
-                ser analisada antes da escolha do procedimento.
-              </p>
+  Quando dois precipitados não apresentam diferença de Kps suficiente, pode
+  haver sobreposição. Nesse caso, o gráfico deve ser interpretado como região
+  estimada de transição, não como ponto final seletivo definitivo.
+</p>
             </div>
 
             <div className="indicatorRankScore">Avaliar</div>
@@ -2238,9 +2281,10 @@ separação quantitativa definitiva.
               <strong>Ponto final único sem separação</strong>
 
               <p className="indicatorJustification">
-                Não é recomendado quando há mistura de haletos, porque mais de
-                um íon pode consumir o mesmo titulante em regiões próximas.
-              </p>
+  Não é recomendado assumir um ponto final único quando há mistura de espécies
+  que precipitam com o mesmo titulante. Se o critério 10⁸ não for atendido, o
+  ponto final pode representar consumo combinado de mais de um íon.
+</p>
             </div>
 
             <div className="indicatorRankScore">Evitar</div>
@@ -2260,9 +2304,8 @@ separação quantitativa definitiva.
     {tipoEstudo === "seletividade" && resultadoSeletividade && (
       <>
         <p>
-          Nesta leitura, os íons da mistura competem pelo mesmo titulante, Ag⁺.
-          O precipitado que exige menor concentração de Ag⁺ começa a se formar
-          primeiro.
+        Nesta leitura, os íons da mistura competem pelo mesmo titulante,{" "}
+{formulaTitulanteCurvaSeletividade}.
         </p>
 
         <div className="indicatorRankingList">
@@ -2283,7 +2326,7 @@ separação quantitativa definitiva.
                 </p>
 
                 <p className="indicatorJustification">
-                  Início da precipitação em [Ag⁺] ={" "}
+                Início teórico da precipitação em [{formulaTitulanteCurvaSeletividade}] ={" "}
                   {formatarCientificoBR(
                     item.concentracaoTitulanteInicioPrecipitacao
                   )}{" "}
@@ -2292,24 +2335,61 @@ separação quantitativa definitiva.
               </div>
 
               <div className="indicatorRankScore">
-                pAg {formatarNumeroBR(item.pTitulanteInicioPrecipitacao, 2)}
+              p{rotuloPTitulanteCurvaSeletividade}{" "}
+{formatarNumeroBR(item.pTitulanteInicioPrecipitacao, 2)}
               </div>
             </div>
           ))}
         </div>
 
         <div className="explanationBox">
-          <h3>Como interpretar a interferência</h3>
+  <h3>Como interpretar a interferência</h3>
 
-          <p>
-            Em uma mistura de haletos, o íon que precipita primeiro pode
-            interferir na determinação dos demais, pois consome Ag⁺ antes que os
-            outros precipitados comecem a se formar. Por isso, I⁻ interfere mais
-            fortemente quando Cl⁻ ou Br⁻ também estão presentes.
-          </p>
-        </div>
+  <p>
+    Em uma mistura de espécies que competem pelo mesmo titulante,{" "}
+    <strong>{formulaTitulanteCurvaSeletividade}</strong>, o precipitado que se
+    forma primeiro pode consumir titulante antes dos demais. Isso pode interferir
+    na determinação das espécies seguintes.
+  </p>
+
+  <p>
+    Quando a diferença entre os Kps não atinge 10⁸, a separação não deve ser
+    interpretada como totalmente quantitativa. Nesse caso, pode haver
+    sobreposição entre precipitações e o gráfico indica apenas regiões estimadas
+    de transição.
+  </p>
+</div>
       </>
     )}
+
+{comparacoesSeletividadeNaoConfiaveis.length > 0 && (
+  <div className="indicatorRankingList">
+    {comparacoesSeletividadeNaoConfiaveis.map((comparacao, index) => (
+      <div
+        className="indicatorRankingItem"
+        key={`interferencia-kps-${comparacao.primeiroSal.id}-${comparacao.segundoSal.id}`}
+      >
+        <div className="indicatorRankNumber">{index + 1}</div>
+
+        <div className="indicatorRankMain">
+          <strong>
+            Possível sobreposição: {comparacao.primeiroSal.formulaExibicao} ×{" "}
+            {comparacao.segundoSal.formulaExibicao}
+          </strong>
+
+          <p className="indicatorJustification">
+            A diferença entre os Kps é{" "}
+            {formatarCientificoBR(comparacao.razaoKps)}, abaixo do critério de
+            10⁸. Por isso, a separação entre essas espécies pode não ser
+            quantitativamente limpa.
+          </p>
+        </div>
+
+        <div className="indicatorRankScore">Avaliar</div>
+      </div>
+    ))}
+  </div>
+)}
 
     {tipoEstudo !== "titulacaoDireta" && tipoEstudo !== "seletividade" && (
       <div className="chartEmpty">
@@ -2766,8 +2846,55 @@ interferências.
   <>
     <div className="explanationBox">
       <h3>Resultado da precipitação seletiva</h3>
+
       <p>{resultadoSeletividade.mensagem}</p>
+
+      <p>
+        A confiabilidade da separação é avaliada pelo critério de diferença de
+        10⁸ entre Kps. Esse critério ajuda a indicar se a separação tende a ser
+        quantitativamente limpa ou se pode haver sobreposição entre
+        precipitados.
+      </p>
+
+      <p>
+        Status da mistura atual:{" "}
+        <strong>
+          {seletividadeAtendeCriterioKps
+            ? "separação seletiva mais confiável pelo critério 10⁸"
+            : "separação não totalmente confiável pelo critério 10⁸"}
+        </strong>
+        .
+      </p>
     </div>
+
+    {comparacoesSeletividadeNaoConfiaveis.length > 0 && (
+  <div className="indicatorRankingList">
+    {comparacoesSeletividadeNaoConfiaveis.map((comparacao, index) => (
+      <div
+        className="indicatorRankingItem"
+        key={`resultado-kps-${comparacao.primeiroSal.id}-${comparacao.segundoSal.id}`}
+      >
+        <div className="indicatorRankNumber">{index + 1}</div>
+
+        <div className="indicatorRankMain">
+          <strong>
+            Atenção: {comparacao.primeiroSal.formulaExibicao} ×{" "}
+            {comparacao.segundoSal.formulaExibicao}
+          </strong>
+
+          <p className="indicatorJustification">
+            A diferença entre os Kps é{" "}
+            {formatarCientificoBR(comparacao.razaoKps)}, abaixo do critério de
+            10⁸. Portanto, essa separação deve ser interpretada como uma região
+            estimada, não como separação quantitativa definitiva.
+          </p>
+        </div>
+
+        <div className="indicatorRankScore">Atenção</div>
+      </div>
+    ))}
+  </div>
+)}
 
     {resultadoSeletividade.itens.length > 0 && (
       <div className="indicatorRankingList">
@@ -2788,7 +2915,7 @@ interferências.
               </p>
 
               <p className="indicatorJustification">
-                Início da precipitação em [Ag⁺] ={" "}
+              Início teórico da precipitação em [{formulaTitulanteCurvaSeletividade}] ={" "}
                 {formatarCientificoBR(
                   item.concentracaoTitulanteInicioPrecipitacao
                 )}{" "}
@@ -2799,7 +2926,8 @@ interferências.
             </div>
 
             <div className="indicatorRankScore">
-              pAg {formatarNumeroBR(item.pTitulanteInicioPrecipitacao, 2)}
+            p{rotuloPTitulanteCurvaSeletividade}{" "}
+{formatarNumeroBR(item.pTitulanteInicioPrecipitacao, 2)}
             </div>
           </div>
         ))}
@@ -2809,9 +2937,8 @@ interferências.
     <div className="explanationBox">
       <h3>Como interpretar</h3>
       <p>
-        A ordem é definida pela menor concentração de Ag⁺ necessária para iniciar
-        a precipitação. O primeiro item da lista é o precipitado que começa a se
-        formar antes dos demais.
+      A ordem é definida pela menor concentração de{" "}
+{formulaTitulanteCurvaSeletividade} necessária para iniciar a precipitação.
       </p>
     </div>
   </>
@@ -2880,6 +3007,8 @@ comparacoesKps: {
   };
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+
+  const rotuloPTitulante = curva.formulaTitulante.replace(/[⁺⁻+-]/g, "");
 
   const largura = 980;
   const altura = 600;
@@ -3186,8 +3315,7 @@ curva.comparacoesKps.forEach((comparacao) => {
       <div className="chartHeader">
         <div>
           <strong>
-            Curva da mistura e dos íons isolados p{curva.formulaTitulante} ×
-            volume
+          Curva da mistura e dos íons isolados p{rotuloPTitulante} × volume
           </strong>
 
           <span>
@@ -3546,7 +3674,7 @@ curva.comparacoesKps.forEach((comparacao) => {
           fontFamily="Arial, Helvetica, sans-serif"
           transform={`rotate(-90 18 ${margem.top + alturaGrafico / 2})`}
         >
-          p{curva.formulaTitulante}
+          p{rotuloPTitulante}
         </text>
       </svg>
     </div>
