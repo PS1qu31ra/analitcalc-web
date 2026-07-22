@@ -1,1175 +1,1255 @@
-import type { IonPrecipitacao, SalPrecipitacao } from "../../precipitacao/tipos";
+import type {
+  IonPrecipitacao,
+  SalPrecipitacao,
+  TipoEstudoPrecipitacao,
+} from "../../precipitacao/tipos";
 
-const Ag: IonPrecipitacao = {
-  id: "Ag+",
-  nome: "íon prata",
-  formula: "Ag+",
-  formulaExibicao: "Ag⁺",
-  carga: 1,
-};
+const ion = (
+  id: string,
+  nome: string,
+  formula: string,
+  formulaExibicao: string,
+  carga: number
+): IonPrecipitacao => ({
+  id,
+  nome,
+  formula,
+  formulaExibicao,
+  carga,
+});
 
-const Cu: IonPrecipitacao = {
-  id: "Cu+",
-  nome: "íon cobre(I)",
-  formula: "Cu+",
-  formulaExibicao: "Cu⁺",
-  carga: 1,
-};
+const Ag = ion("Ag+", "íon prata", "Ag+", "Ag⁺", 1);
+const Cu1 = ion("Cu+", "íon cobre(I)", "Cu+", "Cu⁺", 1);
+const Cu2 = ion("Cu2+", "íon cobre(II)", "Cu2+", "Cu²⁺", 2);
+const Hg2 = ion(
+  "Hg2^2+",
+  "íon mercúrio(I)",
+  "Hg2^2+",
+  "Hg₂²⁺",
+  2
+);
+const Hg = ion(
+  "Hg2+",
+  "íon mercúrio(II)",
+  "Hg2+",
+  "Hg²⁺",
+  2
+);
+const Pb = ion(
+  "Pb2+",
+  "íon chumbo(II)",
+  "Pb2+",
+  "Pb²⁺",
+  2
+);
+const Ba = ion("Ba2+", "íon bário", "Ba2+", "Ba²⁺", 2);
+const Sr = ion(
+  "Sr2+",
+  "íon estrôncio",
+  "Sr2+",
+  "Sr²⁺",
+  2
+);
+const Ca = ion("Ca2+", "íon cálcio", "Ca2+", "Ca²⁺", 2);
+const Mg = ion(
+  "Mg2+",
+  "íon magnésio",
+  "Mg2+",
+  "Mg²⁺",
+  2
+);
+const Zn = ion("Zn2+", "íon zinco", "Zn2+", "Zn²⁺", 2);
+const Cd = ion(
+  "Cd2+",
+  "íon cádmio",
+  "Cd2+",
+  "Cd²⁺",
+  2
+);
+const Mn = ion(
+  "Mn2+",
+  "íon manganês(II)",
+  "Mn2+",
+  "Mn²⁺",
+  2
+);
+const Fe2 = ion(
+  "Fe2+",
+  "íon ferro(II)",
+  "Fe2+",
+  "Fe²⁺",
+  2
+);
+const Fe3 = ion(
+  "Fe3+",
+  "íon ferro(III)",
+  "Fe3+",
+  "Fe³⁺",
+  3
+);
+const Co = ion(
+  "Co2+",
+  "íon cobalto(II)",
+  "Co2+",
+  "Co²⁺",
+  2
+);
+const Ni = ion(
+  "Ni2+",
+  "íon níquel(II)",
+  "Ni2+",
+  "Ni²⁺",
+  2
+);
+const Al = ion(
+  "Al3+",
+  "íon alumínio",
+  "Al3+",
+  "Al³⁺",
+  3
+);
+const La = ion(
+  "La3+",
+  "íon lantânio",
+  "La3+",
+  "La³⁺",
+  3
+);
+const Sn = ion(
+  "Sn2+",
+  "íon estanho(II)",
+  "Sn2+",
+  "Sn²⁺",
+  2
+);
 
-const Hg2: IonPrecipitacao = {
-  id: "Hg2^2+",
-  nome: "íon mercúrio(I)",
-  formula: "Hg2^2+",
-  formulaExibicao: "Hg₂²⁺",
-  carga: 2,
-};
+const Cl = ion("Cl-", "íon cloreto", "Cl-", "Cl⁻", -1);
+const Br = ion("Br-", "íon brometo", "Br-", "Br⁻", -1);
+const I = ion("I-", "íon iodeto", "I-", "I⁻", -1);
+const SCN = ion(
+  "SCN-",
+  "íon tiocianato",
+  "SCN-",
+  "SCN⁻",
+  -1
+);
+const SO4 = ion(
+  "SO4^2-",
+  "íon sulfato",
+  "SO4^2-",
+  "SO₄²⁻",
+  -2
+);
+const CO3 = ion(
+  "CO3^2-",
+  "íon carbonato",
+  "CO3^2-",
+  "CO₃²⁻",
+  -2
+);
+const CrO4 = ion(
+  "CrO4^2-",
+  "íon cromato",
+  "CrO4^2-",
+  "CrO₄²⁻",
+  -2
+);
+const IO3 = ion(
+  "IO3-",
+  "íon iodato",
+  "IO3-",
+  "IO₃⁻",
+  -1
+);
+const F = ion("F-", "íon fluoreto", "F-", "F⁻", -1);
+const OH = ion(
+  "OH-",
+  "íon hidróxido",
+  "OH-",
+  "OH⁻",
+  -1
+);
+const C2O4 = ion(
+  "C2O4^2-",
+  "íon oxalato",
+  "C2O4^2-",
+  "C₂O₄²⁻",
+  -2
+);
+const PO4 = ion(
+  "PO4^3-",
+  "íon fosfato",
+  "PO4^3-",
+  "PO₄³⁻",
+  -3
+);
 
-const Hg: IonPrecipitacao = {
-  id: "Hg2+",
-  nome: "íon mercúrio(II)",
-  formula: "Hg2+",
-  formulaExibicao: "Hg²⁺",
-  carga: 2,
-};
+const usosArgentometriaCompleta:
+  TipoEstudoPrecipitacao[] = [
+    "equilibrio",
+    "titulacaoDireta",
+    "titulacaoRetorno",
+    "seletividade",
+  ];
 
-const Pb: IonPrecipitacao = {
-  id: "Pb2+",
-  nome: "íon chumbo(II)",
-  formula: "Pb2+",
-  formulaExibicao: "Pb²⁺",
-  carga: 2,
-};
+const usosArgentometriaDireta:
+  TipoEstudoPrecipitacao[] = [
+    "equilibrio",
+    "titulacaoDireta",
+    "seletividade",
+  ];
 
-const Ba: IonPrecipitacao = {
-  id: "Ba2+",
-  nome: "íon bário",
-  formula: "Ba2+",
-  formulaExibicao: "Ba²⁺",
-  carga: 2,
-};
+const usosGerais:
+  TipoEstudoPrecipitacao[] = [
+    "equilibrio",
+    "seletividade",
+  ];
 
-const Sr: IonPrecipitacao = {
-  id: "Sr2+",
-  nome: "íon estrôncio",
-  formula: "Sr2+",
-  formulaExibicao: "Sr²⁺",
-  carga: 2,
-};
+type DadosSal = Omit<
+  SalPrecipitacao,
+  "pKps"
+>;
 
-const Ca: IonPrecipitacao = {
-  id: "Ca2+",
-  nome: "íon cálcio",
-  formula: "Ca2+",
-  formulaExibicao: "Ca²⁺",
-  carga: 2,
-};
+const criarSal = (
+  dados: DadosSal
+): SalPrecipitacao => ({
+  ...dados,
+  usos: [...dados.usos],
+  pKps: -Math.log10(dados.kps),
+});
 
-const Mg: IonPrecipitacao = {
-  id: "Mg2+",
-  nome: "íon magnésio",
-  formula: "Mg2+",
-  formulaExibicao: "Mg²⁺",
-  carga: 2,
-};
+export const saisPrecipitacao:
+  SalPrecipitacao[] = [
+    criarSal({
+      id: "CuCl",
+      nome: "cloreto de cobre(I)",
+      formula: "CuCl",
+      formulaExibicao: "CuCl",
+      cation: Cu1,
+      anion: Cl,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1.9e-7,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const Zn: IonPrecipitacao = {
-  id: "Zn2+",
-  nome: "íon zinco",
-  formula: "Zn2+",
-  formulaExibicao: "Zn²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "AgCl",
+      nome: "cloreto de prata",
+      formula: "AgCl",
+      formulaExibicao: "AgCl",
+      cation: Ag,
+      anion: Cl,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1.8e-10,
+      corPrecipitado: "branco",
+      usos: usosArgentometriaCompleta,
+    }),
 
-const Cd: IonPrecipitacao = {
-  id: "Cd2+",
-  nome: "íon cádmio",
-  formula: "Cd2+",
-  formulaExibicao: "Cd²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "Hg2Cl2",
+      nome: "cloreto de mercúrio(I)",
+      formula: "Hg2Cl2",
+      formulaExibicao: "Hg₂Cl₂",
+      cation: Hg2,
+      anion: Cl,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 1.2e-18,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const Mn: IonPrecipitacao = {
-  id: "Mn2+",
-  nome: "íon manganês(II)",
-  formula: "Mn2+",
-  formulaExibicao: "Mn²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "PbCl2",
+      nome: "cloreto de chumbo(II)",
+      formula: "PbCl2",
+      formulaExibicao: "PbCl₂",
+      cation: Pb,
+      anion: Cl,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 1.7e-5,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const Fe2: IonPrecipitacao = {
-  id: "Fe2+",
-  nome: "íon ferro(II)",
-  formula: "Fe2+",
-  formulaExibicao: "Fe²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "CuBr",
+      nome: "brometo de cobre(I)",
+      formula: "CuBr",
+      formulaExibicao: "CuBr",
+      cation: Cu1,
+      anion: Br,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 5e-9,
+      corPrecipitado: "claro",
+      usos: usosGerais,
+    }),
 
-const Fe3: IonPrecipitacao = {
-  id: "Fe3+",
-  nome: "íon ferro(III)",
-  formula: "Fe3+",
-  formulaExibicao: "Fe³⁺",
-  carga: 3,
-};
+    criarSal({
+      id: "AgBr",
+      nome: "brometo de prata",
+      formula: "AgBr",
+      formulaExibicao: "AgBr",
+      cation: Ag,
+      anion: Br,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 5e-13,
+      corPrecipitado: "creme",
+      usos: usosArgentometriaCompleta,
+    }),
 
-const Co: IonPrecipitacao = {
-  id: "Co2+",
-  nome: "íon cobalto(II)",
-  formula: "Co2+",
-  formulaExibicao: "Co²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "Hg2Br2",
+      nome: "brometo de mercúrio(I)",
+      formula: "Hg2Br2",
+      formulaExibicao: "Hg₂Br₂",
+      cation: Hg2,
+      anion: Br,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 5.6e-23,
+      corPrecipitado: "claro",
+      usos: usosGerais,
+    }),
 
-const Ni: IonPrecipitacao = {
-  id: "Ni2+",
-  nome: "íon níquel(II)",
-  formula: "Ni2+",
-  formulaExibicao: "Ni²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "PbBr2",
+      nome: "brometo de chumbo(II)",
+      formula: "PbBr2",
+      formulaExibicao: "PbBr₂",
+      cation: Pb,
+      anion: Br,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 2.1e-6,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const Al: IonPrecipitacao = {
-  id: "Al3+",
-  nome: "íon alumínio",
-  formula: "Al3+",
-  formulaExibicao: "Al³⁺",
-  carga: 3,
-};
+    criarSal({
+      id: "AgI",
+      nome: "iodeto de prata",
+      formula: "AgI",
+      formulaExibicao: "AgI",
+      cation: Ag,
+      anion: I,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 8.3e-17,
+      corPrecipitado: "amarelo",
+      usos: usosArgentometriaCompleta,
+    }),
 
-const La: IonPrecipitacao = {
-  id: "La3+",
-  nome: "íon lantânio",
-  formula: "La3+",
-  formulaExibicao: "La³⁺",
-  carga: 3,
-};
+    criarSal({
+      id: "Hg2I2",
+      nome: "iodeto de mercúrio(I)",
+      formula: "Hg2I2",
+      formulaExibicao: "Hg₂I₂",
+      cation: Hg2,
+      anion: I,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 4.7e-29,
+      corPrecipitado: "amarelo",
+      usos: usosGerais,
+    }),
 
-const Sn: IonPrecipitacao = {
-  id: "Sn2+",
-  nome: "íon estanho(II)",
-  formula: "Sn2+",
-  formulaExibicao: "Sn²⁺",
-  carga: 2,
-};
+    criarSal({
+      id: "PbI2",
+      nome: "iodeto de chumbo(II)",
+      formula: "PbI2",
+      formulaExibicao: "PbI₂",
+      cation: Pb,
+      anion: I,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 7.9e-9,
+      corPrecipitado: "amarelo",
+      usos: usosGerais,
+    }),
 
-const Cl: IonPrecipitacao = {
-  id: "Cl-",
-  nome: "íon cloreto",
-  formula: "Cl-",
-  formulaExibicao: "Cl⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "CaSO4",
+      nome: "sulfato de cálcio",
+      formula: "CaSO4",
+      formulaExibicao: "CaSO₄",
+      cation: Ca,
+      anion: SO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 2.4e-5,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const Br: IonPrecipitacao = {
-  id: "Br-",
-  nome: "íon brometo",
-  formula: "Br-",
-  formulaExibicao: "Br⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "SrSO4",
+      nome: "sulfato de estrôncio",
+      formula: "SrSO4",
+      formulaExibicao: "SrSO₄",
+      cation: Sr,
+      anion: SO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 3.2e-7,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const I: IonPrecipitacao = {
-  id: "I-",
-  nome: "íon iodeto",
-  formula: "I-",
-  formulaExibicao: "I⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "BaSO4",
+      nome: "sulfato de bário",
+      formula: "BaSO4",
+      formulaExibicao: "BaSO₄",
+      cation: Ba,
+      anion: SO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1.1e-10,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const SCN: IonPrecipitacao = {
-  id: "SCN-",
-  nome: "íon tiocianato",
-  formula: "SCN-",
-  formulaExibicao: "SCN⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "Ag2SO4",
+      nome: "sulfato de prata",
+      formula: "Ag2SO4",
+      formulaExibicao: "Ag₂SO₄",
+      cation: Ag,
+      anion: SO4,
+      coeficienteCation: 2,
+      coeficienteAnion: 1,
+      kps: 1.5e-5,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const SO4: IonPrecipitacao = {
-  id: "SO4^2-",
-  nome: "íon sulfato",
-  formula: "SO4^2-",
-  formulaExibicao: "SO₄²⁻",
-  carga: -2,
-};
+    criarSal({
+      id: "Hg2SO4",
+      nome: "sulfato de mercúrio(I)",
+      formula: "Hg2SO4",
+      formulaExibicao: "Hg₂SO₄",
+      cation: Hg2,
+      anion: SO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 7.4e-7,
+      corPrecipitado: "claro",
+      usos: usosGerais,
+    }),
 
-const CO3: IonPrecipitacao = {
-  id: "CO3^2-",
-  nome: "íon carbonato",
-  formula: "CO3^2-",
-  formulaExibicao: "CO₃²⁻",
-  carga: -2,
-};
+    criarSal({
+      id: "PbSO4",
+      nome: "sulfato de chumbo(II)",
+      formula: "PbSO4",
+      formulaExibicao: "PbSO₄",
+      cation: Pb,
+      anion: SO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1.6e-8,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const CrO4: IonPrecipitacao = {
-  id: "CrO4^2-",
-  nome: "íon cromato",
-  formula: "CrO4^2-",
-  formulaExibicao: "CrO₄²⁻",
-  carga: -2,
-};
+    criarSal({
+      id: "MgCO3",
+      nome: "carbonato de magnésio",
+      formula: "MgCO3",
+      formulaExibicao: "MgCO₃",
+      cation: Mg,
+      anion: CO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 3.5e-8,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const IO3: IonPrecipitacao = {
-  id: "IO3-",
-  nome: "íon iodato",
-  formula: "IO3-",
-  formulaExibicao: "IO₃⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "CaCO3",
+      nome: "carbonato de cálcio",
+      formula: "CaCO3",
+      formulaExibicao: "CaCO₃",
+      cation: Ca,
+      anion: CO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 4.5e-9,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const F: IonPrecipitacao = {
-  id: "F-",
-  nome: "íon fluoreto",
-  formula: "F-",
-  formulaExibicao: "F⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "SrCO3",
+      nome: "carbonato de estrôncio",
+      formula: "SrCO3",
+      formulaExibicao: "SrCO₃",
+      cation: Sr,
+      anion: CO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 9.3e-10,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const OH: IonPrecipitacao = {
-  id: "OH-",
-  nome: "íon hidróxido",
-  formula: "OH-",
-  formulaExibicao: "OH⁻",
-  carga: -1,
-};
+    criarSal({
+      id: "BaCO3",
+      nome: "carbonato de bário",
+      formula: "BaCO3",
+      formulaExibicao: "BaCO₃",
+      cation: Ba,
+      anion: CO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 5e-9,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const C2O4: IonPrecipitacao = {
-  id: "C2O4^2-",
-  nome: "íon oxalato",
-  formula: "C2O4^2-",
-  formulaExibicao: "C₂O₄²⁻",
-  carga: -2,
-};
+    criarSal({
+      id: "Ag2CO3",
+      nome: "carbonato de prata",
+      formula: "Ag2CO3",
+      formulaExibicao: "Ag₂CO₃",
+      cation: Ag,
+      anion: CO3,
+      coeficienteCation: 2,
+      coeficienteAnion: 1,
+      kps: 8.1e-12,
+      corPrecipitado: "amarelo-claro",
+      usos: usosGerais,
+    }),
 
-const PO4: IonPrecipitacao = {
-  id: "PO4^3-",
-  nome: "íon fosfato",
-  formula: "PO4^3-",
-  formulaExibicao: "PO₄³⁻",
-  carga: -3,
-};
+    criarSal({
+      id: "PbCO3",
+      nome: "carbonato de chumbo(II)",
+      formula: "PbCO3",
+      formulaExibicao: "PbCO₃",
+      cation: Pb,
+      anion: CO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 7.4e-14,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-const usosArgentometria = [
-  "equilibrio",
-  "titulacaoDireta",
-  "titulacaoRetorno",
-  "seletividade",
-] as const;
+    criarSal({
+      id: "BaCrO4",
+      nome: "cromato de bário",
+      formula: "BaCrO4",
+      formulaExibicao: "BaCrO₄",
+      cation: Ba,
+      anion: CrO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 2.1e-10,
+      corPrecipitado: "amarelo",
+      usos: usosGerais,
+    }),
 
-const usosGerais = ["equilibrio", "seletividade"] as const;
+    criarSal({
+      id: "CuCrO4",
+      nome: "cromato de cobre(II)",
+      formula: "CuCrO4",
+      formulaExibicao: "CuCrO₄",
+      cation: Cu2,
+      anion: CrO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 3.6e-6,
+      corPrecipitado: "amarelo",
+      usos: usosGerais,
+    }),
 
-export const saisPrecipitacao: SalPrecipitacao[] = [
-  {
-    id: "CuCl",
-    nome: "cloreto de cobre(I)",
-    formula: "CuCl",
-    formulaExibicao: "CuCl",
-    cation: Cu,
-    anion: Cl,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1.9e-7,
-    pKps: -Math.log10(1.9e-7),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "AgCl",
-    nome: "cloreto de prata",
-    formula: "AgCl",
-    formulaExibicao: "AgCl",
-    cation: Ag,
-    anion: Cl,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1.8e-10,
-    pKps: -Math.log10(1.8e-10),
-    corPrecipitado: "branco",
-    usos: [...usosArgentometria],
-  },
-  {
-    id: "Hg2Cl2",
-    nome: "cloreto de mercúrio(I)",
-    formula: "Hg2Cl2",
-    formulaExibicao: "Hg₂Cl₂",
-    cation: Hg2,
-    anion: Cl,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 1.2e-18,
-    pKps: -Math.log10(1.2e-18),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbCl2",
-    nome: "cloreto de chumbo(II)",
-    formula: "PbCl2",
-    formulaExibicao: "PbCl₂",
-    cation: Pb,
-    anion: Cl,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 1.7e-5,
-    pKps: -Math.log10(1.7e-5),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "Ag2CrO4",
+      nome: "cromato de prata",
+      formula: "Ag2CrO4",
+      formulaExibicao: "Ag₂CrO₄",
+      cation: Ag,
+      anion: CrO4,
+      coeficienteCation: 2,
+      coeficienteAnion: 1,
+      kps: 1.2e-12,
+      corPrecipitado: "vermelho-tijolo",
+      observacao:
+        "Precipitado indicador do método de Mohr; não é tratado como sistema principal de retrotitulação.",
+      usos: usosArgentometriaDireta,
+    }),
 
-  {
-    id: "CuBr",
-    nome: "brometo de cobre(I)",
-    formula: "CuBr",
-    formulaExibicao: "CuBr",
-    cation: Cu,
-    anion: Br,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 5e-9,
-    pKps: -Math.log10(5e-9),
-    corPrecipitado: "claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "AgBr",
-    nome: "brometo de prata",
-    formula: "AgBr",
-    formulaExibicao: "AgBr",
-    cation: Ag,
-    anion: Br,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 5e-13,
-    pKps: -Math.log10(5e-13),
-    corPrecipitado: "creme",
-    usos: [...usosArgentometria],
-  },
-  {
-    id: "Hg2Br2",
-    nome: "brometo de mercúrio(I)",
-    formula: "Hg2Br2",
-    formulaExibicao: "Hg₂Br₂",
-    cation: Hg2,
-    anion: Br,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 5.6e-23,
-    pKps: -Math.log10(5.6e-23),
-    corPrecipitado: "claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbBr2",
-    nome: "brometo de chumbo(II)",
-    formula: "PbBr2",
-    formulaExibicao: "PbBr₂",
-    cation: Pb,
-    anion: Br,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 2.1e-6,
-    pKps: -Math.log10(2.1e-6),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "Hg2CrO4",
+      nome: "cromato de mercúrio(I)",
+      formula: "Hg2CrO4",
+      formulaExibicao: "Hg₂CrO₄",
+      cation: Hg2,
+      anion: CrO4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 2e-9,
+      corPrecipitado: "amarelo",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "AgI",
-    nome: "iodeto de prata",
-    formula: "AgI",
-    formulaExibicao: "AgI",
-    cation: Ag,
-    anion: I,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 8.3e-17,
-    pKps: -Math.log10(8.3e-17),
-    corPrecipitado: "amarelo",
-    usos: [...usosArgentometria],
-  },
-  {
-    id: "Hg2I2",
-    nome: "iodeto de mercúrio(I)",
-    formula: "Hg2I2",
-    formulaExibicao: "Hg₂I₂",
-    cation: Hg2,
-    anion: I,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 4.7e-29,
-    pKps: -Math.log10(4.7e-29),
-    corPrecipitado: "amarelo",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbI2",
-    nome: "iodeto de chumbo(II)",
-    formula: "PbI2",
-    formulaExibicao: "PbI₂",
-    cation: Pb,
-    anion: I,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 7.9e-9,
-    pKps: -Math.log10(7.9e-9),
-    corPrecipitado: "amarelo",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "CaIO32",
+      nome: "iodato de cálcio",
+      formula: "Ca(IO3)2",
+      formulaExibicao: "Ca(IO₃)₂",
+      cation: Ca,
+      anion: IO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 7.1e-7,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "CaSO4",
-    nome: "sulfato de cálcio",
-    formula: "CaSO4",
-    formulaExibicao: "CaSO₄",
-    cation: Ca,
-    anion: SO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 2.4e-5,
-    pKps: -Math.log10(2.4e-5),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "SrSO4",
-    nome: "sulfato de estrôncio",
-    formula: "SrSO4",
-    formulaExibicao: "SrSO₄",
-    cation: Sr,
-    anion: SO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 3.2e-7,
-    pKps: -Math.log10(3.2e-7),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "BaSO4",
-    nome: "sulfato de bário",
-    formula: "BaSO4",
-    formulaExibicao: "BaSO₄",
-    cation: Ba,
-    anion: SO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1.1e-10,
-    pKps: -Math.log10(1.1e-10),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Ag2SO4",
-    nome: "sulfato de prata",
-    formula: "Ag2SO4",
-    formulaExibicao: "Ag₂SO₄",
-    cation: Ag,
-    anion: SO4,
-    coeficienteCation: 2,
-    coeficienteAnion: 1,
-    kps: 1.5e-5,
-    pKps: -Math.log10(1.5e-5),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Hg2SO4",
-    nome: "sulfato de mercúrio(I)",
-    formula: "Hg2SO4",
-    formulaExibicao: "Hg₂SO₄",
-    cation: Hg2,
-    anion: SO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 7.4e-7,
-    pKps: -Math.log10(7.4e-7),
-    corPrecipitado: "claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbSO4",
-    nome: "sulfato de chumbo(II)",
-    formula: "PbSO4",
-    formulaExibicao: "PbSO₄",
-    cation: Pb,
-    anion: SO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1.6e-8,
-    pKps: -Math.log10(1.6e-8),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "BaIO32",
+      nome: "iodato de bário",
+      formula: "Ba(IO3)2",
+      formulaExibicao: "Ba(IO₃)₂",
+      cation: Ba,
+      anion: IO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 1.5e-9,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "MgCO3",
-    nome: "carbonato de magnésio",
-    formula: "MgCO3",
-    formulaExibicao: "MgCO₃",
-    cation: Mg,
-    anion: CO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 3.5e-8,
-    pKps: -Math.log10(3.5e-8),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CaCO3",
-    nome: "carbonato de cálcio",
-    formula: "CaCO3",
-    formulaExibicao: "CaCO₃",
-    cation: Ca,
-    anion: CO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 4.5e-9,
-    pKps: -Math.log10(4.5e-9),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "SrCO3",
-    nome: "carbonato de estrôncio",
-    formula: "SrCO3",
-    formulaExibicao: "SrCO₃",
-    cation: Sr,
-    anion: CO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 9.3e-10,
-    pKps: -Math.log10(9.3e-10),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "BaCO3",
-    nome: "carbonato de bário",
-    formula: "BaCO3",
-    formulaExibicao: "BaCO₃",
-    cation: Ba,
-    anion: CO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 5e-9,
-    pKps: -Math.log10(5e-9),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Ag2CO3",
-    nome: "carbonato de prata",
-    formula: "Ag2CO3",
-    formulaExibicao: "Ag₂CO₃",
-    cation: Ag,
-    anion: CO3,
-    coeficienteCation: 2,
-    coeficienteAnion: 1,
-    kps: 8.1e-12,
-    pKps: -Math.log10(8.1e-12),
-    corPrecipitado: "amarelo-claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbCO3",
-    nome: "carbonato de chumbo(II)",
-    formula: "PbCO3",
-    formulaExibicao: "PbCO₃",
-    cation: Pb,
-    anion: CO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 7.4e-14,
-    pKps: -Math.log10(7.4e-14),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "AgIO3",
+      nome: "iodato de prata",
+      formula: "AgIO3",
+      formulaExibicao: "AgIO₃",
+      cation: Ag,
+      anion: IO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 3.1e-8,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "BaCrO4",
-    nome: "cromato de bário",
-    formula: "BaCrO4",
-    formulaExibicao: "BaCrO₄",
-    cation: Ba,
-    anion: CrO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 2.1e-10,
-    pKps: -Math.log10(2.1e-10),
-    corPrecipitado: "amarelo",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CuCrO4",
-    nome: "cromato de cobre(II)",
-    formula: "CuCrO4",
-    formulaExibicao: "CuCrO₄",
-    cation: Cu,
-    anion: CrO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 3.6e-6,
-    pKps: -Math.log10(3.6e-6),
-    corPrecipitado: "amarelo",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Ag2CrO4",
-    nome: "cromato de prata",
-    formula: "Ag2CrO4",
-    formulaExibicao: "Ag₂CrO₄",
-    cation: Ag,
-    anion: CrO4,
-    coeficienteCation: 2,
-    coeficienteAnion: 1,
-    kps: 1.2e-12,
-    pKps: -Math.log10(1.2e-12),
-    corPrecipitado: "vermelho-tijolo",
-    usos: [...usosArgentometria],
-  },
-  {
-    id: "Hg2CrO4",
-    nome: "cromato de mercúrio(I)",
-    formula: "Hg2CrO4",
-    formulaExibicao: "Hg₂CrO₄",
-    cation: Hg2,
-    anion: CrO4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 2e-9,
-    pKps: -Math.log10(2e-9),
-    corPrecipitado: "amarelo",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "ZnIO32",
+      nome: "iodato de zinco",
+      formula: "Zn(IO3)2",
+      formulaExibicao: "Zn(IO₃)₂",
+      cation: Zn,
+      anion: IO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 3.9e-6,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "CaIO32",
-    nome: "iodato de cálcio",
-    formula: "Ca(IO3)2",
-    formulaExibicao: "Ca(IO₃)₂",
-    cation: Ca,
-    anion: IO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 7.1e-7,
-    pKps: -Math.log10(7.1e-7),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "BaIO32",
-    nome: "iodato de bário",
-    formula: "Ba(IO3)2",
-    formulaExibicao: "Ba(IO₃)₂",
-    cation: Ba,
-    anion: IO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 1.5e-9,
-    pKps: -Math.log10(1.5e-9),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "AgIO3",
-    nome: "iodato de prata",
-    formula: "AgIO3",
-    formulaExibicao: "AgIO₃",
-    cation: Ag,
-    anion: IO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 3.1e-8,
-    pKps: -Math.log10(3.1e-8),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "ZnIO32",
-    nome: "iodato de zinco",
-    formula: "Zn(IO3)2",
-    formulaExibicao: "Zn(IO₃)₂",
-    cation: Zn,
-    anion: IO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 3.9e-6,
-    pKps: -Math.log10(3.9e-6),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CdIO32",
-    nome: "iodato de cádmio",
-    formula: "Cd(IO3)2",
-    formulaExibicao: "Cd(IO₃)₂",
-    cation: Cd,
-    anion: IO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 2.3e-8,
-    pKps: -Math.log10(2.3e-8),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbIO32",
-    nome: "iodato de chumbo(II)",
-    formula: "Pb(IO3)2",
-    formulaExibicao: "Pb(IO₃)₂",
-    cation: Pb,
-    anion: IO3,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 2.5e-13,
-    pKps: -Math.log10(2.5e-13),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "CdIO32",
+      nome: "iodato de cádmio",
+      formula: "Cd(IO3)2",
+      formulaExibicao: "Cd(IO₃)₂",
+      cation: Cd,
+      anion: IO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 2.3e-8,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "MgF2",
-    nome: "fluoreto de magnésio",
-    formula: "MgF2",
-    formulaExibicao: "MgF₂",
-    cation: Mg,
-    anion: F,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 6.6e-9,
-    pKps: -Math.log10(6.6e-9),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CaF2",
-    nome: "fluoreto de cálcio",
-    formula: "CaF2",
-    formulaExibicao: "CaF₂",
-    cation: Ca,
-    anion: F,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 3.9e-11,
-    pKps: -Math.log10(3.9e-11),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "SrF2",
-    nome: "fluoreto de estrôncio",
-    formula: "SrF2",
-    formulaExibicao: "SrF₂",
-    cation: Sr,
-    anion: F,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 2.9e-9,
-    pKps: -Math.log10(2.9e-9),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "BaF2",
-    nome: "fluoreto de bário",
-    formula: "BaF2",
-    formulaExibicao: "BaF₂",
-    cation: Ba,
-    anion: F,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 1.7e-6,
-    pKps: -Math.log10(1.7e-6),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbF2",
-    nome: "fluoreto de chumbo(II)",
-    formula: "PbF2",
-    formulaExibicao: "PbF₂",
-    cation: Pb,
-    anion: F,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 3.6e-8,
-    pKps: -Math.log10(3.6e-8),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "PbIO32",
+      nome: "iodato de chumbo(II)",
+      formula: "Pb(IO3)2",
+      formulaExibicao: "Pb(IO₃)₂",
+      cation: Pb,
+      anion: IO3,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 2.5e-13,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "MgOH2",
-    nome: "hidróxido de magnésio",
-    formula: "Mg(OH)2",
-    formulaExibicao: "Mg(OH)₂",
-    cation: Mg,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 7.1e-12,
-    pKps: -Math.log10(7.1e-12),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CaOH2",
-    nome: "hidróxido de cálcio",
-    formula: "Ca(OH)2",
-    formulaExibicao: "Ca(OH)₂",
-    cation: Ca,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 6.5e-6,
-    pKps: -Math.log10(6.5e-6),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "LaOH3",
-    nome: "hidróxido de lantânio",
-    formula: "La(OH)3",
-    formulaExibicao: "La(OH)₃",
-    cation: La,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 3,
-    kps: 2e-21,
-    pKps: -Math.log10(2e-21),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "MnOH2",
-    nome: "hidróxido de manganês(II)",
-    formula: "Mn(OH)2",
-    formulaExibicao: "Mn(OH)₂",
-    cation: Mn,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 1.6e-13,
-    pKps: -Math.log10(1.6e-13),
-    corPrecipitado: "claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "FeOH2",
-    nome: "hidróxido de ferro(II)",
-    formula: "Fe(OH)2",
-    formulaExibicao: "Fe(OH)₂",
-    cation: Fe2,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 8e-16,
-    pKps: -Math.log10(8e-16),
-    corPrecipitado: "esverdeado",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CoOH2",
-    nome: "hidróxido de cobalto(II)",
-    formula: "Co(OH)2",
-    formulaExibicao: "Co(OH)₂",
-    cation: Co,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 1.3e-15,
-    pKps: -Math.log10(1.3e-15),
-    corPrecipitado: "claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "NiOH2",
-    nome: "hidróxido de níquel(II)",
-    formula: "Ni(OH)2",
-    formulaExibicao: "Ni(OH)₂",
-    cation: Ni,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 6e-16,
-    pKps: -Math.log10(6e-16),
-    corPrecipitado: "verde",
-    usos: [...usosGerais],
-  },
-  {
-    id: "CuOH2",
-    nome: "hidróxido de cobre(II)",
-    formula: "Cu(OH)2",
-    formulaExibicao: "Cu(OH)₂",
-    cation: Cu,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 4.8e-20,
-    pKps: -Math.log10(4.8e-20),
-    corPrecipitado: "azul",
-    usos: [...usosGerais],
-  },
-  {
-    id: "FeOH3",
-    nome: "hidróxido de ferro(III)",
-    formula: "Fe(OH)3",
-    formulaExibicao: "Fe(OH)₃",
-    cation: Fe3,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 3,
-    kps: 1.6e-39,
-    pKps: -Math.log10(1.6e-39),
-    corPrecipitado: "marrom",
-    usos: [...usosGerais],
-  },
-  {
-    id: "AlOH3",
-    nome: "hidróxido de alumínio",
-    formula: "Al(OH)3",
-    formulaExibicao: "Al(OH)₃",
-    cation: Al,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 3,
-    kps: 3e-34,
-    pKps: -Math.log10(3e-34),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "HgO",
-    nome: "óxido de mercúrio(II)",
-    formula: "HgO",
-    formulaExibicao: "HgO",
-    cation: Hg,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 3.6e-26,
-    pKps: -Math.log10(3.6e-26),
-    corPrecipitado: "vermelho",
-    observacao: "Tabela expressa como HgO + H₂O ⇌ Hg²⁺ + 2OH⁻.",
-    usos: [...usosGerais],
-  },
-  {
-    id: "SnO",
-    nome: "óxido de estanho(II)",
-    formula: "SnO",
-    formulaExibicao: "SnO",
-    cation: Sn,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 6e-27,
-    pKps: -Math.log10(6e-27),
-    corPrecipitado: "claro",
-    observacao: "Tabela expressa como SnO + H₂O ⇌ Sn²⁺ + 2OH⁻.",
-    usos: [...usosGerais],
-  },
-  {
-    id: "PbO",
-    nome: "óxido de chumbo(II)",
-    formula: "PbO",
-    formulaExibicao: "PbO",
-    cation: Pb,
-    anion: OH,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 8e-16,
-    pKps: -Math.log10(8e-16),
-    corPrecipitado: "amarelo",
-    observacao: "Tabela expressa como PbO + H₂O ⇌ Pb²⁺ + 2OH⁻.",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Ag2O",
-    nome: "óxido de prata",
-    formula: "Ag2O",
-    formulaExibicao: "Ag₂O",
-    cation: Ag,
-    anion: OH,
-    coeficienteCation: 2,
-    coeficienteAnion: 2,
-    kps: 3.8e-16,
-    pKps: -Math.log10(3.8e-16),
-    corPrecipitado: "marrom",
-    observacao: "Tabela expressa como Ag₂O + H₂O ⇌ 2Ag⁺ + 2OH⁻.",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Cu2O",
-    nome: "óxido de cobre(I)",
-    formula: "Cu2O",
-    formulaExibicao: "Cu₂O",
-    cation: Cu,
-    anion: OH,
-    coeficienteCation: 2,
-    coeficienteAnion: 2,
-    kps: 4e-30,
-    pKps: -Math.log10(4e-30),
-    corPrecipitado: "vermelho",
-    observacao: "Tabela expressa como Cu₂O + H₂O ⇌ 2Cu⁺ + 2OH⁻.",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "MgF2",
+      nome: "fluoreto de magnésio",
+      formula: "MgF2",
+      formulaExibicao: "MgF₂",
+      cation: Mg,
+      anion: F,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 6.6e-9,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "CaC2O4",
-    nome: "oxalato de cálcio",
-    formula: "CaC2O4",
-    formulaExibicao: "CaC₂O₄",
-    cation: Ca,
-    anion: C2O4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1.3e-8,
-    pKps: -Math.log10(1.3e-8),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "BaC2O4",
-    nome: "oxalato de bário",
-    formula: "BaC2O4",
-    formulaExibicao: "BaC₂O₄",
-    cation: Ba,
-    anion: C2O4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1e-6,
-    pKps: -Math.log10(1e-6),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "SrC2O4",
-    nome: "oxalato de estrôncio",
-    formula: "SrC2O4",
-    formulaExibicao: "SrC₂O₄",
-    cation: Sr,
-    anion: C2O4,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 4e-7,
-    pKps: -Math.log10(4e-7),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "CaF2",
+      nome: "fluoreto de cálcio",
+      formula: "CaF2",
+      formulaExibicao: "CaF₂",
+      cation: Ca,
+      anion: F,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 3.9e-11,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "Fe3PO42",
-    nome: "fosfato de ferro(II)",
-    formula: "Fe3(PO4)2",
-    formulaExibicao: "Fe₃(PO₄)₂",
-    cation: Fe2,
-    anion: PO4,
-    coeficienteCation: 3,
-    coeficienteAnion: 2,
-    kps: 1e-36,
-    pKps: -Math.log10(1e-36),
-    corPrecipitado: "claro",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Zn3PO42",
-    nome: "fosfato de zinco",
-    formula: "Zn3(PO4)2",
-    formulaExibicao: "Zn₃(PO₄)₂",
-    cation: Zn,
-    anion: PO4,
-    coeficienteCation: 3,
-    coeficienteAnion: 2,
-    kps: 5e-36,
-    pKps: -Math.log10(5e-36),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Ag3PO4",
-    nome: "fosfato de prata",
-    formula: "Ag3PO4",
-    formulaExibicao: "Ag₃PO₄",
-    cation: Ag,
-    anion: PO4,
-    coeficienteCation: 3,
-    coeficienteAnion: 1,
-    kps: 2.8e-18,
-    pKps: -Math.log10(2.8e-18),
-    corPrecipitado: "amarelo",
-    usos: [...usosGerais],
-  },
-  {
-    id: "Pb3PO42",
-    nome: "fosfato de chumbo(II)",
-    formula: "Pb3(PO4)2",
-    formulaExibicao: "Pb₃(PO₄)₂",
-    cation: Pb,
-    anion: PO4,
-    coeficienteCation: 3,
-    coeficienteAnion: 2,
-    kps: 3e-44,
-    pKps: -Math.log10(3e-44),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
+    criarSal({
+      id: "SrF2",
+      nome: "fluoreto de estrôncio",
+      formula: "SrF2",
+      formulaExibicao: "SrF₂",
+      cation: Sr,
+      anion: F,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 2.9e-9,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
 
-  {
-    id: "CuSCN",
-    nome: "tiocianato de cobre(I)",
-    formula: "CuSCN",
-    formulaExibicao: "CuSCN",
-    cation: Cu,
-    anion: SCN,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 4e-14,
-    pKps: -Math.log10(4e-14),
-    corPrecipitado: "branco",
-    observacao: "Valor tabelado em μ = 5,0 M.",
-    usos: [...usosGerais],
-  },
-  {
-    id: "AgSCN",
-    nome: "tiocianato de prata",
-    formula: "AgSCN",
-    formulaExibicao: "AgSCN",
-    cation: Ag,
-    anion: SCN,
-    coeficienteCation: 1,
-    coeficienteAnion: 1,
-    kps: 1.1e-12,
-    pKps: -Math.log10(1.1e-12),
-    corPrecipitado: "branco",
-    usos: [...usosArgentometria],
-  },
-  {
-    id: "Hg2SCN2",
-    nome: "tiocianato de mercúrio(I)",
-    formula: "Hg2(SCN)2",
-    formulaExibicao: "Hg₂(SCN)₂",
-    cation: Hg2,
-    anion: SCN,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 3e-20,
-    pKps: -Math.log10(3e-20),
-    corPrecipitado: "branco",
-    usos: [...usosGerais],
-  },
-  {
-    id: "HgSCN2",
-    nome: "tiocianato de mercúrio(II)",
-    formula: "Hg(SCN)2",
-    formulaExibicao: "Hg(SCN)₂",
-    cation: Hg,
-    anion: SCN,
-    coeficienteCation: 1,
-    coeficienteAnion: 2,
-    kps: 2.8e-20,
-    pKps: -Math.log10(2.8e-20),
-    corPrecipitado: "branco",
-    observacao: "Valor tabelado em μ = 1,0 M.",
-    usos: [...usosGerais],
-  },
-];
+    criarSal({
+      id: "BaF2",
+      nome: "fluoreto de bário",
+      formula: "BaF2",
+      formulaExibicao: "BaF₂",
+      cation: Ba,
+      anion: F,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 1.7e-6,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "PbF2",
+      nome: "fluoreto de chumbo(II)",
+      formula: "PbF2",
+      formulaExibicao: "PbF₂",
+      cation: Pb,
+      anion: F,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 3.6e-8,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "MgOH2",
+      nome: "hidróxido de magnésio",
+      formula: "Mg(OH)2",
+      formulaExibicao: "Mg(OH)₂",
+      cation: Mg,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 7.1e-12,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "CaOH2",
+      nome: "hidróxido de cálcio",
+      formula: "Ca(OH)2",
+      formulaExibicao: "Ca(OH)₂",
+      cation: Ca,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 6.5e-6,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "LaOH3",
+      nome: "hidróxido de lantânio",
+      formula: "La(OH)3",
+      formulaExibicao: "La(OH)₃",
+      cation: La,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 3,
+      kps: 2e-21,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "MnOH2",
+      nome: "hidróxido de manganês(II)",
+      formula: "Mn(OH)2",
+      formulaExibicao: "Mn(OH)₂",
+      cation: Mn,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 1.6e-13,
+      corPrecipitado: "claro",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "FeOH2",
+      nome: "hidróxido de ferro(II)",
+      formula: "Fe(OH)2",
+      formulaExibicao: "Fe(OH)₂",
+      cation: Fe2,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 8e-16,
+      corPrecipitado: "esverdeado",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "CoOH2",
+      nome: "hidróxido de cobalto(II)",
+      formula: "Co(OH)2",
+      formulaExibicao: "Co(OH)₂",
+      cation: Co,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 1.3e-15,
+      corPrecipitado: "claro",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "NiOH2",
+      nome: "hidróxido de níquel(II)",
+      formula: "Ni(OH)2",
+      formulaExibicao: "Ni(OH)₂",
+      cation: Ni,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 6e-16,
+      corPrecipitado: "verde",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "CuOH2",
+      nome: "hidróxido de cobre(II)",
+      formula: "Cu(OH)2",
+      formulaExibicao: "Cu(OH)₂",
+      cation: Cu2,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 4.8e-20,
+      corPrecipitado: "azul",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "FeOH3",
+      nome: "hidróxido de ferro(III)",
+      formula: "Fe(OH)3",
+      formulaExibicao: "Fe(OH)₃",
+      cation: Fe3,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 3,
+      kps: 1.6e-39,
+      corPrecipitado: "marrom",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "AlOH3",
+      nome: "hidróxido de alumínio",
+      formula: "Al(OH)3",
+      formulaExibicao: "Al(OH)₃",
+      cation: Al,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 3,
+      kps: 3e-34,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "HgO",
+      nome: "óxido de mercúrio(II)",
+      formula: "HgO",
+      formulaExibicao: "HgO",
+      cation: Hg,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 3.6e-26,
+      corPrecipitado: "vermelho",
+      observacao:
+        "Constante expressa para HgO + H₂O ⇌ Hg²⁺ + 2OH⁻; OH⁻ representa a reação global com água.",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "SnO",
+      nome: "óxido de estanho(II)",
+      formula: "SnO",
+      formulaExibicao: "SnO",
+      cation: Sn,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 6e-27,
+      corPrecipitado: "claro",
+      observacao:
+        "Constante expressa para SnO + H₂O ⇌ Sn²⁺ + 2OH⁻; OH⁻ representa a reação global com água.",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "PbO",
+      nome: "óxido de chumbo(II)",
+      formula: "PbO",
+      formulaExibicao: "PbO",
+      cation: Pb,
+      anion: OH,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 8e-16,
+      corPrecipitado: "amarelo",
+      observacao:
+        "Constante expressa para PbO + H₂O ⇌ Pb²⁺ + 2OH⁻; OH⁻ representa a reação global com água.",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "Ag2O",
+      nome: "óxido de prata",
+      formula: "Ag2O",
+      formulaExibicao: "Ag₂O",
+      cation: Ag,
+      anion: OH,
+      coeficienteCation: 2,
+      coeficienteAnion: 2,
+      kps: 3.8e-16,
+      corPrecipitado: "marrom",
+      observacao:
+        "Constante expressa para Ag₂O + H₂O ⇌ 2Ag⁺ + 2OH⁻; OH⁻ representa a reação global com água.",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "Cu2O",
+      nome: "óxido de cobre(I)",
+      formula: "Cu2O",
+      formulaExibicao: "Cu₂O",
+      cation: Cu1,
+      anion: OH,
+      coeficienteCation: 2,
+      coeficienteAnion: 2,
+      kps: 4e-30,
+      corPrecipitado: "vermelho",
+      observacao:
+        "Constante expressa para Cu₂O + H₂O ⇌ 2Cu⁺ + 2OH⁻; OH⁻ representa a reação global com água.",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "CaC2O4",
+      nome: "oxalato de cálcio",
+      formula: "CaC2O4",
+      formulaExibicao: "CaC₂O₄",
+      cation: Ca,
+      anion: C2O4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1.3e-8,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "BaC2O4",
+      nome: "oxalato de bário",
+      formula: "BaC2O4",
+      formulaExibicao: "BaC₂O₄",
+      cation: Ba,
+      anion: C2O4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1e-6,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "SrC2O4",
+      nome: "oxalato de estrôncio",
+      formula: "SrC2O4",
+      formulaExibicao: "SrC₂O₄",
+      cation: Sr,
+      anion: C2O4,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 4e-7,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "Fe3PO42",
+      nome: "fosfato de ferro(II)",
+      formula: "Fe3(PO4)2",
+      formulaExibicao: "Fe₃(PO₄)₂",
+      cation: Fe2,
+      anion: PO4,
+      coeficienteCation: 3,
+      coeficienteAnion: 2,
+      kps: 1e-36,
+      corPrecipitado: "claro",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "Zn3PO42",
+      nome: "fosfato de zinco",
+      formula: "Zn3(PO4)2",
+      formulaExibicao: "Zn₃(PO₄)₂",
+      cation: Zn,
+      anion: PO4,
+      coeficienteCation: 3,
+      coeficienteAnion: 2,
+      kps: 5e-36,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "Ag3PO4",
+      nome: "fosfato de prata",
+      formula: "Ag3PO4",
+      formulaExibicao: "Ag₃PO₄",
+      cation: Ag,
+      anion: PO4,
+      coeficienteCation: 3,
+      coeficienteAnion: 1,
+      kps: 2.8e-18,
+      corPrecipitado: "amarelo",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "Pb3PO42",
+      nome: "fosfato de chumbo(II)",
+      formula: "Pb3(PO4)2",
+      formulaExibicao: "Pb₃(PO₄)₂",
+      cation: Pb,
+      anion: PO4,
+      coeficienteCation: 3,
+      coeficienteAnion: 2,
+      kps: 3e-44,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "CuSCN",
+      nome: "tiocianato de cobre(I)",
+      formula: "CuSCN",
+      formulaExibicao: "CuSCN",
+      cation: Cu1,
+      anion: SCN,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 4e-14,
+      corPrecipitado: "branco",
+      observacao:
+        "Valor condicional tabelado em força iônica μ = 5,0 mol·L⁻¹.",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "AgSCN",
+      nome: "tiocianato de prata",
+      formula: "AgSCN",
+      formulaExibicao: "AgSCN",
+      cation: Ag,
+      anion: SCN,
+      coeficienteCation: 1,
+      coeficienteAnion: 1,
+      kps: 1.1e-12,
+      corPrecipitado: "branco",
+      usos: usosArgentometriaDireta,
+    }),
+
+    criarSal({
+      id: "Hg2SCN2",
+      nome: "tiocianato de mercúrio(I)",
+      formula: "Hg2(SCN)2",
+      formulaExibicao: "Hg₂(SCN)₂",
+      cation: Hg2,
+      anion: SCN,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 3e-20,
+      corPrecipitado: "branco",
+      usos: usosGerais,
+    }),
+
+    criarSal({
+      id: "HgSCN2",
+      nome: "tiocianato de mercúrio(II)",
+      formula: "Hg(SCN)2",
+      formulaExibicao: "Hg(SCN)₂",
+      cation: Hg,
+      anion: SCN,
+      coeficienteCation: 1,
+      coeficienteAnion: 2,
+      kps: 2.8e-20,
+      corPrecipitado: "branco",
+      observacao:
+        "Valor condicional tabelado em força iônica μ = 1,0 mol·L⁻¹.",
+      usos: usosGerais,
+    }),
+  ];
+
+function validarSalPrecipitacao(
+  sal: SalPrecipitacao
+): void {
+  if (!sal.id.trim()) {
+    throw new Error(
+      "Foi encontrado um sal sem identificador."
+    );
+  }
+
+  if (
+    !Number.isFinite(sal.kps) ||
+    sal.kps <= 0
+  ) {
+    throw new Error(
+      `Kps inválido para ${sal.id}.`
+    );
+  }
+
+  if (
+    !Number.isInteger(
+      sal.coeficienteCation
+    ) ||
+    sal.coeficienteCation <= 0 ||
+    !Number.isInteger(
+      sal.coeficienteAnion
+    ) ||
+    sal.coeficienteAnion <= 0
+  ) {
+    throw new Error(
+      `Coeficientes estequiométricos inválidos para ${sal.id}.`
+    );
+  }
+
+  if (
+    !Number.isInteger(
+      sal.cation.carga
+    ) ||
+    sal.cation.carga <= 0
+  ) {
+    throw new Error(
+      `Carga do cátion inválida em ${sal.id}.`
+    );
+  }
+
+  if (
+    !Number.isInteger(
+      sal.anion.carga
+    ) ||
+    sal.anion.carga >= 0
+  ) {
+    throw new Error(
+      `Carga do ânion inválida em ${sal.id}.`
+    );
+  }
+
+  const cargaTotal =
+    sal.coeficienteCation *
+      sal.cation.carga +
+    sal.coeficienteAnion *
+      sal.anion.carga;
+
+  if (cargaTotal !== 0) {
+    throw new Error(
+      `A estequiometria de ${sal.id} não é eletricamente neutra. ` +
+        `Carga resultante: ${cargaTotal}.`
+    );
+  }
+
+  const pKpsCalculado =
+    -Math.log10(sal.kps);
+
+  if (
+    !Number.isFinite(sal.pKps) ||
+    Math.abs(
+      pKpsCalculado -
+        sal.pKps
+    ) > 1e-12
+  ) {
+    throw new Error(
+      `pKps inconsistente para ${sal.id}.`
+    );
+  }
+
+  if (sal.usos.length === 0) {
+    throw new Error(
+      `Nenhum uso foi definido para ${sal.id}.`
+    );
+  }
+
+  if (
+    new Set(sal.usos).size !==
+    sal.usos.length
+  ) {
+    throw new Error(
+      `Há usos duplicados em ${sal.id}.`
+    );
+  }
+}
+
+function validarBaseSaisPrecipitacao(
+  sais: SalPrecipitacao[]
+): void {
+  const ids =
+    new Set<string>();
+
+  for (const sal of sais) {
+    if (ids.has(sal.id)) {
+      throw new Error(
+        `ID de sal duplicado: ${sal.id}.`
+      );
+    }
+
+    ids.add(sal.id);
+    validarSalPrecipitacao(sal);
+  }
+}
+
+validarBaseSaisPrecipitacao(
+  saisPrecipitacao
+);

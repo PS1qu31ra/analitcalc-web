@@ -1,0 +1,529 @@
+.precipitacaoDirectForm {
+    margin-top: 28px;
+  }
+  
+  .precipitacaoFormBlock {
+    padding: 28px;
+    border: 1px solid #e4e4e7;
+    border-radius: 22px;
+    background: #ffffff;
+  }
+  
+  .precipitacaoFormBlock + .precipitacaoFormBlock {
+    margin-top: 22px;
+  }
+  
+  .precipitacaoFormBlockHeader {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: flex-start;
+  }
+  
+  .precipitacaoFormStep {
+    flex: 0 0 auto;
+    padding: 8px 11px;
+    border-radius: 10px;
+    background: rgba(153, 27, 27, 0.08);
+    color: #991b1b;
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoFormBlockHeader h3 {
+    margin: 0;
+    color: #18181b;
+    font-size: 1.25rem;
+  }
+  
+  .precipitacaoFormBlockHeader p {
+    margin: 6px 0 0;
+    color: #71717a;
+    line-height: 1.55;
+  }
+  
+  .precipitacaoFieldsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  
+  .precipitacaoField {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  
+  .precipitacaoFieldWide {
+    grid-column: 1 / -1;
+  }
+  
+  .precipitacaoField > span {
+    margin-bottom: 8px;
+    color: #27272a;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+  
+  .precipitacaoField select,
+  .precipitacaoInputWithUnit {
+    min-height: 50px;
+    border: 1px solid #d4d4d8;
+    border-radius: 14px;
+    background: #ffffff;
+  }
+  
+  .precipitacaoField select {
+    width: 100%;
+    padding: 0 14px;
+    color: #27272a;
+    font: inherit;
+  }
+  
+  .precipitacaoInputWithUnit {
+    display: flex;
+    overflow: hidden;
+    align-items: stretch;
+  }
+  
+  .precipitacaoInputWithUnit input {
+    min-width: 0;
+    flex: 1;
+    padding: 0 14px;
+    border: 0;
+    outline: none;
+    color: #27272a;
+    font: inherit;
+  }
+  
+  .precipitacaoInputWithUnit > span {
+    display: flex;
+    padding: 0 13px;
+    border-left: 1px solid #e4e4e7;
+    background: #f4f4f5;
+    color: #52525b;
+    font-size: 0.8rem;
+    font-weight: 700;
+    align-items: center;
+  }
+  
+  .precipitacaoField small {
+    margin-top: 7px;
+    color: #71717a;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+  
+  .precipitacaoSpeciesGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  
+  .precipitacaoSpeciesButton {
+    display: flex;
+    padding: 16px;
+    border: 1px solid #d4d4d8;
+    border-radius: 15px;
+    background: #ffffff;
+    color: #27272a;
+    text-align: left;
+    cursor: pointer;
+    flex-direction: column;
+  }
+  
+  .precipitacaoSpeciesButton strong {
+    font-size: 1.08rem;
+  }
+  
+  .precipitacaoSpeciesButton span {
+    margin-top: 4px;
+    color: #71717a;
+    font-size: 0.8rem;
+  }
+  
+  .precipitacaoSpeciesButtonActive {
+    border-color: #991b1b;
+    background: rgba(153, 27, 27, 0.05);
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.07);
+  }
+  
+  .precipitacaoSystemSummary {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .precipitacaoSystemSummary > div {
+    padding: 16px;
+    border-radius: 14px;
+    background: #f7f7f8;
+  }
+  
+  .precipitacaoSystemSummary span {
+    display: block;
+    margin-bottom: 6px;
+    color: #71717a;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  
+  .precipitacaoSystemSummary strong {
+    color: #27272a;
+    font-size: 0.92rem;
+  }
+  
+  .precipitacaoFormError {
+    display: flex;
+    gap: 5px;
+    margin-top: 20px;
+    padding: 16px 18px;
+    border: 1px solid rgba(185, 28, 28, 0.2);
+    border-radius: 14px;
+    background: rgba(185, 28, 28, 0.05);
+    color: #7f1d1d;
+    flex-direction: column;
+  }
+  
+  .precipitacaoFormActions {
+    display: flex;
+    gap: 24px;
+    margin-top: 22px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: #18181b;
+    color: #ffffff;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .precipitacaoFormActions > div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .precipitacaoFormActions span {
+    margin-top: 4px;
+    color: #d4d4d8;
+    font-size: 0.85rem;
+  }
+  
+  .precipitacaoCalculateButton {
+    flex: 0 0 auto;
+    padding: 13px 20px;
+    border: 0;
+    border-radius: 12px;
+    background: #991b1b;
+    color: #ffffff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  
+  .precipitacaoResultsSection {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid #e4e4e7;
+  }
+  
+  .precipitacaoResultsHeader {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  
+  .precipitacaoResultsHeader h3 {
+    margin: 0;
+    color: #18181b;
+    font-size: 1.45rem;
+  }
+  
+  .precipitacaoResultsHeader p {
+    max-width: 720px;
+    margin: 8px 0 0;
+    color: #71717a;
+    line-height: 1.55;
+  }
+  
+  .precipitacaoStatus {
+    flex: 0 0 auto;
+    padding: 9px 13px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 900;
+  }
+  
+  .precipitacaoStatusSuccess {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .precipitacaoStatusWarning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .precipitacaoResultsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  
+  .precipitacaoResultCard {
+    padding: 20px;
+    border: 1px solid #e4e4e7;
+    border-radius: 17px;
+    background: #ffffff;
+  }
+  
+  .precipitacaoResultCardMain {
+    background: linear-gradient(
+      145deg,
+      rgba(153, 27, 27, 0.08),
+      #ffffff
+    );
+  }
+  
+  .precipitacaoResultCard > span {
+    display: block;
+    margin-bottom: 10px;
+    color: #71717a;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  
+  .precipitacaoResultCard > strong {
+    color: #18181b;
+    font-size: 1.35rem;
+  }
+  
+  .precipitacaoResultCard small {
+    font-size: 0.75rem;
+  }
+  
+  .precipitacaoResultCard p {
+    margin: 10px 0 0;
+    color: #71717a;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+  
+  .precipitacaoResultMessage {
+    margin-top: 16px;
+    padding: 17px 19px;
+    border-radius: 15px;
+  }
+  
+  .precipitacaoResultMessage strong {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .precipitacaoResultMessage p {
+    margin: 0;
+    line-height: 1.55;
+  }
+  
+  .precipitacaoResultMessageSuccess {
+    background: #f0fdf4;
+    color: #166534;
+  }
+  
+  .precipitacaoResultMessageWarning {
+    background: #fffbeb;
+    color: #92400e;
+  }
+  
+  @media (max-width: 900px) {
+    .precipitacaoFieldsGrid,
+    .precipitacaoSpeciesGrid,
+    .precipitacaoSystemSummary,
+    .precipitacaoResultsGrid {
+      grid-template-columns: 1fr;
+    }
+  
+    .precipitacaoFormActions,
+    .precipitacaoResultsHeader {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  
+    .precipitacaoCalculateButton {
+      width: 100%;
+    }
+  }
+
+  .precipitacaoMethodGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  
+  .precipitacaoMethodCard {
+    display: flex;
+    min-height: 220px;
+    padding: 20px;
+    border: 1px solid #d4d4d8;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #27272a;
+    text-align: left;
+    cursor: pointer;
+    flex-direction: column;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+  
+  .precipitacaoMethodCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(153, 27, 27, 0.4);
+  }
+  
+  .precipitacaoMethodCard > span {
+    margin-bottom: 7px;
+    color: #991b1b;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoMethodCard > strong {
+    color: #18181b;
+    font-size: 1.15rem;
+  }
+  
+  .precipitacaoMethodCard > p {
+    flex: 1;
+    margin: 11px 0 18px;
+    color: #71717a;
+    font-size: 0.86rem;
+    line-height: 1.55;
+  }
+  
+  .precipitacaoMethodCard > div {
+    padding-top: 13px;
+    border-top: 1px solid #e4e4e7;
+  }
+  
+  .precipitacaoMethodCard small,
+  .precipitacaoMethodCard b {
+    display: block;
+  }
+  
+  .precipitacaoMethodCard small {
+    margin-bottom: 4px;
+    color: #71717a;
+    font-size: 0.73rem;
+  }
+  
+  .precipitacaoMethodCard b {
+    color: #7f1d1d;
+  }
+  
+  .precipitacaoMethodCardActive {
+    border-color: #991b1b;
+    background: rgba(153, 27, 27, 0.04);
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.07);
+  }
+  
+  .precipitacaoCompatibilityBox,
+  .precipitacaoScientificNotice {
+    margin-top: 18px;
+    padding: 18px 20px;
+    border-radius: 16px;
+  }
+  
+  .precipitacaoCompatibilityBox {
+    border: 1px solid rgba(22, 101, 52, 0.18);
+    background: #f0fdf4;
+    color: #166534;
+  }
+  
+  .precipitacaoScientificNotice {
+    border: 1px solid rgba(153, 27, 27, 0.16);
+    background: rgba(153, 27, 27, 0.04);
+    color: #52525b;
+  }
+  
+  .precipitacaoCompatibilityBox strong,
+  .precipitacaoScientificNotice strong {
+    display: block;
+    margin-bottom: 6px;
+  }
+  
+  .precipitacaoCompatibilityBox p,
+  .precipitacaoScientificNotice p {
+    margin: 0;
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 760px) {
+    .precipitacaoMethodGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Interação dos cards de analito e método */
+
+.precipitacaoSpeciesButton,
+.precipitacaoMethodCard {
+  position: relative;
+  appearance: none;
+  width: 100%;
+  font: inherit;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.precipitacaoSpeciesButton {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.precipitacaoSpeciesButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(153, 27, 27, 0.45);
+}
+
+.precipitacaoSpeciesButton:focus-visible,
+.precipitacaoMethodCard:focus-visible {
+  outline: 3px solid rgba(153, 27, 27, 0.18);
+  outline-offset: 3px;
+}
+
+.precipitacaoSpeciesButtonActive {
+  border-color: #991b1b;
+  background: rgba(153, 27, 27, 0.05);
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.07);
+}
+
+.precipitacaoSpeciesButton small {
+  display: block;
+  margin-top: 10px;
+  color: #991b1b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.precipitacaoMethodCardActive {
+  border-color: #991b1b;
+  background: rgba(153, 27, 27, 0.04);
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.07);
+}
+
+@media (max-width: 760px) {
+  .precipitacaoMethodGrid {
+    grid-template-columns: 1fr;
+  }
+}
