@@ -1,5 +1,7 @@
 "use client";
 
+import Graficos from "./Graficos";
+
 import { useMemo, useState } from "react";
 
 import { saisPrecipitacao } from "@/lib/data/precipitacao/sais";
@@ -243,7 +245,14 @@ export default function TitulacaoDireta() {
       />
 
       {resultado && (
-        <Resultados resultado={resultado} />
+        <>
+          <Resultados resultado={resultado} />
+
+          <Graficos
+            resultado={resultado}
+            analito={analitoSelecionado}
+          />
+        </>
       )}
     </section>
   );

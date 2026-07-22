@@ -527,3 +527,363 @@
     grid-template-columns: 1fr;
   }
 }
+
+.precipitacaoResultInterpretation {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 2fr);
+  gap: 22px;
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid #e4e4e7;
+  border-radius: 17px;
+  background: #fafafa;
+  align-items: center;
+}
+
+.precipitacaoResultInterpretationHeader {
+  display: flex;
+  flex-direction: column;
+}
+
+.precipitacaoResultInterpretationHeader span {
+  margin-bottom: 6px;
+  color: #991b1b;
+  font-size: 0.73rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.precipitacaoResultInterpretationHeader strong {
+  color: #18181b;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.precipitacaoResultInterpretation > p {
+  margin: 0;
+  color: #52525b;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.precipitacaoResultInterpretation > p strong {
+  color: #27272a;
+}
+
+.precipitacaoResultScientificNote {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(153, 27, 27, 0.14);
+  border-radius: 15px;
+  background: rgba(153, 27, 27, 0.035);
+  color: #52525b;
+}
+
+.precipitacaoResultScientificNote strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #7f1d1d;
+}
+
+.precipitacaoResultScientificNote p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .precipitacaoResultInterpretation {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.precipitacaoCurveSection {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid #e4e4e7;
+  border-radius: 22px;
+  background: #ffffff;
+}
+
+.precipitacaoCurveLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 20px;
+  margin-top: 22px;
+  align-items: stretch;
+}
+
+.precipitacaoChartCard {
+  min-width: 0;
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid #e4e4e7;
+  border-radius: 18px;
+  background: #fafafa;
+}
+
+.precipitacaoChartCard svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.precipitacaoChartGridLine {
+  stroke: #e4e4e7;
+  stroke-width: 1;
+}
+
+.precipitacaoChartAxis {
+  stroke: #71717a;
+  stroke-width: 1.5;
+}
+
+.precipitacaoChartCurve {
+  fill: none;
+  stroke: #991b1b;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.precipitacaoChartPELine {
+  stroke: #b45309;
+  stroke-width: 2;
+  stroke-dasharray: 7 7;
+}
+
+.precipitacaoChartPELabel {
+  fill: #92400e;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.precipitacaoChartConsultLine {
+  stroke: #3f3f46;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+
+.precipitacaoChartPoint {
+  fill: #ffffff;
+  stroke: #18181b;
+  stroke-width: 3;
+}
+
+.precipitacaoChartLegendBackground {
+  fill: #ffffff;
+  stroke: #d4d4d8;
+  stroke-width: 1.5;
+}
+
+.precipitacaoChartLegendTitle {
+  fill: #18181b;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: Arial, sans-serif;
+}
+
+.precipitacaoChartLegendValue {
+  fill: #52525b;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+}
+
+.precipitacaoChartAxisLabel {
+  fill: #3f3f46;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.precipitacaoChartTick {
+  fill: #71717a;
+  font-size: 12px;
+}
+
+.precipitacaoCurveControlCard {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  border: 1px solid #e4e4e7;
+  border-radius: 18px;
+  background: #fafafa;
+}
+
+.precipitacaoCurveControlCard > strong {
+  margin-top: 8px;
+  color: #18181b;
+  font-size: 1.75rem;
+}
+
+.precipitacaoCurveControlCard input[type="range"] {
+  width: 100%;
+  margin: 28px 0 20px;
+  accent-color: #991b1b;
+}
+
+.precipitacaoCurvePEButton {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(153, 27, 27, 0.24);
+  border-radius: 12px;
+  background: rgba(153, 27, 27, 0.06);
+  color: #7f1d1d;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.precipitacaoCurvePEButton:hover {
+  background: rgba(153, 27, 27, 0.1);
+}
+
+.precipitacaoCurveRegion {
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.precipitacaoCurveRegion span {
+  display: block;
+  margin-bottom: 5px;
+  color: #71717a;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.precipitacaoCurveRegion strong {
+  color: #18181b;
+  font-size: 1rem;
+}
+
+.precipitacaoCurveDataGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+@media (max-width: 980px) {
+  .precipitacaoCurveLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .precipitacaoCurveRegion {
+    margin-top: 20px;
+  }
+
+  .precipitacaoCurveDataGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .precipitacaoCurveSection {
+    padding: 20px;
+  }
+
+  .precipitacaoCurveDataGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .precipitacaoChartCard {
+    padding: 8px;
+  }
+}
+
+.precipitacaoCurveControlDescription {
+  margin: 10px 0 20px;
+  color: #71717a;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.precipitacaoCurveSearchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.precipitacaoCurveSearchForm label {
+  color: #3f3f46;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.precipitacaoCurveInputGroup {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #d4d4d8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.precipitacaoCurveInputGroup:focus-within {
+  border-color: #991b1b;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.08);
+}
+
+.precipitacaoCurveInputGroup input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #18181b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.precipitacaoCurveInputGroup span {
+  padding: 0 14px;
+  color: #71717a;
+  font-size: 0.83rem;
+  font-weight: 800;
+}
+
+.precipitacaoCurveSearchButton {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #991b1b;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.precipitacaoCurveSearchButton:hover {
+  background: #7f1d1d;
+}
+
+.precipitacaoCurveSearchError {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.precipitacaoCurvePEButton {
+  margin-top: 12px;
+}
+
+.precipitacaoCurveDownloadButton {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid #d4d4d8;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #3f3f46;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.precipitacaoCurveDownloadButton:hover {
+  border-color: #a1a1aa;
+  background: #f4f4f5;
+}
