@@ -64,7 +64,7 @@ export default function SimulacaoCondicoes({
   formulaTitulante,
 }: SimulacaoCondicoesProps) {
   const graficoRef =
-    useRef<SVGSVGElement | null>(null);
+  useRef<SVGSVGElement>(null);
 
   const criarCamposOriginais =
     (): CamposSimulacao => ({
@@ -1449,7 +1449,7 @@ export default function SimulacaoCondicoes({
 
 type GraficoComparacaoCondicoesProps = {
   graficoRef:
-    React.RefObject<SVGSVGElement | null>;
+  React.RefObject<SVGSVGElement>;
   pontosOriginais:
     PontoCurvaTitulacaoDiretaPrecipitacao[];
   pontosSimulados:

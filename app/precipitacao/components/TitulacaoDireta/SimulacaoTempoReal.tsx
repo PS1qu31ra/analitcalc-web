@@ -48,7 +48,7 @@ export default function SimulacaoTempoReal({
   formulaTitulante,
 }: SimulacaoTempoRealProps) {
   const graficoRef =
-    useRef<SVGSVGElement | null>(null);
+  useRef<SVGSVGElement>(null);
 
   const proximoIdRef =
     useRef(1);
@@ -1035,7 +1035,7 @@ export default function SimulacaoTempoReal({
 }
 
 type GraficoTempoRealProps = {
-  graficoRef: React.RefObject<SVGSVGElement | null>;
+  graficoRef: React.RefObject<SVGSVGElement>;
   curvaIdeal: PontoCurvaTitulacaoDiretaPrecipitacao[];
   pontosAdicionados: PontoAdicionado[];
   volumePE: number;

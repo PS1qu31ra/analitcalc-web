@@ -213,7 +213,7 @@ export default function AnalisesDiretasTabs({
           </div>
 
           <span className="precipitacaoWorkspaceBadge">
-            {analito.formula}
+          {analito.formulaExibicao}
           </span>
         </header>
 

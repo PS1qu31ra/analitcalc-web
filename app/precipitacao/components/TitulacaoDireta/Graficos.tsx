@@ -788,7 +788,7 @@ const marcacoesYInternas = Array.from(
         </div>
 
         <span className="precipitacaoWorkspaceBadge">
-          {analito.formula}
+        {analito.formulaExibicao}
         </span>
       </header>
 

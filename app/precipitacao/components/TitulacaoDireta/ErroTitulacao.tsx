@@ -32,7 +32,7 @@ export default function ErroTitulacao({
   formulaTitulante,
 }: ErroTitulacaoProps) {
   const graficoRef =
-    useRef<SVGSVGElement | null>(null);
+  useRef<SVGSVGElement>(null);
 
   const [volumePontoFinalDigitado, setVolumePontoFinalDigitado] =
     useState(
@@ -1207,7 +1207,7 @@ type PontoGraficoErro = {
 };
 
 type GraficoComparacaoErroProps = {
-  graficoRef: React.RefObject<SVGSVGElement | null>;
+  graficoRef: React.RefObject<SVGSVGElement>;
   pontos: PontoGraficoErro[];
   volumePE: number;
   volumePF: number;

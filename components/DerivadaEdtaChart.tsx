@@ -28,7 +28,7 @@ type SegundaDerivadaProps = {
 type Props = PrimeiraDerivadaProps | SegundaDerivadaProps;
 
 export function DerivadaEdtaChart(props: Props) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const pontosNormalizados =
   props.tipo === "primeira"

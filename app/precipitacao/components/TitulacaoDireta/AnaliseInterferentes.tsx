@@ -86,7 +86,7 @@ export default function AnaliseInterferentes({
   formulaTitulante,
 }: AnaliseInterferentesProps) {
   const graficoRef =
-    useRef<SVGSVGElement | null>(null);
+  useRef<SVGSVGElement>(null);
 
   const interferenciasPotenciais =
     useMemo(
@@ -1629,7 +1629,7 @@ export default function AnaliseInterferentes({
 
 type GraficoInterferenciasProps = {
   graficoRef:
-    React.RefObject<SVGSVGElement | null>;
+  React.RefObject<SVGSVGElement>
 
   curva: ReturnType<
     typeof gerarCurvaSeletividadePrecipitacao

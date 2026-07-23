@@ -519,7 +519,7 @@ type GraficoDerivadaProps = {
     nomeArquivo,
   }: GraficoDerivadaProps) {
     const graficoRef =
-      useRef<SVGSVGElement | null>(null);
+    useRef<SVGSVGElement>(null);
   const largura = 720;
   const altura = 360;
 

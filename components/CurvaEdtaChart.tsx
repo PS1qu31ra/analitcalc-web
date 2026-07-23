@@ -37,7 +37,7 @@ export function CurvaEdtaChart({
   descricao = "Relação entre pM e volume de titulante adicionado",
   metalPrincipalLabel = "Metal principal",
 }: Props) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const pontosPrincipal = curva.pontos.filter((ponto) => ponto.pM !== null);
 
