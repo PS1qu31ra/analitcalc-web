@@ -25,6 +25,8 @@ import type {
   ConfiguracaoAnalitoDireto,
 } from "@/lib/precipitacao/metodosDiretos";
 
+import AnalisesDiretasTabs from "./AnalisesDiretasTabs";
+
 type GraficosProps = {
   resultado: ResultadoTitulacaoDiretaPrecipitacao;
   analito: ConfiguracaoAnalitoDireto;
@@ -1169,18 +1171,23 @@ const marcacoesYInternas = Array.from(
       </div>
 
       <div className="precipitacaoResultInterpretation">
-        <div className="precipitacaoResultInterpretationHeader">
-          <span>
-            Interpretação da região
-          </span>
+  <div className="precipitacaoResultInterpretationHeader">
+    <span>
+      Interpretação da região
+    </span>
 
-          <strong>
-            {pontoConsultaCurva.regiao}
-          </strong>
-        </div>
+    <strong>
+      {pontoConsultaCurva.regiao}
+    </strong>
+  </div>
 
-        <p>{interpretacaoRegiao}</p>
-      </div>
-    </section>
+  <p>{interpretacaoRegiao}</p>
+</div>
+
+<AnalisesDiretasTabs
+  resultado={resultado}
+  analito={analito}
+/>
+</section>
   );
 }

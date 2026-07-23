@@ -27,12 +27,22 @@ export type SerieCurvaSeletividadePrecipitacao = {
   pontos: PontoCurvaSeletividadePrecipitacao[];
 };
 
+export type StatusSeparacaoQuantitativa =
+  | "atende"
+  | "nao_atende"
+  | "nao_avaliada";
+
 export type ComparacaoKpsSeletividade = {
   primeiroSal: SalPrecipitacao;
   segundoSal: SalPrecipitacao;
   razaoKps: number;
   logRazaoKps: number;
-  atendeCriterioConfiabilidade: boolean;
+  statusSeparacaoQuantitativa:
+    StatusSeparacaoQuantitativa;
+  atendeCriterioConfiabilidade:
+    boolean | null;
+  fracaoPrimeiroPrecipitada:
+    number | null;
   interpretacao: string;
 };
 
@@ -68,6 +78,15 @@ const TOLERANCIA_RELATIVA = 1e-12;
  * quando o segundo precipitado começar a se formar.
  */
 const FRACAO_PRECIPITADA_QUANTITATIVA = 0.999;
+
+/**
+ * Fração mínima usada apenas para identificar numericamente
+ * o primeiro traço de um precipitado na mistura.
+ *
+ * Não representa precipitação quantitativa.
+ */
+const FRACAO_MINIMA_INICIO_PRECIPITACAO =
+  1e-10;
 
 function ehNumeroPositivo(valor: number) {
   return Number.isFinite(valor) && valor > 0;
@@ -821,19 +840,129 @@ function gerarPontosVolume({
         volumeA - volumeB
     );
 }
+function calcularVolumeInicioNaMistura({
+  itens,
+  indiceItem,
+  volumeAmostra,
+  concentracaoTitulante,
+  volumeMaximo,
+}: {
+  itens: ResultadoItemSeletividadePrecipitacao[];
+  indiceItem: number;
+  volumeAmostra: number;
+  concentracaoTitulante: number;
+  volumeMaximo: number;
+}) {
+  const itemAlvo =
+    itens[indiceItem];
+
+  if (
+    !itemAlvo ||
+    !ehNumeroPositivo(volumeAmostra) ||
+    !ehNumeroPositivo(concentracaoTitulante) ||
+    !ehNumeroPositivo(volumeMaximo)
+  ) {
+    return NaN;
+  }
+
+  function calcularFracaoPrecipitada(
+    volumeAdicionado: number
+  ) {
+    const equilibrio =
+      resolverEquilibrioMistura({
+        itens,
+        volumeAmostra,
+        volumeAdicionado,
+        concentracaoTitulante,
+      });
+
+    const resultadoItem =
+      equilibrio.itens[indiceItem];
+
+    if (
+      !resultadoItem ||
+      !Number.isFinite(
+        resultadoItem.percentualPrecipitado
+      )
+    ) {
+      return NaN;
+    }
+
+    return (
+      resultadoItem.percentualPrecipitado /
+      100
+    );
+  }
+
+  const fracaoNoVolumeMaximo =
+    calcularFracaoPrecipitada(
+      volumeMaximo
+    );
+
+  /*
+   * O item ainda não começou a precipitar dentro
+   * da faixa calculada.
+   */
+  if (
+    !Number.isFinite(
+      fracaoNoVolumeMaximo
+    ) ||
+    fracaoNoVolumeMaximo <
+      FRACAO_MINIMA_INICIO_PRECIPITACAO
+  ) {
+    return NaN;
+  }
+
+  let limiteInferior = 0;
+  let limiteSuperior =
+    volumeMaximo;
+
+  for (
+    let iteracao = 0;
+    iteracao < MAX_ITERACOES_BISSECAO;
+    iteracao += 1
+  ) {
+    const meio =
+      (
+        limiteInferior +
+        limiteSuperior
+      ) / 2;
+
+    const fracaoNoMeio =
+      calcularFracaoPrecipitada(
+        meio
+      );
+
+    if (
+      Number.isFinite(
+        fracaoNoMeio
+      ) &&
+      fracaoNoMeio >=
+        FRACAO_MINIMA_INICIO_PRECIPITACAO
+    ) {
+      limiteSuperior = meio;
+    } else {
+      limiteInferior = meio;
+    }
+  }
+
+  return (
+    limiteInferior +
+    limiteSuperior
+  ) / 2;
+}
 
 function gerarComparacoesKps({
   itensOrdenados,
   volumeAmostra,
   concentracaoTitulante,
-  volumesInicio,
+  volumeMaximo,
 }: {
   itensOrdenados:
     ResultadoItemSeletividadePrecipitacao[];
-
   volumeAmostra: number;
   concentracaoTitulante: number;
-  volumesInicio: number[];
+  volumeMaximo: number;
 }): ComparacaoKpsSeletividade[] {
   const comparacoes:
     ComparacaoKpsSeletividade[] = [];
@@ -868,64 +997,123 @@ function gerarComparacoesKps({
     const logRazaoKps =
       Math.log10(razaoKps);
 
-    const volumeInicioSegundo =
-      volumesInicio[indice + 1];
+    /*
+     * Diferentemente da versão anterior, o início do
+     * segundo precipitado é localizado dentro da mistura
+     * completa, considerando o consumo de titulante por
+     * todos os precipitados que se formam antes dele.
+     */
+    const volumeInicioSegundoNaMistura =
+      calcularVolumeInicioNaMistura({
+        itens:
+          itensOrdenados,
+        indiceItem:
+          indice + 1,
+        volumeAmostra,
+        concentracaoTitulante,
+        volumeMaximo,
+      });
 
     let fracaoPrimeiroPrecipitada =
       NaN;
 
     if (
       Number.isFinite(
-        volumeInicioSegundo
+        volumeInicioSegundoNaMistura
       )
     ) {
-      const equilibrio =
+      const equilibrioNoInicioDoSegundo =
         resolverEquilibrioMistura({
-          itens: itensOrdenados,
+          itens:
+            itensOrdenados,
           volumeAmostra,
-
           volumeAdicionado:
-            volumeInicioSegundo,
-
+            volumeInicioSegundoNaMistura,
           concentracaoTitulante,
         });
 
       const resultadoPrimeiro =
-        equilibrio.itens[indice];
+        equilibrioNoInicioDoSegundo
+          .itens[indice];
 
-      fracaoPrimeiroPrecipitada =
-        resultadoPrimeiro
-          .percentualPrecipitado /
-        100;
+      if (
+        resultadoPrimeiro &&
+        Number.isFinite(
+          resultadoPrimeiro
+            .percentualPrecipitado
+        )
+      ) {
+        fracaoPrimeiroPrecipitada =
+          resultadoPrimeiro
+            .percentualPrecipitado /
+          100;
+      }
     }
 
-    const atendeCriterioConfiabilidade =
+    const avaliacaoDisponivel =
       Number.isFinite(
         fracaoPrimeiroPrecipitada
-      ) &&
-      fracaoPrimeiroPrecipitada >=
-        FRACAO_PRECIPITADA_QUANTITATIVA;
+      );
+
+    const atendeCriterioConfiabilidade =
+      avaliacaoDisponivel
+        ? fracaoPrimeiroPrecipitada >=
+          FRACAO_PRECIPITADA_QUANTITATIVA
+        : null;
+
+    const statusSeparacaoQuantitativa:
+      StatusSeparacaoQuantitativa =
+      !avaliacaoDisponivel
+        ? "nao_avaliada"
+        : atendeCriterioConfiabilidade
+          ? "atende"
+          : "nao_atende";
+
+    let interpretacao: string;
+
+    if (
+      statusSeparacaoQuantitativa ===
+      "atende"
+    ) {
+      interpretacao =
+        `Quando ${segundo.sal.formulaExibicao} começa a precipitar ` +
+        `na mistura, aproximadamente ${(
+          fracaoPrimeiroPrecipitada * 100
+        ).toFixed(3)}% de ${primeiro.sal.formulaExibicao} já precipitou. ` +
+        "O sistema atende ao critério adotado de 99,9% para " +
+        "separação quantitativa.";
+    } else if (
+      statusSeparacaoQuantitativa ===
+      "nao_atende"
+    ) {
+      interpretacao =
+        `Quando ${segundo.sal.formulaExibicao} começa a precipitar ` +
+        `na mistura, aproximadamente ${(
+          fracaoPrimeiroPrecipitada * 100
+        ).toFixed(3)}% de ${primeiro.sal.formulaExibicao} precipitou. ` +
+        "Há sobreposição relevante e o critério de 99,9% não é atendido.";
+    } else {
+      interpretacao =
+        `O precipitado ${segundo.sal.formulaExibicao} não começou ` +
+        "a se formar dentro do intervalo calculado para a mistura. " +
+        `Portanto, não foi observada sobreposição com ` +
+        `${primeiro.sal.formulaExibicao} dentro da faixa simulada.`;
+    }
 
     comparacoes.push({
       primeiroSal:
         primeiro.sal,
-
       segundoSal:
         segundo.sal,
-
       razaoKps,
       logRazaoKps,
-
+      statusSeparacaoQuantitativa,
       atendeCriterioConfiabilidade,
-
-      interpretacao:
-        Number.isFinite(
-          fracaoPrimeiroPrecipitada
-        )
-          ? atendeCriterioConfiabilidade
-            ? `Quando ${segundo.sal.formulaExibicao} começa a precipitar, aproximadamente ${(fracaoPrimeiroPrecipitada * 100).toFixed(3)}% de ${primeiro.sal.formulaExibicao} já precipitou. O sistema atende ao critério adotado de 99,9% para separação quantitativa.`
-            : `Quando ${segundo.sal.formulaExibicao} começa a precipitar, aproximadamente ${(fracaoPrimeiroPrecipitada * 100).toFixed(3)}% de ${primeiro.sal.formulaExibicao} precipitou. Há sobreposição relevante e o critério de 99,9% não é atendido.`
-          : "O segundo precipitado não começou a se formar dentro do intervalo calculado. Não foi possível avaliar a separação quantitativa nesse intervalo.",
+      fracaoPrimeiroPrecipitada:
+        avaliacaoDisponivel
+          ? fracaoPrimeiroPrecipitada
+          : null,
+      interpretacao,
     });
   }
 
@@ -1156,12 +1344,12 @@ export function gerarCurvaSeletividadePrecipitacao({
     series: seriesIsoladas,
 
     comparacoesKps:
-      gerarComparacoesKps({
-        itensOrdenados,
-        volumeAmostra,
-        concentracaoTitulante,
-        volumesInicio,
-      }),
+  gerarComparacoesKps({
+    itensOrdenados,
+    volumeAmostra,
+    concentracaoTitulante,
+    volumeMaximo,
+  }),
 
     volumeAmostra,
     concentracaoTitulante,

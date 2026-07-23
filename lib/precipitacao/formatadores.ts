@@ -1,4 +1,7 @@
-const mapaSobrescrito: Record<string, string> = {
+const mapaSobrescrito: Record<
+  string,
+  string
+> = {
   "0": "⁰",
   "1": "¹",
   "2": "²",
@@ -9,8 +12,8 @@ const mapaSobrescrito: Record<string, string> = {
   "7": "⁷",
   "8": "⁸",
   "9": "⁹",
-  "+": "⁺",
   "-": "⁻",
+  "+": "⁺",
 };
 
 const CASAS_DECIMAIS_PADRAO = 2;
@@ -174,7 +177,7 @@ export function formatarPotenciaTexto(
  */
 export function formatarCientificoBR(
   valor: number,
-  casas = CASAS_DECIMAIS_PADRAO
+  casas = 3
 ): string {
   if (!Number.isFinite(valor)) {
     return "-";
@@ -183,57 +186,40 @@ export function formatarCientificoBR(
   const casasNormalizadas =
     normalizarCasasDecimais(casas);
 
-  const valorNormalizado =
-    removerZeroNegativo(
-      valor,
-      casasNormalizadas
-    );
-
-  /*
-   * Evita a apresentação desnecessária:
-   *
-   * 0,00 × 10⁰
-   */
-  if (valorNormalizado === 0) {
+  if (valor === 0) {
     return formatarNumeroBR(
       0,
       casasNormalizadas
     );
   }
 
-  const notacaoCientifica =
-    valorNormalizado.toExponential(
+  const exponencial =
+    valor.toExponential(
       casasNormalizadas
     );
 
   const [
-    coeficienteBruto,
-    expoenteBruto,
-  ] = notacaoCientifica.split("e");
+    mantissaTexto,
+    expoenteTexto,
+  ] = exponencial.split("e");
 
-  const coeficiente =
-    coeficienteBruto.replace(
-      ".",
-      ","
+  const mantissa =
+    Number(
+      mantissaTexto
+    ).toLocaleString(
+      "pt-BR",
+      {
+        minimumFractionDigits:
+          casasNormalizadas,
+        maximumFractionDigits:
+          casasNormalizadas,
+      }
     );
 
   const expoente =
-    Number(expoenteBruto);
-
-  /*
-   * Situação defensiva: toExponential normalmente
-   * sempre gera coeficiente e expoente válidos.
-   */
-  if (
-    !Number.isFinite(expoente)
-  ) {
-    return "-";
-  }
-
-  return (
-    `${coeficiente} × 10` +
     formatarExpoenteSobrescrito(
-      expoente
-    )
-  );
+      Number(expoenteTexto)
+    );
+
+  return `${mantissa} × 10${expoente}`;
 }
