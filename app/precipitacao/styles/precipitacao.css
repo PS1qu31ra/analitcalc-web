@@ -5232,3 +5232,25 @@
   background: #fafafa;
   color: #52525b;
 }
+
+/* =========================================================
+ * ESPAÇAMENTO LATERAL — TITULAÇÃO POR RETORNO
+ * ======================================================= */
+
+ .precipitacaoReturnSection {
+  width: 100%;
+  padding-inline: clamp(16px, 3vw, 40px);
+  box-sizing: border-box;
+}
+
+.precipitacaoReturnSection .precipitacaoResultsSection,
+.precipitacaoReturnSection .precipitacaoCurveSection {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .precipitacaoReturnSection {
+    padding-inline: 16px;
+  }
+}

@@ -199,6 +199,14 @@ const usosArgentometriaDireta:
     "seletividade",
   ];
 
+  const usosAgSCN:
+  TipoEstudoPrecipitacao[] = [
+    "equilibrio",
+    "titulacaoDireta",
+    "titulacaoRetorno",
+    "seletividade",
+  ];
+
 const usosGerais:
   TipoEstudoPrecipitacao[] = [
     "equilibrio",
@@ -1099,7 +1107,7 @@ export const saisPrecipitacao:
       coeficienteAnion: 1,
       kps: 1.1e-12,
       corPrecipitado: "branco",
-      usos: usosArgentometriaDireta,
+      usos: usosAgSCN,
     }),
 
     criarSal({
