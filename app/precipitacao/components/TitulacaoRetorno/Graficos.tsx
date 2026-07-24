@@ -21,6 +21,8 @@ import type {
   ResultadoTitulacaoRetornoPrecipitacao,
 } from "@/lib/precipitacao/tipos";
 
+import AnalisesRetornoTabs from "./AnalisesRetornoTabs";
+
 type GraficosProps = {
   resultado: ResultadoTitulacaoRetornoPrecipitacao;
 };
@@ -1411,6 +1413,10 @@ export default function Graficos({
           da retrotitulação.
         </p>
       </div>
+
+      <AnalisesRetornoTabs
+        resultado={resultado}
+      />
     </section>
   );
 }

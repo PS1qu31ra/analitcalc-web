@@ -5254,3 +5254,96 @@
     padding-inline: 16px;
   }
 }
+
+/* =========================================================
+ * DERIVADAS — TITULAÇÃO POR RETORNO
+ * ======================================================= */
+
+ .precipitacaoDerivativeSection {
+  display: grid;
+  gap: 24px;
+}
+
+.precipitacaoDerivativeHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.precipitacaoDerivativeHeader h5 {
+  margin: 6px 0 8px;
+  font-size: 1.35rem;
+}
+
+.precipitacaoDerivativeHeader p {
+  max-width: 720px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.precipitacaoDerivativeComparisonGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.precipitacaoDerivativeComparisonCard {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.precipitacaoDerivativeComparisonCard span {
+  color: #71717a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.precipitacaoDerivativeComparisonCard strong {
+  color: #18181b;
+  font-size: 1rem;
+}
+
+.precipitacaoDerivativeComparisonCard small {
+  color: #52525b;
+  font-size: 0.88rem;
+}
+
+.precipitacaoDerivativeTablesGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.precipitacaoDerivativeTableHeader {
+  padding: 20px 20px 0;
+}
+
+.precipitacaoDerivativeTableHeader h6 {
+  margin: 6px 0 0;
+  font-size: 1.1rem;
+}
+
+.precipitacaoDerivativeTablesGrid
+  .precipitacaoInlineTableWrapper {
+  max-height: 480px;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .precipitacaoDerivativeHeader {
+    flex-direction: column;
+  }
+
+  .precipitacaoDerivativeComparisonGrid,
+  .precipitacaoDerivativeTablesGrid {
+    grid-template-columns: 1fr;
+  }
+}
