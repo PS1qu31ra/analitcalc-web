@@ -20,11 +20,22 @@ import type {
 
 import DerivadasCurvaRetorno from "./DerivadasCurvaRetorno";
 
-type AbaAnaliseRetorno =
+import ErroTitulacaoRetorno from "./ErroTitulacaoRetorno";
+
+import SimulacaoTempoRealRetorno from "./SimulacaoTempoRealRetorno";
+
+import MetodoVolhard from "./MetodoVolhard";
+
+import SimulacaoCondicoesRetorno from "./SimulacaoCondicoesRetorno";
+
+import AnaliseInterferentesRetorno from "./AnaliseInterferentesRetorno";
+
+type AbaRetorno =
   | "tabela"
   | "derivadas"
   | "erro"
   | "tempo-real"
+  | "metodos"
   | "simulacao"
   | "interferentes";
 
@@ -33,10 +44,10 @@ type AnalisesRetornoTabsProps = {
 };
 
 type ConfiguracaoAbaRetorno = {
-  id: AbaAnaliseRetorno;
-  titulo: string;
-  descricao: string;
-};
+    id: AbaRetorno;
+    titulo: string;
+    descricao: string;
+  };
 
 const abas: ConfiguracaoAbaRetorno[] = [
   {
@@ -64,6 +75,12 @@ const abas: ConfiguracaoAbaRetorno[] = [
       "Registre dados experimentais durante a retrotitulação.",
   },
   {
+    id: "metodos",
+    titulo: "Métodos",
+    descricao:
+      "Consulte o princípio, as condições e os cuidados do método de Volhard.",
+  },
+  {
     id: "simulacao",
     titulo: "Simulação",
     descricao:
@@ -84,9 +101,9 @@ export default function AnalisesRetornoTabs({
     abaAtiva,
     setAbaAtiva,
   ] =
-    useState<AbaAnaliseRetorno>(
-      "tabela"
-    );
+  useState<AbaRetorno>(
+    "tabela"
+  );
 
   const [
     filtroRegiao,
@@ -424,12 +441,31 @@ export default function AnalisesRetornoTabs({
               </span>
             </footer>
           </section>
-                ) : abaAtiva ===
-                "derivadas" ? (
-                <DerivadasCurvaRetorno
-                  resultado={resultado}
-                />
-              ) : (
+                ) : abaAtiva === "derivadas" ? (
+                    <DerivadasCurvaRetorno
+                      resultado={resultado}
+                    />
+                    ) : abaAtiva === "erro" ? (
+                        <ErroTitulacaoRetorno
+                          resultado={resultado}
+                        />
+                        ) : abaAtiva === "tempo-real" ? (
+                            <SimulacaoTempoRealRetorno
+                              resultado={resultado}
+                            />
+                            ) : abaAtiva === "metodos" ? (
+                                <MetodoVolhard
+                                  resultado={resultado}
+                                />
+                                ) : abaAtiva === "simulacao" ? (
+                                    <SimulacaoCondicoesRetorno
+                                      resultado={resultado}
+                                    />
+                                  ) : abaAtiva === "interferentes" ? (
+                                    <AnaliseInterferentesRetorno
+                                      resultado={resultado}
+                                    />
+                                  ) : (
                 <section className="precipitacaoDirectTabDevelopment">
             <div className="precipitacaoDirectTabDevelopmentIcon">
               <svg
