@@ -5587,3 +5587,608 @@
     min-width: 0;
   }
 }
+
+/* =========================================================
+   PRECIPITAÇÃO SELETIVA — ETAPA 2
+   ========================================================= */
+
+   .precipitacaoSelectiveSystemBanner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+  
+    margin-bottom: 24px;
+    padding: 20px 22px;
+  
+    border: 1px solid #fecaca;
+    border-radius: 18px;
+  
+    background:
+      linear-gradient(
+        135deg,
+        rgba(254, 242, 242, 0.98),
+        rgba(255, 255, 255, 0.98)
+      );
+  
+    box-shadow:
+      0 12px 30px rgba(127, 29, 29, 0.06);
+  }
+  
+  .precipitacaoSelectiveSystemBannerIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    width: 50px;
+    height: 50px;
+  
+    border-radius: 15px;
+  
+    background: #991b1b;
+    color: #ffffff;
+  
+    flex-shrink: 0;
+  }
+  
+  .precipitacaoSelectiveSystemBannerIcon svg {
+    width: 25px;
+    height: 25px;
+  
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  .precipitacaoSelectiveSystemBanner > div:nth-child(2) {
+    min-width: 0;
+  }
+  
+  .precipitacaoSelectiveSystemBanner > div:nth-child(2) > span {
+    display: block;
+  
+    margin-bottom: 4px;
+  
+    color: #991b1b;
+  
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoSelectiveSystemBanner > div:nth-child(2) > strong {
+    display: block;
+  
+    color: #18181b;
+  
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  
+  .precipitacaoSelectiveSystemBanner > div:nth-child(2) > p {
+    margin: 7px 0 0;
+  
+    color: #52525b;
+  
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+  
+  .precipitacaoSelectiveSystemBanner > div:nth-child(2) > p b {
+    color: #991b1b;
+    font-weight: 800;
+  }
+  
+  .precipitacaoSelectiveSystemStatus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  
+    min-height: 34px;
+    padding: 7px 12px;
+  
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+  
+    background: #f0fdf4;
+    color: #166534;
+  
+    font-size: 0.76rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  
+  /* Lista de espécies */
+  
+  .precipitacaoSelectiveItems {
+    display: grid;
+    gap: 20px;
+  }
+  
+  /* Card individual */
+  
+  .precipitacaoSelectiveItemCard {
+    position: relative;
+    overflow: hidden;
+  
+    padding: 22px;
+  
+    border: 1px solid #e4e4e7;
+    border-radius: 20px;
+  
+    background: #ffffff;
+  
+    box-shadow:
+      0 8px 24px rgba(24, 24, 27, 0.05);
+  
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+  
+  .precipitacaoSelectiveItemCard::before {
+    content: "";
+  
+    position: absolute;
+    inset: 0 auto 0 0;
+  
+    width: 5px;
+  
+    background:
+      linear-gradient(
+        180deg,
+        #991b1b,
+        #dc2626
+      );
+  }
+  
+  .precipitacaoSelectiveItemCard:hover {
+    border-color: #d4d4d8;
+  
+    box-shadow:
+      0 14px 34px rgba(24, 24, 27, 0.08);
+  
+    transform: translateY(-1px);
+  }
+  
+  /* Cabeçalho do card */
+  
+  .precipitacaoSelectiveItemHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+  
+    margin-bottom: 20px;
+  }
+  
+  .precipitacaoSelectiveItemIdentification {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  
+    min-width: 0;
+  }
+  
+  .precipitacaoSelectiveItemNumber {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    width: 46px;
+    height: 46px;
+  
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+  
+    background: #fef2f2;
+    color: #991b1b;
+  
+    font-size: 0.88rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+  
+    flex-shrink: 0;
+  }
+  
+  .precipitacaoSelectiveItemIdentification > div {
+    min-width: 0;
+  }
+  
+  .precipitacaoSelectiveItemIdentification > div > span {
+    display: block;
+  
+    margin-bottom: 3px;
+  
+    color: #71717a;
+  
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoSelectiveItemIdentification > div > strong {
+    display: block;
+  
+    color: #18181b;
+  
+    font-size: 1.45rem;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  
+  .precipitacaoSelectiveItemIdentification > div > small {
+    display: block;
+  
+    margin-top: 5px;
+  
+    color: #71717a;
+  
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  
+  .precipitacaoSelectiveItemHeader > button {
+    min-height: 36px;
+    padding: 7px 12px;
+  
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+  
+    background: #fff;
+    color: #b91c1c;
+  
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+  
+    cursor: pointer;
+  
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+  
+  .precipitacaoSelectiveItemHeader > button:hover {
+    border-color: #fca5a5;
+  
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  
+  /* Campos dentro do card */
+  
+  .precipitacaoSelectiveItemCard > .precipitacaoField {
+    display: grid;
+    gap: 8px;
+  
+    margin-top: 16px;
+  }
+  
+  .precipitacaoSelectiveItemCard > .precipitacaoField > span {
+    color: #3f3f46;
+  
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+  
+  .precipitacaoSelectiveItemCard select {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 42px 0 14px;
+  
+    border: 1px solid #d4d4d8;
+    border-radius: 12px;
+  
+    background-color: #ffffff;
+    color: #18181b;
+  
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+  
+    outline: none;
+  
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+  
+  .precipitacaoSelectiveItemCard select:focus {
+    border-color: #991b1b;
+  
+    box-shadow:
+      0 0 0 4px rgba(153, 27, 27, 0.1);
+  }
+  
+  /* Equação */
+  
+  .precipitacaoSelectiveReaction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+  
+    margin-top: 16px;
+    padding: 14px 16px;
+  
+    border: 1px solid #e4e4e7;
+    border-radius: 14px;
+  
+    background: #fafafa;
+  }
+  
+  .precipitacaoSelectiveReaction > span {
+    color: #71717a;
+  
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoSelectiveReaction > strong {
+    color: #27272a;
+  
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-align: right;
+  }
+  
+  /* Resumo inferior */
+  
+  .precipitacaoSelectiveItemSummary {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0, 1fr)
+      );
+  
+    gap: 1px;
+  
+    margin-top: 18px;
+    padding: 1px;
+  
+    overflow: hidden;
+  
+    border: 1px solid #e4e4e7;
+    border-radius: 15px;
+  
+    background: #e4e4e7;
+  }
+  
+  .precipitacaoSelectiveItemSummary > div {
+    min-width: 0;
+    padding: 14px 15px;
+  
+    background: #ffffff;
+  }
+  
+  .precipitacaoSelectiveItemSummary > div > span {
+    display: block;
+  
+    margin-bottom: 5px;
+  
+    color: #71717a;
+  
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoSelectiveItemSummary > div > strong {
+    display: block;
+  
+    overflow-wrap: anywhere;
+  
+    color: #18181b;
+  
+    font-size: 0.92rem;
+    font-weight: 900;
+  }
+  
+  /* Botão adicionar espécie */
+  
+  .precipitacaoSelectiveAddButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    width: 100%;
+    min-height: 48px;
+  
+    margin-top: 20px;
+    padding: 12px 18px;
+  
+    border: 1px dashed #d4d4d8;
+    border-radius: 14px;
+  
+    background: #fafafa;
+    color: #52525b;
+  
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 800;
+  
+    cursor: pointer;
+  
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+  
+  .precipitacaoSelectiveAddButton:hover {
+    border-color: #991b1b;
+  
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  
+  /* Responsividade */
+  
+  @media (max-width: 900px) {
+    .precipitacaoSelectiveSystemBanner {
+      grid-template-columns:
+        auto minmax(0, 1fr);
+    }
+  
+    .precipitacaoSelectiveSystemStatus {
+      grid-column: 1 / -1;
+  
+      width: fit-content;
+      margin-left: 68px;
+    }
+  
+    .precipitacaoSelectiveItemSummary {
+      grid-template-columns:
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .precipitacaoSelectiveSystemBanner {
+      grid-template-columns: 1fr;
+  
+      padding: 18px;
+    }
+  
+    .precipitacaoSelectiveSystemBannerIcon {
+      width: 44px;
+      height: 44px;
+    }
+  
+    .precipitacaoSelectiveSystemStatus {
+      grid-column: auto;
+  
+      width: 100%;
+      margin-left: 0;
+    }
+  
+    .precipitacaoSelectiveItemCard {
+      padding: 18px 16px 18px 20px;
+    }
+  
+    .precipitacaoSelectiveItemHeader {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  
+    .precipitacaoSelectiveItemHeader > button {
+      width: 100%;
+    }
+  
+    .precipitacaoSelectiveReaction {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  
+    .precipitacaoSelectiveReaction > strong {
+      text-align: left;
+    }
+  
+    .precipitacaoSelectiveItemSummary {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .precipitacaoClassificationReference {
+    margin-top: 24px;
+    padding: 22px;
+    border: 1px solid #e4e4e7;
+    border-radius: 18px;
+    background: #ffffff;
+  }
+  
+  .precipitacaoClassificationReference > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 18px;
+  }
+  
+  .precipitacaoClassificationReference > header h6 {
+    margin: 5px 0 0;
+    font-size: 1.05rem;
+    color: #18181b;
+  }
+  
+  .precipitacaoClassificationReference > header small {
+    max-width: 420px;
+    color: #71717a;
+    line-height: 1.5;
+    text-align: right;
+  }
+  
+  .precipitacaoClassificationReferenceTableWrapper {
+    overflow-x: auto;
+    border: 1px solid #e4e4e7;
+    border-radius: 14px;
+  }
+  
+  .precipitacaoClassificationReference table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+  }
+  
+  .precipitacaoClassificationReference th,
+  .precipitacaoClassificationReference td {
+    padding: 13px 15px;
+    border-bottom: 1px solid #e4e4e7;
+    text-align: left;
+    vertical-align: middle;
+  }
+  
+  .precipitacaoClassificationReference th {
+    background: #f8fafc;
+    color: #3f3f46;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  
+  .precipitacaoClassificationReference td {
+    color: #3f3f46;
+    font-size: 0.9rem;
+  }
+  
+  .precipitacaoClassificationReference tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  
+  .precipitacaoClassificationReference > p {
+    margin: 16px 0 0;
+    color: #71717a;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 720px) {
+    .precipitacaoClassificationReference {
+      padding: 17px;
+    }
+  
+    .precipitacaoClassificationReference > header {
+      flex-direction: column;
+      gap: 8px;
+    }
+  
+    .precipitacaoClassificationReference > header small {
+      text-align: left;
+    }
+  }

@@ -10,7 +10,6 @@ import {
 import {
   avaliarInterferenciasRetornoPrecipitacao,
   type EtapaInterferenciaRetorno,
-  type InterferenciaRetornoPrecipitacao,
 } from "@/lib/precipitacao/interferenciasRetorno";
 
 import {
@@ -175,6 +174,24 @@ export default function AnaliseInterferentesRetorno({
       ]
     );
 
+    const avaliacaoSelecionada =
+  interferenciaSelecionada
+    ?.avaliacaoSeparacao ?? null;
+
+    const percentualReferenciaPrecipitada =
+  interferenciaSelecionada
+    ?.percentualReferenciaPrecipitada ??
+  null;
+
+const percentualReferenciaRemanescente =
+  percentualReferenciaPrecipitada === null
+    ? null
+    : Math.max(
+        0,
+        100 -
+          percentualReferenciaPrecipitada
+      );
+
     const curvaInterferencia =
   useMemo(() => {
     if (
@@ -275,14 +292,16 @@ export default function AnaliseInterferentesRetorno({
         </strong>
 
         <p>
-          Como a concentração real dos possíveis
-          interferentes não foi informada, o sistema
-          utiliza inicialmente a mesma concentração
-          analítica de {formulaAnalito}. Portanto,
-          esta classificação representa uma
-          avaliação potencial e não uma confirmação
-          experimental.
-        </p>
+  Como a concentração real dos possíveis
+  interferentes não foi informada, o sistema
+  utiliza inicialmente a concentração analítica
+  de {formulaAnalito} como valor de comparação
+  para a espécie concorrente. Na etapa de retorno,
+  a referência de AgSCN utiliza a concentração
+  calculada de Ag⁺ remanescente. Portanto, esta
+  classificação representa uma avaliação potencial
+  e não uma confirmação experimental.
+</p>
       </section>
 
       <section className="precipitacaoInterferenceMetrics">
@@ -573,6 +592,32 @@ export default function AnaliseInterferentesRetorno({
                   Competição química prevista
                 </small>
               </div>
+
+              <div className="precipitacaoInterferenceSelectedSalt">
+  <span>
+    Classificação da separação
+  </span>
+
+  <strong>
+  {percentualReferenciaPrecipitada !==
+    null &&
+  avaliacaoSelecionada
+    ? avaliacaoSelecionada.titulo
+    : obterTituloRisco(
+        interferenciaSelecionada.risco
+      )}
+</strong>
+
+  <small>
+  {percentualReferenciaPrecipitada ===
+  null
+    ? "Percentual da referência não localizado"
+    : `${formatarNumeroBR(
+        percentualReferenciaPrecipitada,
+        4
+      )}% da referência precipitada`}
+</small>
+</div>
             </aside>
 
             <section className="precipitacaoInterferenceGraphCard">
@@ -923,9 +968,264 @@ export default function AnaliseInterferentesRetorno({
     </div>
   )}
 </section>
-          </div>
+</div>
 
-          <section className="precipitacaoInterferenceDiagnosis">
+<section className="precipitacaoInterferenceMetrics">
+  <article>
+    <span>
+      Sistema de referência
+    </span>
+
+    <strong>
+      {interferenciaSelecionada.etapa ===
+      "precipitacao-principal"
+        ? resultado.salPrincipal
+            .formulaExibicao
+        : "AgSCN"}
+    </strong>
+
+    <small>
+  Sistema adotado como referência
+</small>
+  </article>
+
+  <article>
+    <span>
+      Precipitado concorrente
+    </span>
+
+    <strong>
+      {
+        interferenciaSelecionada
+          .salInterferente
+          .formulaExibicao
+      }
+    </strong>
+
+    <small>
+      Consome{" "}
+      {
+        interferenciaSelecionada
+          .especieConsumida
+      }
+    </small>
+  </article>
+
+  <article>
+  <span>
+    Referência já precipitada
+  </span>
+
+  <strong>
+    {percentualReferenciaPrecipitada ===
+    null
+      ? "Não avaliado"
+      : `${formatarNumeroBR(
+          percentualReferenciaPrecipitada,
+          4
+        )}%`}
+  </strong>
+
+  <small>
+    No início do concorrente
+  </small>
+</article>
+
+<article>
+  <span>
+    Referência remanescente
+  </span>
+
+  <strong>
+    {percentualReferenciaRemanescente ===
+    null
+      ? "Não avaliado"
+      : `${formatarNumeroBR(
+          percentualReferenciaRemanescente,
+          6
+        )}%`}
+  </strong>
+
+  <small>
+    Fração ainda dissolvida
+  </small>
+</article>
+
+<article>
+  <span>
+    Classificação
+  </span>
+
+  <strong>
+    {percentualReferenciaPrecipitada !== null &&
+    avaliacaoSelecionada
+      ? avaliacaoSelecionada.titulo
+      : obterTituloRisco(
+          interferenciaSelecionada.risco
+        )}
+  </strong>
+
+  <small>
+    {percentualReferenciaPrecipitada !== null
+      ? "Critério percentual predominante"
+      : "Classificação pela ordem de precipitação"}
+  </small>
+</article>
+
+  <article>
+    <span>
+      Início do concorrente
+    </span>
+
+    <strong>
+      {interferenciaSelecionada
+        .volumeInicioInterferente ===
+      null
+        ? "Não localizado"
+        : `${formatarNumeroBR(
+            interferenciaSelecionada
+              .volumeInicioInterferente,
+            3
+          )} mL`}
+    </strong>
+
+    <small>
+      Na mistura simulada
+    </small>
+  </article>
+</section>
+
+<section className="precipitacaoClassificationReference">
+  <header>
+    <div>
+      <span className="precipitacaoSectionLabel">
+        Padrão de classificação
+      </span>
+
+      <h6>
+        Critério percentual adotado
+      </h6>
+    </div>
+
+    <small>
+      Percentual do sistema de referência já
+      precipitado quando o precipitado concorrente
+      começa a se formar.
+    </small>
+  </header>
+
+  <div className="precipitacaoClassificationReferenceTableWrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Referência já precipitada
+          </th>
+
+          <th>
+            Classificação
+          </th>
+
+          <th>
+            Risco
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            Menor que 90%
+          </td>
+
+          <td>
+            Não seletiva
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskHigh">
+              Alto
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            90% a menor que 99%
+          </td>
+
+          <td>
+            Separação insuficiente
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskHigh">
+              Alto
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            99% a menor que 99,9%
+          </td>
+
+          <td>
+            Separação parcial
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskModerate">
+              Moderado
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            99,9% a menor que 99,99%
+          </td>
+
+          <td>
+            Separação quantitativa
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskLow">
+              Baixo
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            99,99% ou mais
+          </td>
+
+          <td>
+            Separação muito favorável
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskLow">
+              Baixo
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Se o precipitado concorrente se formar antes do
+    sistema de referência, ou se ambos apresentarem
+    início praticamente simultâneo, o risco será
+    classificado como alto independentemente do
+    percentual.
+  </p>
+</section>
+
+<section className="precipitacaoInterferenceDiagnosis">
             <header>
               <div>
                 <span className="precipitacaoSectionLabel">
@@ -933,11 +1233,15 @@ export default function AnaliseInterferentesRetorno({
                 </span>
 
                 <h6>
-                  {obterTituloRisco(
-                    interferenciaSelecionada
-                      .risco
-                  )}
-                </h6>
+  {percentualReferenciaPrecipitada !==
+    null &&
+  avaliacaoSelecionada
+    ? avaliacaoSelecionada.titulo
+    : obterTituloRisco(
+        interferenciaSelecionada
+          .risco
+      )}
+</h6>
               </div>
 
               <span
@@ -958,18 +1262,36 @@ export default function AnaliseInterferentesRetorno({
             </header>
 
             <div className="precipitacaoInterferenceDiagnosisBlocks">
-              <article>
-                <span>
-                  Interpretação química
-                </span>
+            <article>
+  <span>
+    Interpretação química
+  </span>
 
-                <p>
-                  {
-                    interferenciaSelecionada
-                      .motivo
-                  }
-                </p>
-              </article>
+  <p>
+    {
+      interferenciaSelecionada
+        .motivo
+    }
+  </p>
+
+  {percentualReferenciaPrecipitada !==
+  null &&
+  avaliacaoSelecionada &&
+  avaliacaoSelecionada
+    .classificacao !==
+    "nao_avaliada" && (
+      <small>
+        Classificação percentual:{" "}
+        <strong>
+          {
+            avaliacaoSelecionada
+              .titulo
+          }
+        </strong>
+        .
+      </small>
+    )}
+</article>
 
               <article>
                 <span>

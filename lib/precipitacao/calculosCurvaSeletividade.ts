@@ -1,4 +1,9 @@
+import {
+  classificarSeparacaoPorPercentual,
+} from "./classificacaoSeparacao";
+
 import type {
+  AvaliacaoSeparacaoPrecipitacao,
   ResultadoItemSeletividadePrecipitacao,
   ResultadoSeletividadePrecipitacao,
   SalPrecipitacao,
@@ -32,19 +37,56 @@ export type StatusSeparacaoQuantitativa =
   | "nao_atende"
   | "nao_avaliada";
 
-export type ComparacaoKpsSeletividade = {
-  primeiroSal: SalPrecipitacao;
-  segundoSal: SalPrecipitacao;
-  razaoKps: number;
-  logRazaoKps: number;
-  statusSeparacaoQuantitativa:
-    StatusSeparacaoQuantitativa;
-  atendeCriterioConfiabilidade:
-    boolean | null;
-  fracaoPrimeiroPrecipitada:
-    number | null;
-  interpretacao: string;
-};
+  export type ComparacaoKpsSeletividade = {
+    primeiroSal: SalPrecipitacao;
+  
+    segundoSal: SalPrecipitacao;
+  
+    /**
+     * Informações auxiliares.
+     *
+     * A razão entre Kps não é o critério predominante
+     * da classificação de seletividade.
+     */
+    razaoKps: number;
+  
+    logRazaoKps: number;
+  
+    /**
+     * Volume da mistura no qual o segundo precipitado
+     * começa a se formar.
+     *
+     * null indica que esse início não foi localizado
+     * dentro do intervalo calculado.
+     */
+    volumeInicioSegundo:
+      number | null;
+  
+    /**
+     * Nova classificação predominante.
+     *
+     * Baseada no percentual do primeiro analito já
+     * precipitado quando o segundo precipitado começa
+     * a se formar.
+     */
+    avaliacao:
+      AvaliacaoSeparacaoPrecipitacao;
+  
+    /**
+     * Campos mantidos temporariamente para
+     * compatibilidade com componentes antigos.
+     */
+    statusSeparacaoQuantitativa:
+      StatusSeparacaoQuantitativa;
+  
+    atendeCriterioConfiabilidade:
+      boolean | null;
+  
+    fracaoPrimeiroPrecipitada:
+      number | null;
+  
+    interpretacao: string;
+  };
 
 export type CurvaSeletividadePrecipitacao = {
   serieMistura: {
@@ -70,14 +112,6 @@ export type CurvaSeletividadePrecipitacao = {
 
 const MAX_ITERACOES_BISSECAO = 250;
 const TOLERANCIA_RELATIVA = 1e-12;
-
-/**
- * Critério adotado para considerar uma precipitação quantitativa:
- *
- * 99,9% do primeiro analito já deve estar precipitado
- * quando o segundo precipitado começar a se formar.
- */
-const FRACAO_PRECIPITADA_QUANTITATIVA = 0.999;
 
 /**
  * Fração mínima usada apenas para identificar numericamente
@@ -1051,70 +1085,114 @@ function gerarComparacoesKps({
     }
 
     const avaliacaoDisponivel =
-      Number.isFinite(
-        fracaoPrimeiroPrecipitada
-      );
+  Number.isFinite(
+    fracaoPrimeiroPrecipitada
+  );
 
-    const atendeCriterioConfiabilidade =
-      avaliacaoDisponivel
-        ? fracaoPrimeiroPrecipitada >=
-          FRACAO_PRECIPITADA_QUANTITATIVA
-        : null;
+const percentualPrimeiroPrecipitado =
+  avaliacaoDisponivel
+    ? fracaoPrimeiroPrecipitada *
+      100
+    : null;
 
-    const statusSeparacaoQuantitativa:
-      StatusSeparacaoQuantitativa =
-      !avaliacaoDisponivel
-        ? "nao_avaliada"
-        : atendeCriterioConfiabilidade
-          ? "atende"
-          : "nao_atende";
+/**
+ * Dois precipitados são considerados praticamente
+ * simultâneos quando o cálculo de ordem atribui a
+ * mesma posição aos dois sistemas.
+ */
+const precipitacaoSimultanea =
+  primeiro.ordemPrecipitacao ===
+  segundo.ordemPrecipitacao;
 
-    let interpretacao: string;
+const avaliacao =
+  classificarSeparacaoPorPercentual({
+    percentualPrecipitado:
+      percentualPrimeiroPrecipitado,
 
-    if (
-      statusSeparacaoQuantitativa ===
-      "atende"
-    ) {
-      interpretacao =
-        `Quando ${segundo.sal.formulaExibicao} começa a precipitar ` +
-        `na mistura, aproximadamente ${(
-          fracaoPrimeiroPrecipitada * 100
-        ).toFixed(3)}% de ${primeiro.sal.formulaExibicao} já precipitou. ` +
-        "O sistema atende ao critério adotado de 99,9% para " +
-        "separação quantitativa.";
-    } else if (
-      statusSeparacaoQuantitativa ===
-      "nao_atende"
-    ) {
-      interpretacao =
-        `Quando ${segundo.sal.formulaExibicao} começa a precipitar ` +
-        `na mistura, aproximadamente ${(
-          fracaoPrimeiroPrecipitada * 100
-        ).toFixed(3)}% de ${primeiro.sal.formulaExibicao} precipitou. ` +
-        "Há sobreposição relevante e o critério de 99,9% não é atendido.";
-    } else {
-      interpretacao =
-        `O precipitado ${segundo.sal.formulaExibicao} não começou ` +
-        "a se formar dentro do intervalo calculado para a mistura. " +
-        `Portanto, não foi observada sobreposição com ` +
-        `${primeiro.sal.formulaExibicao} dentro da faixa simulada.`;
-    }
+    precipitacaoSimultanea,
+  });
 
-    comparacoes.push({
-      primeiroSal:
-        primeiro.sal,
-      segundoSal:
-        segundo.sal,
-      razaoKps,
-      logRazaoKps,
-      statusSeparacaoQuantitativa,
-      atendeCriterioConfiabilidade,
-      fracaoPrimeiroPrecipitada:
-        avaliacaoDisponivel
-          ? fracaoPrimeiroPrecipitada
-          : null,
-      interpretacao,
-    });
+/**
+ * Conversão temporária para os campos antigos.
+ *
+ * Esses valores permanecem até que todos os
+ * componentes sejam migrados para avaliacao.
+ */
+const statusSeparacaoQuantitativa:
+  StatusSeparacaoQuantitativa =
+  avaliacao.classificacao ===
+    "nao_avaliada"
+    ? "nao_avaliada"
+    : avaliacao.classificacao ===
+          "separacao_quantitativa" ||
+        avaliacao.classificacao ===
+          "separacao_muito_favoravel"
+      ? "atende"
+      : "nao_atende";
+
+const atendeCriterioConfiabilidade =
+  statusSeparacaoQuantitativa ===
+    "nao_avaliada"
+    ? null
+    : statusSeparacaoQuantitativa ===
+      "atende";
+
+let interpretacao: string;
+
+if (
+  avaliacao.classificacao ===
+  "nao_avaliada"
+) {
+  interpretacao =
+    `O precipitado ${segundo.sal.formulaExibicao} não começou ` +
+    "a se formar dentro do intervalo calculado para a mistura. " +
+    `Não foi possível calcular o percentual de ` +
+    `${primeiro.sal.formulaExibicao} precipitado no início do ` +
+    "segundo sistema. A classificação permanece indeterminada.";
+} else {
+  interpretacao =
+    `Quando ${segundo.sal.formulaExibicao} começa a precipitar ` +
+    `na mistura, aproximadamente ${(
+      avaliacao.percentualPrecipitado ??
+      0
+    ).toFixed(4)}% de ${primeiro.sal.formulaExibicao} já precipitou. ` +
+    avaliacao.interpretacao;
+}
+
+comparacoes.push({
+  primeiroSal:
+    primeiro.sal,
+
+  segundoSal:
+    segundo.sal,
+
+  razaoKps,
+
+  logRazaoKps,
+
+  volumeInicioSegundo:
+    Number.isFinite(
+      volumeInicioSegundoNaMistura
+    )
+      ? volumeInicioSegundoNaMistura
+      : null,
+
+  avaliacao,
+
+  /**
+   * Compatibilidade temporária.
+   */
+  statusSeparacaoQuantitativa,
+
+  atendeCriterioConfiabilidade,
+
+  fracaoPrimeiroPrecipitada:
+    avaliacaoDisponivel
+      ? fracaoPrimeiroPrecipitada
+      : null,
+
+  interpretacao,
+});
   }
 
   return comparacoes;

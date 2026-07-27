@@ -97,162 +97,6 @@ export default function AnaliseInterferentes({
       [resultado]
     );
 
-    const riscosDetalhadosPorSal =
-  useMemo(() => {
-    const volumeMaximo =
-      Math.max(
-        resultado.volumeMaximoBureta,
-        resultado.volumePE * 1.3
-      );
-
-    return Object.fromEntries(
-      interferenciasPotenciais.map(
-        (interferencia) => {
-          const especieInterferente =
-            obterEspecieAnalitoDoSal({
-              sal:
-                interferencia
-                  .salInterferente,
-              ionId:
-                interferencia
-                  .especieConcorrente.id,
-            });
-
-          const seletividade =
-            calcularSeletividadePrecipitacao({
-              especieTitulante:
-                resultado.especieTitulante,
-              itens: [
-                {
-                  sal: resultado.sal,
-                  especieAnalito:
-                    resultado.especieAnalito,
-                  concentracaoAnalito:
-                    resultado.concentracaoAnalito,
-                },
-                {
-                  sal:
-                    interferencia
-                      .salInterferente,
-                  especieAnalito:
-                    especieInterferente,
-                  concentracaoAnalito:
-                    resultado.concentracaoAnalito,
-                },
-              ],
-            });
-
-          if (
-            seletividade.status !==
-            "adequado"
-          ) {
-            return [
-              interferencia
-                .salInterferente.id,
-              interferencia.risco,
-            ];
-          }
-
-          const curva =
-            gerarCurvaSeletividadePrecipitacao({
-              resultado:
-                seletividade,
-              volumeAmostra:
-                resultado.volumeAmostra,
-              concentracaoTitulante:
-                resultado.concentracaoTitulante,
-              passo: 0.1,
-              volumeMaximoManual:
-                volumeMaximo,
-            });
-
-          const itemPrincipal =
-            seletividade.itens.find(
-              (item) =>
-                item.sal.id ===
-                resultado.sal.id
-            );
-
-          const itemInterferente =
-            seletividade.itens.find(
-              (item) =>
-                item.sal.id ===
-                interferencia
-                  .salInterferente.id
-            );
-
-          const comparacao =
-            curva.comparacoesKps[0];
-
-          let riscoDetalhado:
-            InterferenciaPrecipitacao["risco"];
-
-          if (
-            !itemPrincipal ||
-            !itemInterferente
-          ) {
-            riscoDetalhado =
-              interferencia.risco;
-          } else if (
-            itemInterferente
-              .ordemPrecipitacao <
-            itemPrincipal
-              .ordemPrecipitacao
-          ) {
-            riscoDetalhado = "alto";
-          } else if (
-            itemInterferente
-              .ordemPrecipitacao ===
-            itemPrincipal
-              .ordemPrecipitacao
-          ) {
-            riscoDetalhado = "alto";
-          } else if (
-            comparacao
-              ?.statusSeparacaoQuantitativa ===
-            "atende"
-          ) {
-            riscoDetalhado = "baixo";
-          } else if (
-            comparacao
-              ?.statusSeparacaoQuantitativa ===
-            "nao_avaliada"
-          ) {
-            riscoDetalhado = "baixo";
-          } else if (
-            comparacao
-              ?.statusSeparacaoQuantitativa ===
-            "nao_atende"
-          ) {
-            riscoDetalhado = "moderado";
-          } else {
-            riscoDetalhado =
-              interferencia.risco;
-          }
-
-          return [
-            interferencia
-              .salInterferente.id,
-            riscoDetalhado,
-          ];
-        }
-      )
-    ) as Record<
-      string,
-      InterferenciaPrecipitacao["risco"]
-    >;
-  }, [
-    interferenciasPotenciais,
-    resultado.concentracaoAnalito,
-    resultado.concentracaoTitulante,
-    resultado.especieAnalito,
-    resultado.especieTitulante,
-    resultado.sal,
-    resultado.volumeAmostra,
-    resultado.volumeMaximoBureta,
-    resultado.volumePE,
-  ]);
-
   const [
     interferenteSelecionadoId,
     setInterferenteSelecionadoId,
@@ -455,87 +299,90 @@ export default function AnaliseInterferentes({
     curvaSeletividade
       ?.comparacoesKps[0] ?? null;
 
-      const interpretacaoQuimicaDetalhada =
-  useMemo(() => {
-    if (
-      !itemPrincipal ||
-      !itemInterferente ||
-      !interferenteSelecionado
-    ) {
-      return "";
-    }
+      const avaliacaoSeparacao =
+  comparacaoConfiabilidade
+    ?.avaliacao ?? null;
 
-    const interferentePrimeiro =
-      itemInterferente.ordemPrecipitacao <
-      itemPrincipal.ordemPrecipitacao;
-
-    const mesmaOrdem =
-      itemInterferente.ordemPrecipitacao ===
-      itemPrincipal.ordemPrecipitacao;
-
-    const status =
-      comparacaoConfiabilidade
-        ?.statusSeparacaoQuantitativa;
-
-    if (interferentePrimeiro) {
-      return (
-        `${itemInterferente.sal.formulaExibicao} começa a precipitar ` +
-        `antes de ${itemPrincipal.sal.formulaExibicao}. Portanto, a ` +
-        `espécie interferente começa a consumir ${formulaTitulante} ` +
-        "antes da precipitação predominante do analito principal."
-      );
-    }
-
-    if (mesmaOrdem) {
-      return (
-        `${itemPrincipal.sal.formulaExibicao} e ` +
-        `${itemInterferente.sal.formulaExibicao} apresentam ` +
-        "concentrações críticas de início praticamente iguais. " +
-        "Os dois precipitados podem começar a se formar de maneira " +
-        "simultânea nas condições avaliadas."
-      );
-    }
-
-    if (status === "nao_avaliada") {
-      return (
-        `${itemPrincipal.sal.formulaExibicao} começa a precipitar ` +
-        `com menor concentração livre de ${formulaTitulante}. ` +
-        `${itemInterferente.sal.formulaExibicao} não iniciou sua ` +
-        "precipitação dentro do intervalo de volume calculado. " +
-        "Portanto, não foi observada precipitação concorrente na " +
-        "faixa simulada. O segundo precipitado ainda pode se formar " +
-        "fora do intervalo de volume atualmente calculado."
-      );
-    }
-
-    if (status === "atende") {
+    const interpretacaoQuimicaDetalhada =
+    useMemo(() => {
+      if (
+        !itemPrincipal ||
+        !itemInterferente ||
+        !interferenteSelecionado
+      ) {
+        return "";
+      }
+  
+      const interferentePrimeiro =
+        itemInterferente
+          .ordemPrecipitacao <
+        itemPrincipal
+          .ordemPrecipitacao;
+  
+      const mesmaOrdem =
+        itemInterferente
+          .ordemPrecipitacao ===
+        itemPrincipal
+          .ordemPrecipitacao;
+  
+      if (interferentePrimeiro) {
+        return (
+          `${itemInterferente.sal.formulaExibicao} começa a precipitar ` +
+          `antes de ${itemPrincipal.sal.formulaExibicao}. Portanto, ` +
+          `${interferenteSelecionado.especieConcorrente.formulaExibicao} ` +
+          `começa a consumir ${formulaTitulante} antes da precipitação ` +
+          "predominante do analito principal."
+        );
+      }
+  
+      if (mesmaOrdem) {
+        return (
+          `${itemPrincipal.sal.formulaExibicao} e ` +
+          `${itemInterferente.sal.formulaExibicao} apresentam condições ` +
+          "de início praticamente iguais. Os dois precipitados podem " +
+          "começar a se formar simultaneamente."
+        );
+      }
+  
+      if (!avaliacaoSeparacao) {
+        return (
+          "Não foi possível obter a avaliação percentual da separação " +
+          "para os dados informados."
+        );
+      }
+  
+      if (
+        avaliacaoSeparacao.classificacao ===
+        "nao_avaliada"
+      ) {
+        return (
+          `${itemPrincipal.sal.formulaExibicao} começa a precipitar antes. ` +
+          `${itemInterferente.sal.formulaExibicao} não começou a se formar ` +
+          "dentro do intervalo simulado, portanto não foi observada " +
+          "precipitação concorrente nessa faixa."
+        );
+      }
+  
       return (
         `${itemPrincipal.sal.formulaExibicao} precipita antes de ` +
-        `${itemInterferente.sal.formulaExibicao}. Quando o segundo ` +
-        "precipitado começa a se formar, pelo menos 99,9% do analito " +
-        "principal já foi precipitado."
+        `${itemInterferente.sal.formulaExibicao}. Quando o precipitado ` +
+        "interferente começa a se formar, aproximadamente " +
+        `${formatarNumeroBR(
+          avaliacaoSeparacao
+            .percentualPrecipitado ?? 0,
+          4
+        )}% do sistema principal já precipitou. ` +
+        `A classificação obtida foi: ${avaliacaoSeparacao.titulo}.`
       );
-    }
+    }, [
+      avaliacaoSeparacao,
+      formulaTitulante,
+      interferenteSelecionado,
+      itemInterferente,
+      itemPrincipal,
+    ]);
 
-    if (status === "nao_atende") {
-      return (
-        `${itemPrincipal.sal.formulaExibicao} começa a precipitar ` +
-        `antes de ${itemInterferente.sal.formulaExibicao}, mas o ` +
-        "segundo precipitado surge antes que 99,9% do analito " +
-        "principal tenha sido precipitado."
-      );
-    }
-
-    return interferenteSelecionado.motivo;
-  }, [
-    comparacaoConfiabilidade,
-    formulaTitulante,
-    interferenteSelecionado,
-    itemInterferente,
-    itemPrincipal,
-  ]);
-
-  const diagnostico =
+    const diagnostico =
     useMemo(() => {
       if (
         !itemPrincipal ||
@@ -544,122 +391,131 @@ export default function AnaliseInterferentes({
       ) {
         return null;
       }
-
+  
       const interferentePrimeiro =
         itemInterferente
           .ordemPrecipitacao <
         itemPrincipal
           .ordemPrecipitacao;
-
+  
       const mesmaOrdem =
         itemInterferente
           .ordemPrecipitacao ===
         itemPrincipal
           .ordemPrecipitacao;
-
+  
       const razaoInicio =
         itemInterferente
           .concentracaoTitulanteInicioPrecipitacao /
         itemPrincipal
           .concentracaoTitulanteInicioPrecipitacao;
-
-          let titulo: string;
-          let impacto: string;
-          let recomendacao: string;
-          let riscoIntegrado:
-            InterferenciaPrecipitacao["risco"];
-
-            if (interferentePrimeiro) {
-              riscoIntegrado = "alto";
-            
-              titulo =
-                "O interferente precipita antes do analito principal";
-            
-              impacto =
-                `A espécie ${interferenteSelecionado.especieConcorrente.formulaExibicao} começa a consumir ${formulaTitulante} antes da precipitação predominante de ${formulaAnalito}. Esse consumo concorrente pode aumentar o volume de titulante necessário e produzir tendência de erro positivo no resultado.`;
-            
-              recomendacao =
-                "Considere remover ou separar previamente o interferente, alterar as condições experimentais, utilizar outro titulante ou avaliar uma titulação de retorno.";
-            } else if (mesmaOrdem) {
-              riscoIntegrado = "alto";
-            
-              titulo =
-                "Os precipitados apresentam início praticamente simultâneo";
-            
-              impacto =
-                `As concentrações críticas de início de ${itemPrincipal.sal.formulaExibicao} e ${itemInterferente.sal.formulaExibicao} são praticamente iguais. O titulante pode ser consumido simultaneamente pelos dois sistemas, dificultando a determinação seletiva do analito principal.`;
-            
-              recomendacao =
-                "A titulação direta apresenta baixa seletividade nessas condições. Considere separação prévia, redução da concentração do interferente, alteração das condições do meio ou outro método analítico.";
-            } else if (
-              comparacaoConfiabilidade
-                ?.statusSeparacaoQuantitativa ===
-              "nao_avaliada"
-            ) {
-              riscoIntegrado = "baixo";
-            
-              titulo =
-  "Baixo risco de interferência dentro da faixa simulada";
-
-  impacto =
-  `Nas condições simuladas, ${itemPrincipal.sal.formulaExibicao} precipita primeiro, enquanto ${itemInterferente.sal.formulaExibicao} não começa a se formar dentro do volume máximo avaliado. Assim, não foi observada precipitação concorrente dentro da faixa simulada. Isso não significa que o segundo precipitado nunca possa se formar em volumes maiores.`;
-
-              recomendacao =
-                "Para a faixa de volume atualmente simulada, a interferência por precipitação concorrente tende a ser baixa. Amplie o intervalo apenas caso seja necessário localizar o início teórico do segundo precipitado.";
-            } else if (
-              comparacaoConfiabilidade
-                ?.statusSeparacaoQuantitativa ===
-              "atende"
-            ) {
-              riscoIntegrado = "baixo";
-            
-              titulo =
-                "O analito principal precipita primeiro com separação quantitativa";
-            
-              impacto =
-                "O precipitado principal se forma antes do interferente e, quando o segundo precipitado começa, pelo menos 99,9% do analito principal já está precipitado.";
-            
-              recomendacao =
-                "A separação é potencialmente adequada nas condições simuladas. Mantenha controle das concentrações, do volume adicionado e das condições do ponto final.";
-            } else if (
-              comparacaoConfiabilidade
-                ?.statusSeparacaoQuantitativa ===
-              "nao_atende"
-            ) {
-              riscoIntegrado = "moderado";
-            
-              titulo =
-                "O analito principal precipita primeiro, mas há sobreposição";
-            
-              impacto =
-                "A ordem de precipitação é favorável ao analito principal, porém o interferente começa a precipitar antes que a precipitação principal atinja 99,9%. Isso pode causar consumo adicional do titulante e deslocamento do ponto final.";
-            
-              recomendacao =
-                "A ordem de formação isoladamente não garante seletividade. Avalie a concentração do interferente, as condições experimentais e a possibilidade de separação prévia ou mudança de método.";
-            } else {
-              riscoIntegrado = "moderado";
-            
-              titulo =
-                "A separação quantitativa não pôde ser determinada";
-            
-              impacto =
-                "Os dados calculados não permitiram classificar de forma conclusiva a sobreposição entre os precipitados.";
-            
-              recomendacao =
-                "Verifique os dados do sistema, o intervalo de volume calculado e os resultados da análise de seletividade.";
-            }
-
-            return {
-              titulo,
-              impacto,
-              recomendacao,
-              razaoInicio,
-              interferentePrimeiro,
-              mesmaOrdem,
-              riscoIntegrado,
-            };
+  
+      if (interferentePrimeiro) {
+        return {
+          titulo:
+            "O interferente precipita antes do analito principal",
+  
+          impacto:
+            `A espécie ${interferenteSelecionado.especieConcorrente.formulaExibicao} ` +
+            `começa a consumir ${formulaTitulante} antes da precipitação ` +
+            `predominante de ${formulaAnalito}. Isso pode aumentar o volume ` +
+            "de titulante utilizado e provocar erro positivo.",
+  
+          recomendacao:
+            "Considere remover ou separar previamente o interferente, alterar as condições experimentais ou utilizar outro procedimento analítico.",
+  
+          razaoInicio,
+  
+          riscoIntegrado:
+            "alto" as const,
+        };
+      }
+  
+      if (mesmaOrdem) {
+        return {
+          titulo:
+            "Os precipitados apresentam início praticamente simultâneo",
+  
+          impacto:
+            `O titulante pode ser consumido simultaneamente por ` +
+            `${itemPrincipal.sal.formulaExibicao} e ` +
+            `${itemInterferente.sal.formulaExibicao}, comprometendo a seletividade.`,
+  
+          recomendacao:
+            "Considere separação prévia, alteração das condições do meio ou outro método analítico.",
+  
+          razaoInicio,
+  
+          riscoIntegrado:
+            "alto" as const,
+        };
+      }
+  
+      if (!avaliacaoSeparacao) {
+        return {
+          titulo:
+            "A separação não pôde ser classificada",
+  
+          impacto:
+            "Os dados atuais não permitiram calcular o percentual precipitado no início do sistema concorrente.",
+  
+          recomendacao:
+            "Verifique a faixa de volume da simulação, as concentrações e os dados de solubilidade.",
+  
+          razaoInicio,
+  
+          riscoIntegrado:
+            interferenteSelecionado.risco,
+        };
+      }
+  
+      if (
+        avaliacaoSeparacao.classificacao ===
+        "nao_avaliada"
+      ) {
+        return {
+          titulo:
+            "Baixo risco dentro da faixa simulada",
+  
+          impacto:
+            `${itemInterferente.sal.formulaExibicao} não começou a se formar ` +
+            "dentro do intervalo avaliado. Não foi observada competição " +
+            "por precipitação nessa faixa.",
+  
+          recomendacao:
+            "A classificação é válida para o intervalo simulado e para a concentração informada do interferente.",
+  
+          razaoInicio,
+  
+          riscoIntegrado:
+            "baixo" as const,
+        };
+      }
+  
+      return {
+        titulo:
+          avaliacaoSeparacao.titulo,
+  
+        impacto:
+          avaliacaoSeparacao.interpretacao,
+  
+        recomendacao:
+          avaliacaoSeparacao.risco ===
+          "alto"
+            ? "Considere separação prévia, redução da concentração do interferente ou mudança do procedimento analítico."
+            : avaliacaoSeparacao.risco ===
+                "moderado"
+              ? "Avalie se a sobreposição é aceitável para a exatidão pretendida e confirme experimentalmente."
+              : "A separação tende a ser adequada nas condições simuladas, mantendo-se o controle experimental.",
+  
+        razaoInicio,
+  
+        riscoIntegrado:
+          avaliacaoSeparacao.risco ??
+          interferenteSelecionado.risco,
+      };
     }, [
-      comparacaoConfiabilidade,
+      avaliacaoSeparacao,
       formulaAnalito,
       formulaTitulante,
       interferenteSelecionado,
@@ -1044,11 +900,8 @@ export default function AnaliseInterferentes({
       interferenteSelecionado
         ?.salInterferente.id;
 
-    const riscoExibido =
-      riscosDetalhadosPorSal[
-        interferencia
-          .salInterferente.id
-      ] ?? interferencia.risco;
+        const riscoExibido =
+        interferencia.risco;
 
               return (
                 <button
@@ -1406,34 +1259,32 @@ export default function AnaliseInterferentes({
               </article>
 
               <article>
-                <span>
-                  Separação quantitativa
-                </span>
+  <span>
+    Classificação da separação
+  </span>
 
-                <strong>
-  {!comparacaoConfiabilidade
-    ? "Indisponível"
-    : comparacaoConfiabilidade
-          .statusSeparacaoQuantitativa ===
-        "nao_avaliada"
-      ? "Não avaliada"
-      : comparacaoConfiabilidade
-            .statusSeparacaoQuantitativa ===
-          "atende"
-        ? "Atende"
-        : "Não atende"}
-</strong>
+  <strong>
+    {avaliacaoSeparacao
+      ? avaliacaoSeparacao.titulo
+      : "Indisponível"}
+  </strong>
 
-<small>
-  {!comparacaoConfiabilidade
-    ? "Resultado de comparação indisponível"
-    : comparacaoConfiabilidade
-          .statusSeparacaoQuantitativa ===
-        "nao_avaliada"
-      ? "Segundo precipitado fora do intervalo"
-      : "Critério adotado: 99,9%"}
-</small>
-              </article>
+  <small>
+    {avaliacaoSeparacao
+      ?.percentualPrecipitado ===
+    null
+      ? "Percentual não localizado"
+      : avaliacaoSeparacao
+          ?.percentualPrecipitado !==
+        undefined
+        ? `${formatarNumeroBR(
+            avaliacaoSeparacao
+              .percentualPrecipitado,
+            4
+          )}% do principal precipitado`
+        : "Avaliação não disponível"}
+  </small>
+</article>
             </section>
 
             <div className="precipitacaoInterferenceInterpretationGrid">
@@ -1490,77 +1341,227 @@ export default function AnaliseInterferentes({
               </section>
 
               <section className="precipitacaoInterferenceReliability">
-                <header>
+  <header>
+    <span className="precipitacaoSectionLabel">
+      Classificação predominante
+    </span>
+
+    <h6>
+      Avaliação percentual da separação
+    </h6>
+  </header>
+
+  <div
+    className={[
+      "precipitacaoInterferenceReliabilityStatus",
+      !avaliacaoSeparacao ||
+      avaliacaoSeparacao.risco ===
+        null
+        ? "precipitacaoInterferenceReliabilityStatusNeutral"
+        : avaliacaoSeparacao.risco ===
+            "baixo"
+          ? "precipitacaoInterferenceReliabilityStatusOk"
+          : "precipitacaoInterferenceReliabilityStatusAlert",
+    ].join(" ")}
+  >
+    <strong>
+      {avaliacaoSeparacao
+        ? avaliacaoSeparacao.titulo
+        : "Avaliação indisponível"}
+    </strong>
+  </div>
+
+  <p>
+    {comparacaoConfiabilidade
+      ?.interpretacao ??
+      "A comparação percentual não foi gerada para os dados atuais."}
+  </p>
+
+  {avaliacaoSeparacao && (
+    <div className="precipitacaoInterferenceKpsComparison">
+      <span>
+        Percentual do principal precipitado
+      </span>
+
+      <strong>
+        {avaliacaoSeparacao
+          .percentualPrecipitado ===
+        null
+          ? "Não avaliado"
+          : `${formatarNumeroBR(
+              avaliacaoSeparacao
+                .percentualPrecipitado,
+              4
+            )}%`}
+      </strong>
+
+      <small>
+        Remanescente em solução:{" "}
+        {avaliacaoSeparacao
+          .percentualRemanescente ===
+        null
+          ? "não calculado"
+          : `${formatarNumeroBR(
+              avaliacaoSeparacao
+                .percentualRemanescente,
+              6
+            )}%`}
+      </small>
+    </div>
+  )}
+
+  {comparacaoConfiabilidade && (
+    <div className="precipitacaoInterferenceKpsComparison">
+      <span>
+        Razão entre Kps — informação auxiliar
+      </span>
+
+      <strong>
+        {formatarCientificoBR(
+          comparacaoConfiabilidade
+            .razaoKps,
+          3
+        )}
+      </strong>
+
+      <small>
+        Não é o critério predominante da classificação
+      </small>
+    </div>
+  )}
+</section>
+            </div>
+
+            <section className="precipitacaoClassificationReference">
+              <header>
+                <div>
                   <span className="precipitacaoSectionLabel">
-                    Separação quantitativa
+                    Padrão de classificação
                   </span>
 
                   <h6>
-                    Avaliação do critério de 99,9%
+                    Critério percentual adotado
                   </h6>
-                </header>
-
-                <div
-                  className={[
-                    "precipitacaoInterferenceReliabilityStatus",
-                    !comparacaoConfiabilidade
-                      ? "precipitacaoInterferenceReliabilityStatusNeutral"
-                      : comparacaoConfiabilidade
-                            .statusSeparacaoQuantitativa ===
-                          "nao_avaliada"
-                        ? "precipitacaoInterferenceReliabilityStatusNeutral"
-                        : comparacaoConfiabilidade
-                              .statusSeparacaoQuantitativa ===
-                            "atende"
-                          ? "precipitacaoInterferenceReliabilityStatusOk"
-                          : "precipitacaoInterferenceReliabilityStatusAlert",
-                  ].join(" ")}
-                >
-                  <strong>
-  {!comparacaoConfiabilidade
-    ? "Resultado de separação indisponível"
-    : comparacaoConfiabilidade
-          .statusSeparacaoQuantitativa ===
-        "nao_avaliada"
-      ? "Segundo precipitado fora do intervalo simulado"
-      : comparacaoConfiabilidade
-            .statusSeparacaoQuantitativa ===
-          "atende"
-        ? "Separação potencialmente quantitativa"
-        : "Sobreposição relevante entre os precipitados"}
-</strong>
                 </div>
 
-                <p>
-                {comparacaoConfiabilidade
-  ?.interpretacao ??
-  "A comparação de separação quantitativa não foi gerada para os dados atuais. Verifique o intervalo da curva e os resultados de seletividade."}
-                </p>
+                <small>
+                  Percentual do primeiro analito já
+                  precipitado quando o precipitado
+                  seguinte começa a se formar.
+                </small>
+              </header>
 
-                {comparacaoConfiabilidade && (
-                  <div className="precipitacaoInterferenceKpsComparison">
-                    <span>Razão entre Kps</span>
+              <div className="precipitacaoClassificationReferenceTableWrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>
+                        Primeiro já precipitado
+                      </th>
 
-                    <strong>
-                      {formatarCientificoBR(
-                        comparacaoConfiabilidade
-                          .razaoKps,
-                        3
-                      )}
-                    </strong>
+                      <th>
+                        Classificação
+                      </th>
 
-                    <small>
-                      log₁₀ da razão ={" "}
-                      {formatarNumeroBR(
-                        comparacaoConfiabilidade
-                          .logRazaoKps,
-                        3
-                      )}
-                    </small>
-                  </div>
-                )}
-              </section>
-            </div>
+                      <th>
+                        Risco
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr>
+                      <td>
+                        Menor que 90%
+                      </td>
+
+                      <td>
+                        Não seletiva
+                      </td>
+
+                      <td>
+                        <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskHigh">
+                          Alto
+                        </span>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        90% a menor que 99%
+                      </td>
+
+                      <td>
+                        Separação insuficiente
+                      </td>
+
+                      <td>
+                        <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskHigh">
+                          Alto
+                        </span>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        99% a menor que 99,9%
+                      </td>
+
+                      <td>
+                        Separação parcial
+                      </td>
+
+                      <td>
+                        <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskModerate">
+                          Moderado
+                        </span>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        99,9% a menor que 99,99%
+                      </td>
+
+                      <td>
+                        Separação quantitativa
+                      </td>
+
+                      <td>
+                        <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskLow">
+                          Baixo
+                        </span>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>
+                        99,99% ou mais
+                      </td>
+
+                      <td>
+                        Separação muito favorável
+                      </td>
+
+                      <td>
+                        <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskLow">
+                          Baixo
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p>
+                Quando o interferente precipita antes
+                do sistema principal ou quando os dois
+                precipitados apresentam início
+                praticamente simultâneo, o risco é
+                classificado como alto,
+                independentemente do percentual.
+              </p>
+            </section>
 
             <section className="precipitacaoInterferenceDiagnosis">
               <header>
@@ -1734,7 +1735,18 @@ function GraficoInterferencias({
   const volumeMinimo = 0;
 
   const volumeMaximo =
-    curva.volumeMaximo;
+  Number.isFinite(
+    curva.volumeMaximo
+  ) &&
+  curva.volumeMaximo > 0
+    ? curva.volumeMaximo
+    : Math.max(
+        ...todosPontos.map(
+          (ponto) =>
+            ponto.volumeAdicionado
+        ),
+        1
+      );
 
   const pMinimoBruto =
     Math.min(

@@ -1,6 +1,18 @@
-import { saisPrecipitacao } from "../data/precipitacao/sais";
+import {
+  saisPrecipitacao,
+} from "../data/precipitacao/sais";
+
+import {
+  calcularSeletividadePrecipitacao,
+} from "./calculosSeletividade";
+
+import {
+  gerarCurvaSeletividadePrecipitacao,
+} from "./calculosCurvaSeletividade";
 
 import type {
+  AvaliacaoSeparacaoPrecipitacao,
+  EspecieAnalitoPrecipitacao,
   InterferenciaPrecipitacao,
   IonPrecipitacao,
   ResultadoTitulacaoDiretaPrecipitacao,
@@ -22,7 +34,6 @@ import type {
  * A classificação continua sendo uma avaliação
  * potencial, e não uma confirmação experimental.
  */
-const FATOR_RISCO_MODERADO = 10;
 
 function ehNumeroPositivo(valor: number) {
   return Number.isFinite(valor) && valor > 0;
@@ -136,6 +147,28 @@ function obterEspecieConcorrente({
   return sal.cation;
 }
 
+function obterEspecieAnalitoDoSal({
+  sal,
+  ion,
+}: {
+  sal: SalPrecipitacao;
+  ion: IonPrecipitacao;
+}): EspecieAnalitoPrecipitacao | null {
+  if (
+    sal.cation.id === ion.id
+  ) {
+    return "cation";
+  }
+
+  if (
+    sal.anion.id === ion.id
+  ) {
+    return "anion";
+  }
+
+  return null;
+}
+
 /**
  * Calcula a concentração livre de titulante necessária
  * para iniciar a precipitação.
@@ -207,59 +240,111 @@ function calcularConcentracaoCriticaTitulante({
   );
 }
 
-function obterDescricaoRisco({
-  risco,
-  especieConcorrente,
-  salInterferente,
-  concentracaoCriticaInterferente,
-  concentracaoCriticaPrincipal,
+function criarAvaliacaoIndeterminada():
+  AvaliacaoSeparacaoPrecipitacao {
+  return {
+    classificacao:
+      "nao_avaliada",
+
+    risco: null,
+
+    percentualPrecipitado:
+      null,
+
+    percentualRemanescente:
+      null,
+
+    titulo:
+      "Separação não avaliada",
+
+    interpretacao:
+      "Não foi possível calcular quanto do precipitado principal estava formado quando o precipitado concorrente começou a se formar.",
+  };
+}
+
+function obterRiscoPredominante({
+  avaliacao,
+  principalFormaPrimeiro,
+  precipitacaoSimultanea,
 }: {
-  risco: InterferenciaPrecipitacao["risco"];
-  especieConcorrente: IonPrecipitacao;
+  avaliacao:
+    AvaliacaoSeparacaoPrecipitacao;
+  principalFormaPrimeiro: boolean;
+  precipitacaoSimultanea: boolean;
+}): InterferenciaPrecipitacao["risco"] {
+  if (
+    precipitacaoSimultanea ||
+    !principalFormaPrimeiro
+  ) {
+    return "alto";
+  }
+
+  if (
+    avaliacao.risco === null
+  ) {
+    return "baixo";
+  }
+
+  return avaliacao.risco;
+}
+
+function criarDescricaoAvaliacao({
+  salPrincipal,
+  salInterferente,
+  especieConcorrente,
+  avaliacao,
+  principalFormaPrimeiro,
+  precipitacaoSimultanea,
+}: {
+  salPrincipal: SalPrecipitacao;
   salInterferente: SalPrecipitacao;
-  concentracaoCriticaInterferente: number;
-  concentracaoCriticaPrincipal: number;
+  especieConcorrente: IonPrecipitacao;
+  avaliacao:
+    AvaliacaoSeparacaoPrecipitacao;
+  principalFormaPrimeiro: boolean;
+  precipitacaoSimultanea: boolean;
 }) {
-  const razaoConcentracoesCriticas =
-    concentracaoCriticaInterferente /
-    concentracaoCriticaPrincipal;
-
-  const razaoFormatada =
-    razaoConcentracoesCriticas.toExponential(
-      3
-    );
-
-  if (risco === "alto") {
+  if (precipitacaoSimultanea) {
     return (
-      `${especieConcorrente.formulaExibicao} pode formar ` +
-      `${salInterferente.formulaExibicao} antes ou praticamente ` +
-      "ao mesmo tempo que o precipitado principal. " +
-      "Sob a hipótese de concentrações analíticas iguais, " +
-      `o início desse precipitado exige aproximadamente ` +
-      `${razaoFormatada} vez(es) a concentração livre de titulante ` +
-      "necessária para o sistema principal. A presença desse íon " +
-      "pode provocar consumo adicional do titulante e erro positivo."
+      `${salPrincipal.formulaExibicao} e ` +
+      `${salInterferente.formulaExibicao} começam a se formar ` +
+      "em condições praticamente iguais. O titulante pode ser " +
+      `consumido simultaneamente pelo analito principal e por ` +
+      `${especieConcorrente.formulaExibicao}.`
     );
   }
 
-  if (risco === "moderado") {
+  if (!principalFormaPrimeiro) {
     return (
-      `${especieConcorrente.formulaExibicao} tende a começar a ` +
-      `precipitar depois do sistema principal, formando ` +
-      `${salInterferente.formulaExibicao}. Entretanto, as ` +
-      "concentrações críticas calculadas estão relativamente próximas: " +
-      `a razão estimada é ${razaoFormatada}. Pode ocorrer sobreposição ` +
-      "antes que a precipitação do analito principal esteja completa."
+      `${salInterferente.formulaExibicao} começa a precipitar antes de ` +
+      `${salPrincipal.formulaExibicao}. Assim, ` +
+      `${especieConcorrente.formulaExibicao} começa a consumir o ` +
+      "titulante antes da precipitação predominante do analito principal. " +
+      "A interferência é classificada como de alto risco."
+    );
+  }
+
+  if (
+    avaliacao.classificacao ===
+    "nao_avaliada"
+  ) {
+    return (
+      `${salPrincipal.formulaExibicao} precipita primeiro e ` +
+      `${salInterferente.formulaExibicao} não começou a se formar ` +
+      "dentro do intervalo calculado. Não foi observada precipitação " +
+      "concorrente na faixa simulada."
     );
   }
 
   return (
-    `${especieConcorrente.formulaExibicao} necessita, sob a hipótese ` +
-    "de concentrações analíticas iguais, de uma concentração livre de " +
-    `titulante aproximadamente ${razaoFormatada} vez(es) maior para ` +
-    `iniciar a formação de ${salInterferente.formulaExibicao}. ` +
-    "A tendência de interferência é menor, mas pode aumentar caso esse " +
-    "íon esteja presente em concentração significativamente mais alta."
+    `${salPrincipal.formulaExibicao} precipita antes de ` +
+    `${salInterferente.formulaExibicao}. Quando o precipitado ` +
+    `concorrente começa a se formar, aproximadamente ` +
+    `${(
+      avaliacao.percentualPrecipitado ??
+      0
+    ).toFixed(4)}% do sistema principal já precipitou. ` +
+    avaliacao.interpretacao
   );
 }
 
@@ -268,11 +353,14 @@ export function avaliarInterferenciasPrecipitacao(
     | ResultadoTitulacaoDiretaPrecipitacao
     | null
 ): InterferenciaPrecipitacao[] {
-  if (!resultadoValido(resultado)) {
+  if (
+    !resultadoValido(resultado)
+  ) {
     return [];
   }
 
-  const salPrincipal = resultado.sal;
+  const salPrincipal =
+    resultado.sal;
 
   const titulante =
     obterIonTitulante(resultado);
@@ -282,7 +370,9 @@ export function avaliarInterferenciasPrecipitacao(
 
   const concentracaoCriticaPrincipal =
     calcularConcentracaoCriticaTitulante({
-      sal: salPrincipal,
+      sal:
+        salPrincipal,
+
       titulante,
 
       concentracaoEspecieConcorrente:
@@ -297,10 +387,18 @@ export function avaliarInterferenciasPrecipitacao(
     return [];
   }
 
+  const volumeMaximoCurva =
+    Math.max(
+      resultado.volumeMaximoBureta,
+      resultado.volumePE * 1.3,
+      1
+    );
+
   return saisPrecipitacao
     .filter(
       (sal) =>
-        sal.id !== salPrincipal.id
+        sal.id !==
+        salPrincipal.id
     )
     .filter(salValido)
     .filter((sal) =>
@@ -316,16 +414,28 @@ export function avaliarInterferenciasPrecipitacao(
           titulante,
         });
 
+      const especieAnalitoInterferente =
+        obterEspecieAnalitoDoSal({
+          sal,
+          ion:
+            especieConcorrente,
+        });
+
+      if (
+        !especieAnalitoInterferente
+      ) {
+        return null;
+      }
+
       const concentracaoCriticaInterferente =
         calcularConcentracaoCriticaTitulante({
           sal,
           titulante,
 
           /*
-           * A concentração real do possível interferente
-           * não está disponível. Para comparar os sistemas,
-           * assume-se a mesma concentração do analito
-           * principal.
+           * A triagem continua usando inicialmente a
+           * mesma concentração analítica do analito
+           * principal para o possível interferente.
            */
           concentracaoEspecieConcorrente:
             concentracaoComparacao,
@@ -339,101 +449,224 @@ export function avaliarInterferenciasPrecipitacao(
         return null;
       }
 
-      /*
-       * Uma razão menor que ou igual a 1 indica que o
-       * interferente começa a precipitar antes ou junto
-       * com o precipitado principal.
-       *
-       * Uma razão entre 1 e 10 indica proximidade entre
-       * os inícios de precipitação e risco de sobreposição.
-       */
       const razaoConcentracoesCriticas =
         concentracaoCriticaInterferente /
         concentracaoCriticaPrincipal;
 
-      let risco:
-        InterferenciaPrecipitacao["risco"];
+      const seletividade =
+        calcularSeletividadePrecipitacao({
+          especieTitulante:
+            resultado.especieTitulante,
+
+          itens: [
+            {
+              sal:
+                salPrincipal,
+
+              especieAnalito:
+                resultado.especieAnalito,
+
+              concentracaoAnalito:
+                resultado.concentracaoAnalito,
+            },
+
+            {
+              sal,
+
+              especieAnalito:
+                especieAnalitoInterferente,
+
+              concentracaoAnalito:
+                concentracaoComparacao,
+            },
+          ],
+        });
+
+      let avaliacao =
+        criarAvaliacaoIndeterminada();
+
+      let primeiroSalId:
+        string | null = null;
+
+      let segundoSalId:
+        string | null = null;
+
+      let volumeInicioInterferente:
+        number | null = null;
 
       if (
-        razaoConcentracoesCriticas <= 1
+        seletividade.status ===
+        "adequado"
       ) {
-        risco = "alto";
-      } else if (
-        razaoConcentracoesCriticas <=
-        FATOR_RISCO_MODERADO
-      ) {
-        risco = "moderado";
-      } else {
-        risco = "baixo";
+        const curva =
+          gerarCurvaSeletividadePrecipitacao({
+            resultado:
+              seletividade,
+
+            volumeAmostra:
+              resultado.volumeAmostra,
+
+            concentracaoTitulante:
+              resultado.concentracaoTitulante,
+
+            passo: 0.1,
+
+            volumeMaximoManual:
+              volumeMaximoCurva,
+          });
+
+        const comparacao =
+          curva.comparacoesKps[0];
+
+        if (comparacao) {
+          avaliacao =
+            comparacao.avaliacao;
+
+          primeiroSalId =
+            comparacao
+              .primeiroSal.id;
+
+          segundoSalId =
+            comparacao
+              .segundoSal.id;
+
+          /*
+           * O volume armazenado representa o início do
+           * segundo precipitado da comparação.
+           *
+           * Só corresponde ao interferente quando ele é
+           * realmente o segundo sistema.
+           */
+          volumeInicioInterferente =
+            comparacao
+                .segundoSal.id ===
+              sal.id
+              ? comparacao
+                  .volumeInicioSegundo
+              : null;
+        }
       }
 
-      /*
-       * Mantemos razaoKps por compatibilidade com os
-       * componentes atuais da interface.
-       *
-       * Ela deve ser exibida apenas como informação
-       * complementar, e não como único critério para
-       * definir a interferência.
-       */
+      const principalFormaPrimeiro =
+        primeiroSalId ===
+        salPrincipal.id;
+
+      const precipitacaoSimultanea =
+        primeiroSalId !== null &&
+        segundoSalId !== null &&
+        seletividade.status ===
+          "adequado" &&
+        seletividade.itens.some(
+          (item) =>
+            item.sal.id ===
+              salPrincipal.id &&
+            item.ordemPrecipitacao ===
+              seletividade.itens.find(
+                (outroItem) =>
+                  outroItem.sal.id ===
+                  sal.id
+              )?.ordemPrecipitacao
+        );
+
+        const risco =
+        obterRiscoPredominante({
+          avaliacao,
+          principalFormaPrimeiro,
+          precipitacaoSimultanea,
+        });
+
       const razaoKps =
-        sal.kps / salPrincipal.kps;
+        sal.kps /
+        salPrincipal.kps;
 
       const motivo =
-        obterDescricaoRisco({
-          risco,
+        criarDescricaoAvaliacao({
+          salPrincipal,
+
+          salInterferente:
+            sal,
+
           especieConcorrente,
 
-          salInterferente: sal,
+          avaliacao,
 
-          concentracaoCriticaInterferente,
-          concentracaoCriticaPrincipal,
+          principalFormaPrimeiro,
+
+          precipitacaoSimultanea,
         });
 
       return {
-        salInterferente: sal,
+        salInterferente:
+          sal,
+
         especieConcorrente,
+
         risco,
+
         motivo,
+
         razaoKps,
 
-        /*
-         * Propriedades adicionais são disponibilizadas
-         * para componentes futuros da interface.
-         *
-         * O tipo atual de InterferenciaPrecipitacao não
-         * exige esses campos, então eles não são incluídos
-         * no objeto retornado para preservar compatibilidade.
-         */
+        concentracaoCriticaPrincipal,
+
+        concentracaoCriticaInterferente,
+
+        razaoConcentracoesCriticas,
+
+        avaliacaoSeparacao:
+          avaliacao,
+
+        percentualPrincipalPrecipitado:
+          principalFormaPrimeiro
+            ? avaliacao
+                .percentualPrecipitado
+            : null,
+
+        volumeInicioInterferente,
       };
     })
     .filter(
       (
         item
-      ): item is InterferenciaPrecipitacao =>
+      ): item is NonNullable<typeof item> =>
         item !== null
     )
-    .sort((itemA, itemB) => {
-      const concentracaoCriticaA =
-        calcularConcentracaoCriticaTitulante({
-          sal: itemA.salInterferente,
-          titulante,
+    .sort(
+      (itemA, itemB) => {
+        const ordemRisco = {
+          alto: 0,
+          moderado: 1,
+          baixo: 2,
+        };
 
-          concentracaoEspecieConcorrente:
-            concentracaoComparacao,
-        });
+        const diferencaRisco =
+          ordemRisco[
+            itemA.risco
+          ] -
+          ordemRisco[
+            itemB.risco
+          ];
 
-      const concentracaoCriticaB =
-        calcularConcentracaoCriticaTitulante({
-          sal: itemB.salInterferente,
-          titulante,
+        if (
+          diferencaRisco !== 0
+        ) {
+          return diferencaRisco;
+        }
 
-          concentracaoEspecieConcorrente:
-            concentracaoComparacao,
-        });
+        const percentualA =
+          itemA
+            .percentualPrincipalPrecipitado ??
+          -1;
 
-      return (
-        concentracaoCriticaA -
-        concentracaoCriticaB
-      );
-    });
+        const percentualB =
+          itemB
+            .percentualPrincipalPrecipitado ??
+          -1;
+
+        return (
+          percentualA -
+          percentualB
+        );
+      }
+    );
 }

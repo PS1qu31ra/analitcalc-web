@@ -367,6 +367,43 @@ export type RiscoInterferenciaPrecipitacao =
   | "moderado"
   | "baixo";
 
+/**
+ * Classificação predominante da separação por
+ * precipitação fracionada.
+ *
+ * O critério principal é o percentual do primeiro
+ * analito já precipitado quando o precipitado
+ * seguinte começa a se formar.
+ */
+export type ClassificacaoSeparacaoPrecipitacao =
+  | "nao_seletiva"
+  | "separacao_ruim"
+  | "separacao_parcial"
+  | "separacao_quantitativa"
+  | "separacao_muito_favoravel"
+  | "precipitacao_simultanea"
+  | "nao_avaliada";
+
+/**
+ * Resultado padronizado da avaliação da separação.
+ *
+ * O risco permanece compatível com os componentes
+ * atuais. Quando a separação não puder ser avaliada,
+ * o risco será null.
+ */
+export type AvaliacaoSeparacaoPrecipitacao = {
+  classificacao:
+    ClassificacaoSeparacaoPrecipitacao;
+  risco:
+    RiscoInterferenciaPrecipitacao | null;
+  percentualPrecipitado:
+    number | null;
+  percentualRemanescente:
+    number | null;
+  titulo: string;
+  interpretacao: string;
+};
+
 export type InterferenciaPrecipitacao = {
   salInterferente: SalPrecipitacao;
 
@@ -411,6 +448,29 @@ export type InterferenciaPrecipitacao = {
    * [T]crítica,principal
    */
   razaoConcentracoesCriticas?: number;
+
+    /**
+   * Avaliação predominante da separação entre
+   * o precipitado principal e o concorrente.
+   */
+    avaliacaoSeparacao?:
+    AvaliacaoSeparacaoPrecipitacao;
+
+  /**
+   * Percentual do precipitado principal já formado
+   * quando o precipitado concorrente começa.
+   */
+  percentualPrincipalPrecipitado?:
+    number | null;
+
+  /**
+   * Volume em que o precipitado concorrente começa
+   * a se formar na mistura simulada.
+   *
+   * Unidade: mL
+   */
+  volumeInicioInterferente?:
+    number | null;
 };
 
 /* =========================================================
