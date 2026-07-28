@@ -20,12 +20,14 @@ import type {
 type GraficoSeletividadeProps = {
   resultado:
     ResultadoSeletividadePrecipitacao;
-
   volumeAmostra: number;
-
   concentracaoTitulante: number;
-
   volumeMaximoBureta: number;
+};
+
+type PontoGraficoSeletividade = {
+  volumeAdicionado: number;
+  pTitulante: number;
 };
 
 export default function GraficoSeletividade({
@@ -37,27 +39,24 @@ export default function GraficoSeletividade({
   const graficoRef =
     useRef<SVGSVGElement>(null);
 
-  const curva = useMemo(
-    () =>
-      gerarCurvaSeletividadePrecipitacao({
-        resultado,
-
-        volumeAmostra,
-
+  const curva =
+    useMemo(
+      () =>
+        gerarCurvaSeletividadePrecipitacao({
+          resultado,
+          volumeAmostra,
+          concentracaoTitulante,
+          passo: 0.1,
+          volumeMaximoManual:
+            volumeMaximoBureta,
+        }),
+      [
         concentracaoTitulante,
-
-        passo: 0.1,
-
-        volumeMaximoManual:
-          volumeMaximoBureta,
-      }),
-    [
-      concentracaoTitulante,
-      resultado,
-      volumeAmostra,
-      volumeMaximoBureta,
-    ]
-  );
+        resultado,
+        volumeAmostra,
+        volumeMaximoBureta,
+      ]
+    );
 
   const largura = 940;
   const altura = 580;
@@ -77,27 +76,85 @@ export default function GraficoSeletividade({
     margemSuperior -
     margemInferior;
 
-  const seriesIsoladas =
-    curva.seriesIsoladas;
-
-  const pontosMistura =
-    curva.serieMistura.pontos.filter(
-      (ponto) =>
-        Number.isFinite(
-          ponto.volumeAdicionado
-        ) &&
-        Number.isFinite(
-          ponto.pTitulante
+  /*
+   * Garante que as cores e a legenda sigam a ordem
+   * real de precipitação, e não apenas a ordem interna
+   * das séries produzidas pelo cálculo da curva.
+   */
+  const ordemPorSal =
+    useMemo(() => {
+      return new Map(
+        resultado.itens.map(
+          (item) => [
+            item.sal.id,
+            item.ordemPrecipitacao,
+          ]
         )
-    );
+      );
+    }, [resultado.itens]);
 
   const seriesValidas =
-    seriesIsoladas.map(
-      (serie) => ({
-        ...serie,
+    useMemo(() => {
+      return curva.seriesIsoladas
+        .map(
+          (serie) => ({
+            ...serie,
+            pontos:
+              serie.pontos
+                .filter(
+                  (ponto) =>
+                    Number.isFinite(
+                      ponto.volumeAdicionado
+                    ) &&
+                    Number.isFinite(
+                      ponto.pTitulante
+                    )
+                )
+                .sort(
+                  (
+                    pontoA,
+                    pontoB
+                  ) =>
+                    pontoA.volumeAdicionado -
+                    pontoB.volumeAdicionado
+                ),
+          })
+        )
+        .filter(
+          (serie) =>
+            serie.pontos.length >
+            0
+        )
+        .sort(
+          (
+            serieA,
+            serieB
+          ) => {
+            const ordemA =
+              ordemPorSal.get(
+                serieA.sal.id
+              ) ??
+              Number.MAX_SAFE_INTEGER;
 
-        pontos:
-          serie.pontos.filter(
+            const ordemB =
+              ordemPorSal.get(
+                serieB.sal.id
+              ) ??
+              Number.MAX_SAFE_INTEGER;
+
+            return ordemA - ordemB;
+          }
+        );
+    }, [
+      curva.seriesIsoladas,
+      ordemPorSal,
+    ]);
+
+  const pontosMistura =
+    useMemo(
+      () =>
+        curva.serieMistura.pontos
+          .filter(
             (ponto) =>
               Number.isFinite(
                 ponto.volumeAdicionado
@@ -105,13 +162,20 @@ export default function GraficoSeletividade({
               Number.isFinite(
                 ponto.pTitulante
               )
+          )
+          .sort(
+            (
+              pontoA,
+              pontoB
+            ) =>
+              pontoA.volumeAdicionado -
+              pontoB.volumeAdicionado
           ),
-      })
+      [curva.serieMistura.pontos]
     );
 
   const todosPontos = [
     ...pontosMistura,
-
     ...seriesValidas.flatMap(
       (serie) =>
         serie.pontos
@@ -123,33 +187,41 @@ export default function GraficoSeletividade({
   ) {
     return (
       <section className="precipitacaoInterferenceGraphEmpty">
-        <strong>
-          Não foi possível gerar o gráfico
-        </strong>
+        <div>
+          <strong>
+            Não foi possível gerar o gráfico
+          </strong>
 
-        <p>
-          A curva de seletividade não retornou
-          pontos válidos para os dados atuais.
-        </p>
+          <p>
+            A curva de seletividade não retornou
+            pontos válidos para os dados atuais.
+          </p>
+        </div>
       </section>
     );
   }
 
   const volumeMinimo = 0;
 
+  const maiorVolumeCalculado =
+    Math.max(
+      ...todosPontos.map(
+        (ponto) =>
+          ponto.volumeAdicionado
+      ),
+      1
+    );
+
   const volumeMaximo =
     Number.isFinite(
       curva.volumeMaximo
     ) &&
     curva.volumeMaximo > 0
-      ? curva.volumeMaximo
-      : Math.max(
-          ...todosPontos.map(
-            (ponto) =>
-              ponto.volumeAdicionado
-          ),
-          1
-        );
+      ? Math.max(
+          curva.volumeMaximo,
+          maiorVolumeCalculado
+        )
+      : maiorVolumeCalculado;
 
   const pMinimoBruto =
     Math.min(
@@ -167,12 +239,13 @@ export default function GraficoSeletividade({
       )
     );
 
+  const intervaloP =
+    pMaximoBruto -
+    pMinimoBruto;
+
   const margemP =
     Math.max(
-      (
-        pMaximoBruto -
-        pMinimoBruto
-      ) * 0.08,
+      intervaloP * 0.08,
       0.25
     );
 
@@ -187,6 +260,10 @@ export default function GraficoSeletividade({
   function converterX(
     volume: number
   ) {
+    const intervaloVolume =
+      volumeMaximo -
+      volumeMinimo;
+
     return (
       margemEsquerda +
       (
@@ -195,8 +272,7 @@ export default function GraficoSeletividade({
           volumeMinimo
         ) /
         (
-          volumeMaximo -
-          volumeMinimo ||
+          intervaloVolume ||
           1
         )
       ) *
@@ -207,6 +283,10 @@ export default function GraficoSeletividade({
   function converterY(
     pTitulante: number
   ) {
+    const intervalo =
+      pMaximo -
+      pMinimo;
+
     return (
       margemSuperior +
       (
@@ -215,8 +295,7 @@ export default function GraficoSeletividade({
           pTitulante
         ) /
         (
-          pMaximo -
-          pMinimo ||
+          intervalo ||
           1
         )
       ) *
@@ -225,11 +304,15 @@ export default function GraficoSeletividade({
   }
 
   function criarCaminho(
-    pontos: Array<{
-      volumeAdicionado: number;
-      pTitulante: number;
-    }>
+    pontos:
+      PontoGraficoSeletividade[]
   ) {
+    if (
+      pontos.length === 0
+    ) {
+      return "";
+    }
+
     return pontos
       .map(
         (
@@ -249,10 +332,69 @@ export default function GraficoSeletividade({
       .join(" ");
   }
 
+  function obterVolumeInicioSerie(
+    salId: string
+  ): number | null {
+    /*
+     * Primeiro tenta localizar o volume na comparação
+     * calculada da mistura. Esse é o volume mais
+     * representativo para a precipitação seletiva.
+     */
+    const comparacaoComoSegundo =
+      curva.comparacoesKps.find(
+        (comparacao) =>
+          comparacao.segundoSal.id ===
+          salId
+      );
+
+    if (
+      comparacaoComoSegundo &&
+      comparacaoComoSegundo
+        .volumeInicioSegundo !==
+        null &&
+      Number.isFinite(
+        comparacaoComoSegundo
+          .volumeInicioSegundo
+      )
+    ) {
+      return (
+        comparacaoComoSegundo
+          .volumeInicioSegundo
+      );
+    }
+
+    /*
+     * Para o primeiro precipitado, ou quando não houver
+     * comparação correspondente, utiliza-se o início
+     * calculado da série isolada.
+     */
+    const serie =
+      seriesValidas.find(
+        (item) =>
+          item.sal.id === salId
+      );
+
+    if (
+      serie &&
+      Number.isFinite(
+        serie.volumeInicio
+      )
+    ) {
+      return serie.volumeInicio;
+    }
+
+    return null;
+  }
+
   const marcacoesX =
     Array.from(
-      { length: 6 },
-      (_, indice) =>
+      {
+        length: 6,
+      },
+      (
+        _,
+        indice
+      ) =>
         volumeMinimo +
         (
           (
@@ -266,8 +408,13 @@ export default function GraficoSeletividade({
 
   const marcacoesY =
     Array.from(
-      { length: 6 },
-      (_, indice) =>
+      {
+        length: 6,
+      },
+      (
+        _,
+        indice
+      ) =>
         pMaximo -
         (
           (
@@ -278,6 +425,78 @@ export default function GraficoSeletividade({
         ) *
           indice
     );
+
+  function obterClasseSerie(
+    indice: number
+  ) {
+    if (
+      indice === 0
+    ) {
+      return "selectivityGraphSeriesPrimary";
+    }
+
+    if (
+      indice === 1
+    ) {
+      return "selectivityGraphSeriesSecondary";
+    }
+
+    return "selectivityGraphSeriesOther";
+  }
+
+  function obterClasseInicio(
+    indice: number
+  ) {
+    if (
+      indice === 0
+    ) {
+      return "selectivityGraphStartPrimary";
+    }
+
+    if (
+      indice === 1
+    ) {
+      return "selectivityGraphStartSecondary";
+    }
+
+    return "selectivityGraphStartOther";
+  }
+
+  function obterClasseRotulo(
+    indice: number
+  ) {
+    if (
+      indice === 0
+    ) {
+      return "selectivityGraphPrimaryLabel";
+    }
+
+    if (
+      indice === 1
+    ) {
+      return "selectivityGraphSecondaryLabel";
+    }
+
+    return "selectivityGraphOtherLabel";
+  }
+
+  function obterClasseLegenda(
+    indice: number
+  ) {
+    if (
+      indice === 0
+    ) {
+      return "precipitacaoSelectivityLegendPrimary";
+    }
+
+    if (
+      indice === 1
+    ) {
+      return "precipitacaoSelectivityLegendSecondary";
+    }
+
+    return "precipitacaoSelectivityLegendOther";
+  }
 
   function baixarGrafico() {
     const grafico =
@@ -365,9 +584,10 @@ export default function GraficoSeletividade({
       .selectivityGraphMixture {
         fill: none;
         stroke: #a1a1aa;
-        stroke-width: 3.4;
+        stroke-width: 5;
         stroke-linecap: round;
         stroke-linejoin: round;
+        opacity: 0.82;
       }
 
       .selectivityGraphSeriesPrimary {
@@ -460,7 +680,9 @@ export default function GraficoSeletividade({
 
     const arquivoSvg =
       new Blob(
-        [svgSerializado],
+        [
+          svgSerializado,
+        ],
         {
           type:
             "image/svg+xml;charset=utf-8",
@@ -490,7 +712,9 @@ export default function GraficoSeletividade({
         altura * escala;
 
       const contexto =
-        canvas.getContext("2d");
+        canvas.getContext(
+          "2d"
+        );
 
       if (!contexto) {
         URL.revokeObjectURL(
@@ -519,7 +743,9 @@ export default function GraficoSeletividade({
       );
 
       canvas.toBlob(
-        (arquivoPng) => {
+        (
+          arquivoPng
+        ) => {
           if (!arquivoPng) {
             URL.revokeObjectURL(
               urlSvg
@@ -549,6 +775,7 @@ export default function GraficoSeletividade({
           );
 
           link.click();
+
           link.remove();
 
           URL.revokeObjectURL(
@@ -590,14 +817,17 @@ export default function GraficoSeletividade({
             O gráfico compara as curvas calculadas
             para cada precipitado isolado com o
             comportamento da mistura durante a
-            adição de {curva.formulaTitulante}.
+            adição de{" "}
+            {curva.formulaTitulante}.
           </p>
         </div>
 
         <button
           type="button"
           className="precipitacaoInterferenceDownloadButton"
-          onClick={baixarGrafico}
+          onClick={
+            baixarGrafico
+          }
         >
           <svg
             viewBox="0 0 24 24"
@@ -613,13 +843,18 @@ export default function GraficoSeletividade({
       </header>
 
       <svg
-        ref={graficoRef}
+        ref={
+          graficoRef
+        }
         viewBox={`0 0 ${largura} ${altura}`}
         role="img"
-        aria-label="Curvas calculadas de precipitação seletiva"
+        aria-label={`Curvas calculadas de precipitação seletiva com ${curva.formulaTitulante}`}
       >
         {marcacoesY.map(
-          (valor) => {
+          (
+            valor,
+            indice
+          ) => {
             const y =
               converterY(
                 valor
@@ -627,18 +862,22 @@ export default function GraficoSeletividade({
 
             return (
               <g
-                key={`y-${valor}`}
+                key={`y-${indice}`}
               >
                 <line
                   x1={
                     margemEsquerda
                   }
-                  y1={y}
+                  y1={
+                    y
+                  }
                   x2={
                     largura -
                     margemDireita
                   }
-                  y2={y}
+                  y2={
+                    y
+                  }
                   className="selectivityGraphGrid"
                 />
 
@@ -647,7 +886,9 @@ export default function GraficoSeletividade({
                     margemEsquerda -
                     12
                   }
-                  y={y + 4}
+                  y={
+                    y + 4
+                  }
                   textAnchor="end"
                   className="selectivityGraphTick"
                 >
@@ -662,7 +903,10 @@ export default function GraficoSeletividade({
         )}
 
         {marcacoesX.map(
-          (volume) => {
+          (
+            volume,
+            indice
+          ) => {
             const x =
               converterX(
                 volume
@@ -670,14 +914,18 @@ export default function GraficoSeletividade({
 
             return (
               <g
-                key={`x-${volume}`}
+                key={`x-${indice}`}
               >
                 <line
-                  x1={x}
+                  x1={
+                    x
+                  }
                   y1={
                     margemSuperior
                   }
-                  x2={x}
+                  x2={
+                    x
+                  }
                   y2={
                     altura -
                     margemInferior
@@ -686,7 +934,9 @@ export default function GraficoSeletividade({
                 />
 
                 <text
-                  x={x}
+                  x={
+                    x
+                  }
                   y={
                     altura -
                     margemInferior +
@@ -746,82 +996,103 @@ export default function GraficoSeletividade({
             serie,
             indice
           ) => {
-            const volumeInicioValido =
-              Number.isFinite(
-                serie.volumeInicio
+            const volumeInicio =
+              obterVolumeInicioSerie(
+                serie.sal.id
               );
 
-            const classeLinhaInicio =
-              indice === 0
-                ? "selectivityGraphStartPrimary"
-                : indice === 1
-                  ? "selectivityGraphStartSecondary"
-                  : "selectivityGraphStartOther";
+            const volumeInicioValido =
+              volumeInicio !==
+                null &&
+              Number.isFinite(
+                volumeInicio
+              ) &&
+              volumeInicio >=
+                volumeMinimo &&
+              volumeInicio <=
+                volumeMaximo;
 
-            const classeRotulo =
-              indice === 0
-                ? "selectivityGraphPrimaryLabel"
-                : indice === 1
-                  ? "selectivityGraphSecondaryLabel"
-                  : "selectivityGraphOtherLabel";
+            if (
+              !volumeInicioValido
+            ) {
+              return null;
+            }
+
+            const xInicio =
+              converterX(
+                volumeInicio
+              );
+
+            const larguraRotulo =
+              150;
+
+            const xRotulo =
+              Math.min(
+                xInicio + 7,
+                largura -
+                  margemDireita -
+                  larguraRotulo
+              );
 
             return (
               <g
                 key={`inicio-${serie.sal.id}`}
               >
-                {volumeInicioValido && (
-                  <>
-                    <line
-                      x1={converterX(
-                        serie.volumeInicio
-                      )}
-                      y1={
-                        margemSuperior
-                      }
-                      x2={converterX(
-                        serie.volumeInicio
-                      )}
-                      y2={
-                        altura -
-                        margemInferior
-                      }
-                      className={
-                        classeLinhaInicio
-                      }
-                    />
+                <line
+                  x1={
+                    xInicio
+                  }
+                  y1={
+                    margemSuperior
+                  }
+                  x2={
+                    xInicio
+                  }
+                  y2={
+                    altura -
+                    margemInferior
+                  }
+                  vectorEffect="non-scaling-stroke"
+                  className={
+                    obterClasseInicio(
+                      indice
+                    )
+                  }
+                />
 
-                    <text
-                      x={
-                        converterX(
-                          serie.volumeInicio
-                        ) + 7
-                      }
-                      y={
-                        margemSuperior +
-                        18 +
-                        indice * 20
-                      }
-                      className={
-                        classeRotulo
-                      }
-                    >
-                      Início{" "}
-                      {
-                        serie.sal
-                          .formulaExibicao
-                      }
-                    </text>
-                  </>
-                )}
+                <text
+                  x={
+                    xRotulo
+                  }
+                  y={
+                    margemSuperior +
+                    18 +
+                    indice * 20
+                  }
+                  className={
+                    obterClasseRotulo(
+                      indice
+                    )
+                  }
+                >
+                  Início{" "}
+                  {
+                    serie.sal
+                      .formulaExibicao
+                  }
+                </text>
               </g>
             );
           }
         )}
 
         <path
-          d={criarCaminho(
-            pontosMistura
-          )}
+          d={
+            criarCaminho(
+              pontosMistura
+            )
+          }
+          vectorEffect="non-scaling-stroke"
           className="selectivityGraphMixture"
         />
 
@@ -834,15 +1105,16 @@ export default function GraficoSeletividade({
               key={
                 serie.sal.id
               }
-              d={criarCaminho(
-                serie.pontos
-              )}
+              d={
+                criarCaminho(
+                  serie.pontos
+                )
+              }
+              vectorEffect="non-scaling-stroke"
               className={
-                indice === 0
-                  ? "selectivityGraphSeriesPrimary"
-                  : indice === 1
-                    ? "selectivityGraphSeriesSecondary"
-                    : "selectivityGraphSeriesOther"
+                obterClasseSerie(
+                  indice
+                )
               }
             />
           )
@@ -876,37 +1148,63 @@ export default function GraficoSeletividade({
         </text>
       </svg>
 
-      <footer className="precipitacaoInterferenceLegend">
+      <footer className="precipitacaoSelectivityGraphLegend">
         <span>
-          <i className="precipitacaoInterferenceLegendMixture" />
-          Mistura completa
+          <i className="precipitacaoSelectivityLegendMixture" />
+
+          <div>
+            <strong>
+              Mistura completa
+            </strong>
+
+            <small>
+              Comportamento conjunto das espécies
+            </small>
+          </div>
         </span>
 
         {seriesValidas.map(
           (
             serie,
             indice
-          ) => (
-            <span
-              key={
+          ) => {
+            const ordem =
+              ordemPorSal.get(
                 serie.sal.id
-              }
-            >
-              <i
-                className={
-                  indice === 0
-                    ? "precipitacaoInterferenceLegendMain"
-                    : "precipitacaoInterferenceLegendCompetitor"
-                }
-              />
+              );
 
-              {
-                serie.sal
-                  .formulaExibicao
-              }{" "}
-              isolado
-            </span>
-          )
+            return (
+              <span
+                key={
+                  serie.sal.id
+                }
+              >
+                <i
+                  className={
+                    obterClasseLegenda(
+                      indice
+                    )
+                  }
+                />
+
+                <div>
+                  <strong>
+                    {
+                      serie.sal
+                        .formulaExibicao
+                    }{" "}
+                    isolado
+                  </strong>
+
+                  <small>
+                    {ordem
+                      ? `${ordem}º precipitado previsto`
+                      : "Curva do precipitado individual"}
+                  </small>
+                </div>
+              </span>
+            );
+          }
         )}
       </footer>
 
@@ -917,13 +1215,15 @@ export default function GraficoSeletividade({
 
         <p>
           As linhas verticais indicam o início
-          calculado da formação de cada precipitado.
-          Quanto maior a distância entre esses
-          inícios, maior tende a ser a possibilidade
-          de precipitação seletiva. Entretanto, a
-          confirmação de separação quantitativa
-          depende também da fração precipitada antes
-          do início do sistema seguinte.
+          calculado da formação de cada precipitado
+          na mistura. A curva cinza representa o
+          comportamento conjunto, enquanto as
+          curvas coloridas mostram cada sistema
+          isoladamente. A distância entre os inícios
+          auxilia na interpretação, mas a
+          classificação quantitativa depende da
+          fração do primeiro analito já precipitada
+          quando o sistema seguinte começa.
         </p>
       </div>
     </section>

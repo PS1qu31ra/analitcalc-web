@@ -22,20 +22,27 @@ import type {
 } from "@/lib/precipitacao/tipos";
 
 import EntradaDados from "./EntradaDados";
-
 import ResultadoSeletividade from "./ResultadoSeletividade";
 
 type ItemMisturaFormulario = {
   id: string;
   sal: SalPrecipitacao;
-  especieAnalito: EspeciePrecipitacao;
+  especieAnalito:
+    EspeciePrecipitacao;
   concentracaoAnalito: string;
+};
+
+type DadosCalculadosSeletividade = {
+  volumeAmostra: number;
+  concentracaoTitulante: number;
+  volumeMaximoBureta: number;
 };
 
 function converterNumeroBR(
   valor: string
 ) {
-  const texto = valor.trim();
+  const texto =
+    valor.trim();
 
   if (!texto) {
     return NaN;
@@ -49,14 +56,17 @@ function converterNumeroBR(
       : texto
   );
 }
+
 function obterIonTitulanteDoSal({
   sal,
   especieTitulante,
 }: {
   sal: SalPrecipitacao;
-  especieTitulante: EspeciePrecipitacao;
+  especieTitulante:
+    EspeciePrecipitacao;
 }) {
-  return especieTitulante === "cation"
+  return especieTitulante ===
+    "cation"
     ? sal.cation
     : sal.anion;
 }
@@ -87,15 +97,22 @@ export default function PrecipitacaoSeletiva() {
   const primeiroSal =
     saisCompativeis[0];
 
-    const segundoSal =
-    saisCompativeis.find(
-      (sal) =>
-        sal.id !== primeiroSal.id &&
-        sal.cation.id ===
-          primeiroSal.cation.id
-    ) ??
-    saisCompativeis[1] ??
-    primeiroSal;
+  const segundoSal =
+    primeiroSal
+      ? saisCompativeis.find(
+          (sal) =>
+            sal.id !==
+              primeiroSal.id &&
+            sal.cation.id ===
+              primeiroSal.cation.id
+        ) ??
+        saisCompativeis.find(
+          (sal) =>
+            sal.id !==
+            primeiroSal.id
+        ) ??
+        primeiroSal
+      : undefined;
 
   const [
     especieTitulante,
@@ -110,45 +127,66 @@ export default function PrecipitacaoSeletiva() {
     setItens,
   ] =
     useState<ItemMisturaFormulario[]>(
-      [
-        {
-          id: "especie-1",
-          sal: primeiroSal,
-          especieAnalito:
-            "anion",
-          concentracaoAnalito:
-            "0,0100",
-        },
-        {
-          id: "especie-2",
-          sal: segundoSal,
-          especieAnalito:
-            "anion",
-          concentracaoAnalito:
-            "0,0100",
-        },
-      ]
+      () => {
+        if (
+          !primeiroSal ||
+          !segundoSal
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: "especie-1",
+            sal: primeiroSal,
+            especieAnalito:
+              "anion",
+            concentracaoAnalito:
+              "0,0100",
+          },
+          {
+            id: "especie-2",
+            sal: segundoSal,
+            especieAnalito:
+              "anion",
+            concentracaoAnalito:
+              "0,0100",
+          },
+        ];
+      }
     );
 
   const [
     volumeAmostra,
     setVolumeAmostra,
-  ] = useState("25,00");
+  ] =
+    useState(
+      "25,00"
+    );
 
   const [
     concentracaoTitulante,
     setConcentracaoTitulante,
-  ] = useState("0,0100");
+  ] =
+    useState(
+      "0,0100"
+    );
 
   const [
     volumeMaximoBureta,
     setVolumeMaximoBureta,
-  ] = useState("50,00");
+  ] =
+    useState(
+      "50,00"
+    );
 
   const [
     erro,
     setErro,
-  ] = useState("");
+  ] =
+    useState(
+      ""
+    );
 
   const [
     resultado,
@@ -158,89 +196,199 @@ export default function PrecipitacaoSeletiva() {
       null
     );
 
-    const [
-      dadosCalculados,
-      setDadosCalculados,
-    ] = useState<{
-      volumeAmostra: number;
-      concentracaoTitulante: number;
-      volumeMaximoBureta: number;
-    } | null>(null);
-
-  function alterarEspecieTitulante(
-    novaEspecie:
-      EspeciePrecipitacao
-  ) {
-    setEspecieTitulante(
-      novaEspecie
+  const [
+    dadosCalculados,
+    setDadosCalculados,
+  ] =
+    useState<DadosCalculadosSeletividade | null>(
+      null
     );
 
-    setItens(
-      (itensAtuais) =>
-        itensAtuais.map(
-          (item) => ({
-            ...item,
-            especieAnalito:
-              obterEspecieAnalito(
-                novaEspecie
-              ),
-          })
-        )
-    );
-
+  function limparResultado() {
     setResultado(null);
     setDadosCalculados(null);
     setErro("");
   }
 
+  function alterarEspecieTitulante(
+    novaEspecie:
+      EspeciePrecipitacao
+  ) {
+    if (
+      novaEspecie ===
+      especieTitulante
+    ) {
+      return;
+    }
+
+    const primeiroItemAtual =
+      itens[0];
+
+    if (!primeiroItemAtual) {
+      setEspecieTitulante(
+        novaEspecie
+      );
+
+      limparResultado();
+
+      return;
+    }
+
+    /*
+     * O primeiro sal define o novo íon
+     * titulante comum após a troca entre
+     * cátion e ânion.
+     */
+    const ionTitulanteReferencia =
+      obterIonTitulanteDoSal({
+        sal:
+          primeiroItemAtual.sal,
+        especieTitulante:
+          novaEspecie,
+      });
+
+    const saisDoMesmoSistema =
+      saisCompativeis.filter(
+        (sal) => {
+          const ionDoSal =
+            obterIonTitulanteDoSal({
+              sal,
+              especieTitulante:
+                novaEspecie,
+            });
+
+          return (
+            ionDoSal.id ===
+            ionTitulanteReferencia.id
+          );
+        }
+      );
+
+    if (
+      saisDoMesmoSistema.length <
+      itens.length
+    ) {
+      setErro(
+        `O sistema com ${ionTitulanteReferencia.formulaExibicao} possui apenas ${saisDoMesmoSistema.length} precipitado(s) disponível(is), quantidade insuficiente para manter ${itens.length} espécies diferentes.`
+      );
+
+      return;
+    }
+
+    const idsUtilizados =
+      new Set<string>();
+
+    const novosItens =
+      itens.map(
+        (item) => {
+          const salAtualCompativel =
+            saisDoMesmoSistema.find(
+              (sal) =>
+                sal.id ===
+                  item.sal.id &&
+                !idsUtilizados.has(
+                  sal.id
+                )
+            );
+
+          const salSubstituto =
+            salAtualCompativel ??
+            saisDoMesmoSistema.find(
+              (sal) =>
+                !idsUtilizados.has(
+                  sal.id
+                )
+            );
+
+          if (!salSubstituto) {
+            return item;
+          }
+
+          idsUtilizados.add(
+            salSubstituto.id
+          );
+
+          return {
+            ...item,
+            sal: salSubstituto,
+            especieAnalito:
+              obterEspecieAnalito(
+                novaEspecie
+              ),
+          };
+        }
+      );
+
+    setEspecieTitulante(
+      novaEspecie
+    );
+
+    setItens(
+      novosItens
+    );
+
+    limparResultado();
+  }
+
   function adicionarItem() {
     const primeiroItem =
-  itens[0];
+      itens[0];
 
-const ionTitulanteReferencia =
-  primeiroItem
-    ? obterIonTitulanteDoSal({
-        sal: primeiroItem.sal,
-        especieTitulante,
-      })
-    : null;
+    const ionTitulanteReferencia =
+      primeiroItem
+        ? obterIonTitulanteDoSal({
+            sal:
+              primeiroItem.sal,
+            especieTitulante,
+          })
+        : null;
 
-const salDisponivel =
-  saisCompativeis.find(
-    (sal) => {
-      const aindaNaoSelecionado =
-        !itens.some(
-          (item) =>
-            item.sal.id ===
-            sal.id
-        );
-
-      if (
-        !aindaNaoSelecionado ||
-        !ionTitulanteReferencia
-      ) {
-        return false;
-      }
-
-      const ionDoSal =
-        obterIonTitulanteDoSal({
-          sal,
-          especieTitulante,
-        });
-
-      return (
-        ionDoSal.id ===
-        ionTitulanteReferencia.id
+    if (
+      !ionTitulanteReferencia
+    ) {
+      setErro(
+        "Não foi possível identificar o titulante comum da mistura."
       );
-    }
-  );
 
-  if (!salDisponivel) {
-    setErro(
-      "Não existe outro precipitado disponível na base que utilize o mesmo titulante das espécies já selecionadas."
-    );
-    return;
-  }
+      return;
+    }
+
+    const salDisponivel =
+      saisCompativeis.find(
+        (sal) => {
+          const aindaNaoSelecionado =
+            !itens.some(
+              (item) =>
+                item.sal.id ===
+                sal.id
+            );
+
+          if (
+            !aindaNaoSelecionado
+          ) {
+            return false;
+          }
+
+          const ionDoSal =
+            obterIonTitulanteDoSal({
+              sal,
+              especieTitulante,
+            });
+
+          return (
+            ionDoSal.id ===
+            ionTitulanteReferencia.id
+          );
+        }
+      );
+
+    if (!salDisponivel) {
+      setErro(
+        "Não existe outro precipitado disponível na base que utilize o mesmo titulante das espécies já selecionadas."
+      );
+
+      return;
+    }
 
     setItens(
       (itensAtuais) => [
@@ -259,9 +407,7 @@ const salDisponivel =
       ]
     );
 
-    setResultado(null);
-    setDadosCalculados(null);
-    setErro("");
+    limparResultado();
   }
 
   function removerItem(
@@ -275,9 +421,7 @@ const salDisponivel =
         )
     );
 
-    setResultado(null);
-    setDadosCalculados(null);
-    setErro("");
+    limparResultado();
   }
 
   function alterarSal(
@@ -289,26 +433,62 @@ const salDisponivel =
         (sal) =>
           sal.id === salId
       );
-  
+
     if (!novoSal) {
       return;
     }
-  
+
     const indiceAlterado =
       itens.findIndex(
         (item) =>
           item.id === id
       );
-  
-    if (indiceAlterado < 0) {
+
+    if (
+      indiceAlterado < 0
+    ) {
       return;
     }
-  
+
     /*
-     * Quando uma espécie diferente da primeira
-     * é alterada, basta substituir o sal escolhido.
+     * Para itens diferentes do primeiro,
+     * basta verificar se o novo sal pertence
+     * ao mesmo sistema titulante.
      */
-    if (indiceAlterado !== 0) {
+    if (
+      indiceAlterado !== 0
+    ) {
+      const primeiroItem =
+        itens[0];
+
+      if (!primeiroItem) {
+        return;
+      }
+
+      const ionReferencia =
+        obterIonTitulanteDoSal({
+          sal:
+            primeiroItem.sal,
+          especieTitulante,
+        });
+
+      const ionNovoSal =
+        obterIonTitulanteDoSal({
+          sal: novoSal,
+          especieTitulante,
+        });
+
+      if (
+        ionNovoSal.id !==
+        ionReferencia.id
+      ) {
+        setErro(
+          `O precipitado selecionado utiliza ${ionNovoSal.formulaExibicao}, mas a mistura atual exige ${ionReferencia.formulaExibicao} como titulante comum.`
+        );
+
+        return;
+      }
+
       setItens(
         (itensAtuais) =>
           itensAtuais.map(
@@ -325,25 +505,22 @@ const salDisponivel =
                 : item
           )
       );
-  
-      setResultado(null);
-      setDadosCalculados(null);
-      setErro("");
-  
+
+      limparResultado();
+
       return;
     }
-  
+
     /*
-     * A primeira espécie define o íon titulante
-     * comum da mistura. Ao alterá-la, os demais
-     * sais precisam ser reorganizados.
+     * A primeira espécie define o íon
+     * titulante comum da mistura.
      */
     const ionTitulanteReferencia =
       obterIonTitulanteDoSal({
         sal: novoSal,
         especieTitulante,
       });
-  
+
     const saisDoMesmoSistema =
       saisCompativeis.filter(
         (sal) => {
@@ -352,14 +529,14 @@ const salDisponivel =
               sal,
               especieTitulante,
             });
-  
+
           return (
             ionDoSal.id ===
             ionTitulanteReferencia.id
           );
         }
       );
-  
+
     if (
       saisDoMesmoSistema.length <
       itens.length
@@ -367,21 +544,26 @@ const salDisponivel =
       setErro(
         `O sistema com ${ionTitulanteReferencia.formulaExibicao} possui apenas ${saisDoMesmoSistema.length} precipitado(s) disponível(is), quantidade insuficiente para manter ${itens.length} espécies diferentes.`
       );
-  
+
       return;
     }
-  
+
     const idsUtilizados =
       new Set<string>();
-  
+
     idsUtilizados.add(
       novoSal.id
     );
-  
+
     const novosItens =
       itens.map(
-        (item, indice) => {
-          if (indice === 0) {
+        (
+          item,
+          indice
+        ) => {
+          if (
+            indice === 0
+          ) {
             return {
               ...item,
               sal: novoSal,
@@ -391,7 +573,7 @@ const salDisponivel =
                 ),
             };
           }
-  
+
           const salAtualCompativel =
             saisDoMesmoSistema.find(
               (sal) =>
@@ -401,7 +583,7 @@ const salDisponivel =
                   sal.id
                 )
             );
-  
+
           const salSubstituto =
             salAtualCompativel ??
             saisDoMesmoSistema.find(
@@ -410,15 +592,15 @@ const salDisponivel =
                   sal.id
                 )
             );
-  
+
           if (!salSubstituto) {
             return item;
           }
-  
+
           idsUtilizados.add(
             salSubstituto.id
           );
-  
+
           return {
             ...item,
             sal: salSubstituto,
@@ -429,14 +611,12 @@ const salDisponivel =
           };
         }
       );
-  
+
     setItens(
       novosItens
     );
-  
-    setResultado(null);
-    setDadosCalculados(null);
-    setErro("");
+
+    limparResultado();
   }
 
   function alterarConcentracao(
@@ -457,9 +637,7 @@ const salDisponivel =
         )
     );
 
-    setResultado(null);
-    setDadosCalculados(null);
-    setErro("");
+    limparResultado();
   }
 
   function calcular(
@@ -478,49 +656,65 @@ const salDisponivel =
       setErro(
         "Adicione pelo menos duas espécies para avaliar a precipitação seletiva."
       );
+
       return;
     }
 
-    const saisRepetidos =
+    const quantidadeSaisUnicos =
       new Set(
         itens.map(
           (item) =>
             item.sal.id
         )
-      ).size !==
-      itens.length;
+      ).size;
 
-    if (saisRepetidos) {
+    if (
+      quantidadeSaisUnicos !==
+      itens.length
+    ) {
       setErro(
         "Selecione precipitados diferentes para cada espécie da mistura."
       );
+
       return;
     }
 
     const ionsTitulantes =
-  itens.map((item) =>
-    obterIonTitulanteDoSal({
-      sal: item.sal,
-      especieTitulante,
-    })
-  );
+      itens.map(
+        (item) =>
+          obterIonTitulanteDoSal({
+            sal: item.sal,
+            especieTitulante,
+          })
+      );
 
-const ionTitulanteReferencia =
-  ionsTitulantes[0];
+    const ionTitulanteReferencia =
+      ionsTitulantes[0];
 
-const mesmoTitulante =
-  ionsTitulantes.every(
-    (ion) =>
-      ion.id ===
-      ionTitulanteReferencia.id
-  );
+    if (
+      !ionTitulanteReferencia
+    ) {
+      setErro(
+        "Não foi possível identificar o titulante comum da mistura."
+      );
 
-if (!mesmoTitulante) {
-  setErro(
-    `Todos os precipitados devem utilizar o mesmo titulante. O primeiro sistema utiliza ${ionTitulanteReferencia.formulaExibicao}, mas há espécies selecionadas com outro íon precipitante.`
-  );
-  return;
-}
+      return;
+    }
+
+    const mesmoTitulante =
+      ionsTitulantes.every(
+        (ion) =>
+          ion.id ===
+          ionTitulanteReferencia.id
+      );
+
+    if (!mesmoTitulante) {
+      setErro(
+        `Todos os precipitados devem utilizar o mesmo titulante. O primeiro sistema utiliza ${ionTitulanteReferencia.formulaExibicao}, mas há espécies selecionadas com outro íon precipitante.`
+      );
+
+      return;
+    }
 
     const volumeAmostraNumero =
       converterNumeroBR(
@@ -546,6 +740,7 @@ if (!mesmoTitulante) {
       setErro(
         "Informe um volume de amostra positivo e válido."
       );
+
       return;
     }
 
@@ -559,6 +754,7 @@ if (!mesmoTitulante) {
       setErro(
         "Informe uma concentração positiva e válida para o titulante."
       );
+
       return;
     }
 
@@ -572,21 +768,24 @@ if (!mesmoTitulante) {
       setErro(
         "Informe uma capacidade de bureta positiva e válida."
       );
+
       return;
     }
 
     const itensCalculados =
-      itens.map((item) => ({
-        sal: item.sal,
-        especieAnalito:
-          obterEspecieAnalito(
-            especieTitulante
-          ),
-        concentracaoAnalito:
-          converterNumeroBR(
-            item.concentracaoAnalito
-          ),
-      }));
+      itens.map(
+        (item) => ({
+          sal: item.sal,
+          especieAnalito:
+            obterEspecieAnalito(
+              especieTitulante
+            ),
+          concentracaoAnalito:
+            converterNumeroBR(
+              item.concentracaoAnalito
+            ),
+        })
+      );
 
     const concentracoesValidas =
       itensCalculados.every(
@@ -604,6 +803,7 @@ if (!mesmoTitulante) {
       setErro(
         "Informe concentrações positivas e válidas para todas as espécies."
       );
+
       return;
     }
 
@@ -620,27 +820,53 @@ if (!mesmoTitulante) {
         entrada
       );
 
-      setDadosCalculados({
-        volumeAmostra:
-          volumeAmostraNumero,
-        concentracaoTitulante:
-          concentracaoTitulanteNumero,
-        volumeMaximoBureta:
-          volumeMaximoBuretaNumero,
-      });
+    setDadosCalculados({
+      volumeAmostra:
+        volumeAmostraNumero,
+      concentracaoTitulante:
+        concentracaoTitulanteNumero,
+      volumeMaximoBureta:
+        volumeMaximoBuretaNumero,
+    });
 
     setResultado(
       novoResultado
     );
   }
 
+  if (
+    !primeiroSal ||
+    !segundoSal
+  ) {
+    return (
+      <section className="precipitacaoSelectiveSection">
+        <div
+          className="precipitacaoFormError"
+          role="alert"
+        >
+          <strong>
+            Base de seletividade indisponível
+          </strong>
+
+          <span>
+            Não foram encontrados pelo menos dois
+            precipitados disponíveis para iniciar a
+            análise de seletividade.
+          </span>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section>
+    <section className="precipitacaoSelectiveSection">
       <EntradaDados
         especieTitulante={
           especieTitulante
         }
-        itens={itens}
+        itens={
+          itens
+        }
         volumeAmostra={
           volumeAmostra
         }
@@ -650,7 +876,9 @@ if (!mesmoTitulante) {
         volumeMaximoBureta={
           volumeMaximoBureta
         }
-        erro={erro}
+        erro={
+          erro
+        }
         onEspecieTitulanteChange={
           alterarEspecieTitulante
         }
@@ -666,42 +894,60 @@ if (!mesmoTitulante) {
         onConcentracaoChange={
           alterarConcentracao
         }
-        onVolumeAmostraChange={(valor) => {
-          setVolumeAmostra(valor);
-          setResultado(null);
-          setDadosCalculados(null);
-          setErro("");
+        onVolumeAmostraChange={(
+          valor
+        ) => {
+          setVolumeAmostra(
+            valor
+          );
+
+          limparResultado();
         }}
-        onConcentracaoTitulanteChange={(valor) => {
-          setConcentracaoTitulante(valor);
-          setResultado(null);
-          setDadosCalculados(null);
-          setErro("");
+        onConcentracaoTitulanteChange={(
+          valor
+        ) => {
+          setConcentracaoTitulante(
+            valor
+          );
+
+          limparResultado();
         }}
-        onVolumeMaximoBuretaChange={(valor) => {
-          setVolumeMaximoBureta(valor);
-          setResultado(null);
-          setDadosCalculados(null);
-          setErro("");
+        onVolumeMaximoBuretaChange={(
+          valor
+        ) => {
+          setVolumeMaximoBureta(
+            valor
+          );
+
+          limparResultado();
         }}
-        onSubmit={calcular}
+        onSubmit={
+          calcular
+        }
       />
 
-{resultado &&
-  dadosCalculados && (
-    <ResultadoSeletividade
-      resultado={resultado}
-      volumeAmostra={
-        dadosCalculados.volumeAmostra
-      }
-      concentracaoTitulante={
-        dadosCalculados.concentracaoTitulante
-      }
-      volumeMaximoBureta={
-        dadosCalculados.volumeMaximoBureta
-      }
-    />
-  )}
+      {resultado &&
+        dadosCalculados && (
+          <div className="precipitacaoSelectiveResultsWrapper">
+            <ResultadoSeletividade
+              resultado={
+                resultado
+              }
+              volumeAmostra={
+                dadosCalculados
+                  .volumeAmostra
+              }
+              concentracaoTitulante={
+                dadosCalculados
+                  .concentracaoTitulante
+              }
+              volumeMaximoBureta={
+                dadosCalculados
+                  .volumeMaximoBureta
+              }
+            />
+          </div>
+        )}
     </section>
   );
 }

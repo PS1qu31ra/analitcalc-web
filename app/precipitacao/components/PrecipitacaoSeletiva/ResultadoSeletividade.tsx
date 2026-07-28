@@ -750,6 +750,135 @@ const avaliacaoPrincipal =
     </section>
   )}
 
+<section className="precipitacaoClassificationReference">
+  <header>
+    <div>
+      <span className="precipitacaoSectionLabel">
+        Padrão de classificação
+      </span>
+
+      <h4>
+        Critério percentual adotado
+      </h4>
+    </div>
+
+    <small>
+      Percentual do primeiro precipitado já formado
+      quando o precipitado seguinte começa a se formar.
+    </small>
+  </header>
+
+  <div className="precipitacaoClassificationReferenceTableWrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Primeiro já precipitado
+          </th>
+
+          <th>
+            Classificação
+          </th>
+
+          <th>
+            Risco
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            Menor que 90%
+          </td>
+
+          <td>
+            Não seletiva
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskHigh">
+              Alto
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            90% a menor que 99%
+          </td>
+
+          <td>
+            Separação insuficiente
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskHigh">
+              Alto
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            99% a menor que 99,9%
+          </td>
+
+          <td>
+            Separação parcial
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskModerate">
+              Moderado
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            99,9% a menor que 99,99%
+          </td>
+
+          <td>
+            Separação quantitativa
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskLow">
+              Baixo
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            99,99% ou mais
+          </td>
+
+          <td>
+            Separação muito favorável
+          </td>
+
+          <td>
+            <span className="precipitacaoInterferenceRiskBadge precipitacaoInterferenceRiskLow">
+              Baixo
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Quando dois precipitados apresentam a mesma ordem
+    de precipitação, ou seja, começam a se formar em
+    condições praticamente simultâneas, o risco é
+    classificado como alto independentemente do
+    percentual calculado.
+  </p>
+</section>
+
 <GraficoSeletividade
   resultado={resultado}
   volumeAmostra={volumeAmostra}

@@ -65,18 +65,6 @@ type EntradaDadosProps = {
   ) => void;
 };
 
-function obterEspecieAnalito({
-  sal,
-  especieTitulante,
-}: {
-  sal: SalPrecipitacao;
-  especieTitulante: EspeciePrecipitacao;
-}): EspeciePrecipitacao {
-  return especieTitulante === "cation"
-    ? "anion"
-    : "cation";
-}
-
 function obterIonTitulante({
     sal,
     especieTitulante,
@@ -306,11 +294,6 @@ const ionTitulanteReferencia =
               item,
               indice
             ) => {
-              const especieAnalito =
-                obterEspecieAnalito({
-                  sal: item.sal,
-                  especieTitulante,
-                });
 
               const formulaAnalito =
                 obterFormulaAnalito({
@@ -329,51 +312,31 @@ const ionTitulanteReferencia =
     ? `${formulaTitulante} + ${formulaAnalito} → ${item.sal.formulaExibicao}(s)`
     : `${formulaAnalito} + ${formulaTitulante} → ${item.sal.formulaExibicao}(s)`;
 
-                const saisPermitidos =
-  saisCompativeis.filter(
-    (sal) => {
-      /*
-       * A primeira espécie define o íon
-       * titulante comum da mistura.
-       *
-       * Por isso, seu seletor deve continuar
-       * exibindo todos os sais disponíveis.
-       */
-      const primeiroDaMistura =
-        indice === 0;
-
-      const ionTitulante =
-        obterIonTitulante({
-          sal,
-          especieTitulante,
-        });
-
-      const usaMesmoTitulante =
-        primeiroDaMistura ||
-        !ionTitulanteReferencia ||
-        ionTitulante.id ===
-          ionTitulanteReferencia.id;
-
-      /*
-       * O sal atual precisa continuar visível
-       * no próprio seletor, mas não deve aparecer
-       * como opção nos demais itens.
-       */
-      const usadoEmOutroItem =
-        itens.some(
-          (outroItem) =>
-            outroItem.id !==
-              item.id &&
-            outroItem.sal.id ===
-              sal.id
+    const saisPermitidos =
+    saisCompativeis.filter(
+      (sal) => {
+        const primeiroDaMistura =
+          indice === 0;
+  
+        const ionTitulante =
+          obterIonTitulante({
+            sal,
+            especieTitulante,
+          });
+  
+        /*
+         * O primeiro card pode definir um novo
+         * sistema. Os demais mostram somente sais
+         * compatíveis com o titulante comum atual.
+         */
+        return (
+          primeiroDaMistura ||
+          !ionTitulanteReferencia ||
+          ionTitulante.id ===
+            ionTitulanteReferencia.id
         );
-
-      return (
-        usaMesmoTitulante &&
-        !usadoEmOutroItem
-      );
-    }
-  );
+      }
+    );
 
               return (
                 <article
@@ -442,22 +405,34 @@ const ionTitulanteReferencia =
                       }
                     >
                       {saisPermitidos.map(
-                        (sal) => (
-                          <option
-                            key={
-                              sal.id
-                            }
-                            value={
-                              sal.id
-                            }
-                          >
-                            {
-                              sal.formulaExibicao
-                            }{" "}
-                            — {sal.nome}
-                          </option>
-                        )
-                      )}
+  (sal) => {
+    const usadoEmOutroItem =
+      itens.some(
+        (outroItem) =>
+          outroItem.id !==
+            item.id &&
+          outroItem.sal.id ===
+            sal.id
+      );
+
+    return (
+      <option
+        key={sal.id}
+        value={sal.id}
+        disabled={
+          usadoEmOutroItem
+        }
+      >
+        {sal.formulaExibicao}
+        {" — "}
+        {sal.nome}
+        {usadoEmOutroItem
+          ? " — já selecionado"
+          : ""}
+      </option>
+    );
+  }
+)}
                     </select>
                   </label>
 
