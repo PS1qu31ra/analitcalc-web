@@ -7013,3 +7013,675 @@
    white-space: normal;
  }
 }
+
+.selectivityGraphSelectiveRegion {
+  fill: #dcfce7;
+  opacity: 0.48;
+}
+
+.selectivityGraphSelectiveBracket {
+  stroke: #15803d;
+  stroke-width: 1.8;
+}
+
+.selectivityGraphSelectiveLabel {
+  fill: #166534;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.precipitacaoSelectivityIntervalSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 1rem;
+  background: #f0fdf4;
+}
+
+.precipitacaoSelectivityIntervalSummary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.precipitacaoSelectivityIntervalSummary span {
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.precipitacaoSelectivityIntervalSummary strong {
+  color: #14532d;
+  font-size: 1rem;
+}
+
+.precipitacaoSelectivityIntervalSummary small {
+  color: #3f6212;
+  line-height: 1.45;
+}
+
+@media (max-width: 720px) {
+  .precipitacaoSelectivityIntervalSummary {
+    grid-template-columns: 1fr;
+  }
+}
+
+.selectivityGraphConsultedLine {
+  stroke: #0f172a;
+  stroke-width: 2;
+  stroke-dasharray: 3 4;
+}
+
+.selectivityGraphConsultedHalo {
+  fill: #ffffff;
+  stroke: #0f172a;
+  stroke-width: 2;
+}
+
+.selectivityGraphConsultedMarker {
+  fill: #0f172a;
+}
+
+.selectivityGraphConsultedBox {
+  fill: #ffffff;
+  stroke: #cbd5e1;
+  stroke-width: 1.2;
+}
+
+.selectivityGraphConsultedText {
+  fill: #0f172a;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.selectivityGraphConsultedTextSecondary {
+  fill: #475569;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.precipitacaoPointConsultation {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #fecaca;
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fff7f7 100%
+    );
+}
+
+.precipitacaoPointConsultationHeader h6 {
+  margin: 0.3rem 0;
+  color: #0f172a;
+  font-size: 1.05rem;
+}
+
+.precipitacaoPointConsultationHeader p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.precipitacaoPointConsultationForm {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.precipitacaoPointConsultationForm label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.precipitacaoPointConsultationForm label > span {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.precipitacaoPointConsultationInput {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.precipitacaoPointConsultationInput:focus-within {
+  border-color: #b91c1c;
+  box-shadow:
+    0 0 0 3px
+    rgb(185 28 28 / 12%);
+}
+
+.precipitacaoPointConsultationInput input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 0.9rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 700;
+}
+
+.precipitacaoPointConsultationInput > span {
+  padding: 0 0.9rem;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.precipitacaoPointConsultationButton {
+  min-height: 46px;
+  padding: 0.75rem 1.1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #a61b1b;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.precipitacaoPointConsultationButton:hover {
+  background: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+.precipitacaoPointConsultationHint {
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.precipitacaoPointConsultationError,
+.precipitacaoPointEvaluationWarning {
+  padding: 0.85rem 1rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  background: #fef2f2;
+  color: #991b1b;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.precipitacaoPointEvaluation {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #fecaca;
+}
+
+.precipitacaoPointEvaluationHeader {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.precipitacaoPointEvaluationHeader > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.precipitacaoPointEvaluationHeader span {
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.precipitacaoPointEvaluationHeader strong {
+  color: #0f172a;
+}
+
+.precipitacaoPointRegion {
+  min-width: 240px;
+}
+
+.precipitacaoPointRegion--precipitacao_seletiva {
+  border-color: #86efac !important;
+  background: #f0fdf4 !important;
+}
+
+.precipitacaoPointRegion--inicio_de_coprecipitacao {
+  border-color: #fde68a !important;
+  background: #fffbeb !important;
+}
+
+.precipitacaoPointRegion--coprecipitacao {
+  border-color: #fecaca !important;
+  background: #fef2f2 !important;
+}
+
+.precipitacaoPointRegion--apos_precipitacao {
+  border-color: #c4b5fd !important;
+  background: #f5f3ff !important;
+}
+
+.precipitacaoPointMetrics {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 0.75rem;
+}
+
+.precipitacaoPointMetrics article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.precipitacaoPointMetrics span {
+  color: #64748b;
+  font-size: 0.77rem;
+  font-weight: 800;
+}
+
+.precipitacaoPointMetrics strong {
+  color: #0f172a;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.precipitacaoPointMetrics small {
+  color: #94a3b8;
+}
+
+.precipitacaoPointInterpretation {
+  padding: 1rem;
+  border-left: 4px solid #a61b1b;
+  border-radius: 0.75rem;
+  background: #ffffff;
+}
+
+.precipitacaoPointInterpretation strong {
+  color: #7f1d1d;
+}
+
+.precipitacaoPointInterpretation p {
+  margin: 0.4rem 0 0;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.precipitacaoPointSpecies {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.precipitacaoPointSpeciesTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.precipitacaoPointSpeciesTitle > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.precipitacaoPointSpeciesTitle strong {
+  color: #0f172a;
+}
+
+.precipitacaoPointSpeciesTitle small,
+.precipitacaoPointSpeciesTitle > span {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.precipitacaoPointSpeciesTableWrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.precipitacaoPointSpeciesTable {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+}
+
+.precipitacaoPointSpeciesTable th,
+.precipitacaoPointSpeciesTable td {
+  padding: 0.85rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.precipitacaoPointSpeciesTable th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.precipitacaoPointSpeciesTable td {
+  color: #334155;
+  font-size: 0.86rem;
+}
+
+.precipitacaoPointSpeciesTable td:first-child,
+.precipitacaoPointSpeciesTable td:last-child {
+  display: table-cell;
+}
+
+.precipitacaoPointSpeciesTable td > strong,
+.precipitacaoPointSpeciesTable td > small {
+  display: block;
+}
+
+.precipitacaoPointSpeciesTable td > small {
+  margin-top: 0.15rem;
+  color: #94a3b8;
+}
+
+.precipitacaoPointState {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.precipitacaoPointState--nao_iniciada {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.precipitacaoPointState--inicio {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.precipitacaoPointState--em_precipitacao {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.precipitacaoPointState--majoritariamente_precipitada {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.precipitacaoPointState--praticamente_completa {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.precipitacaoPointSpeciesDetails {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 0.75rem;
+}
+
+.precipitacaoPointSpeciesDetails article {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.precipitacaoPointSpeciesDetails article > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.precipitacaoPointSpeciesDetails article > p {
+  margin: 0.65rem 0;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.precipitacaoPointSpeciesDetails dl {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.precipitacaoPointSpeciesDetails dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.precipitacaoPointSpeciesDetails dt {
+  color: #64748b;
+}
+
+.precipitacaoPointSpeciesDetails dd {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 800;
+  text-align: right;
+}
+
+@media (max-width: 760px) {
+  .precipitacaoPointConsultationForm,
+  .precipitacaoPointEvaluationHeader,
+  .precipitacaoPointSpeciesTitle {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .precipitacaoPointRegion {
+    min-width: 0;
+  }
+
+  .precipitacaoPointMetrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .precipitacaoPointSpeciesDetails {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .precipitacaoPointMetrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+.precipitacaoResultsTabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 1.5rem 0 1.75rem;
+  padding: 0.35rem;
+  border: 1px solid #eadcdc;
+  border-radius: 0.9rem;
+  background: #faf7f7;
+}
+
+.precipitacaoResultsTab {
+  position: relative;
+  min-height: 2.65rem;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: #6b6060;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.precipitacaoResultsTab:hover {
+  color: #8f1d1d;
+  background: #fff;
+}
+
+.precipitacaoResultsTab:active {
+  transform: translateY(1px);
+}
+
+.precipitacaoResultsTab:focus-visible {
+  outline: 3px solid rgba(166, 27, 27, 0.2);
+  outline-offset: 2px;
+}
+
+.precipitacaoResultsTabActive {
+  border-color: #e8c4c4;
+  background: #fff;
+  color: #991b1b;
+  box-shadow:
+    0 1px 2px rgba(65, 18, 18, 0.06),
+    0 6px 18px rgba(127, 29, 29, 0.08);
+}
+
+.precipitacaoResultsTabActive::after {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.3rem;
+  left: 1rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: #a61b1b;
+  content: "";
+}
+
+.precipitacaoResultsTabPanel[hidden] {
+  display: none;
+}
+
+.precipitacaoResultsTabPanel:not([hidden]) {
+  animation: precipitacaoTabEntrada 180ms ease-out;
+}
+
+@keyframes precipitacaoTabEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(0.3rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .precipitacaoResultsTabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .precipitacaoResultsTab {
+    width: 100%;
+    padding-inline: 0.75rem;
+  }
+}
+
+.precipitacaoDerivativesSection {
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 22px;
+  background: #ffffff;
+}
+
+.precipitacaoDerivativesHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.precipitacaoDerivativesHeader h3 {
+  margin: 7px 0 8px;
+  color: #18181b;
+  font-size: 1.45rem;
+}
+
+.precipitacaoDerivativesHeader p {
+  max-width: 760px;
+  margin: 0;
+  color: #71717a;
+  line-height: 1.6;
+}
+
+.precipitacaoDerivativesSection
+  .precipitacaoDerivativeSection {
+  padding: 28px;
+}
+
+.precipitacaoDerivativesSection
+  .precipitacaoDerivativeIntro {
+  padding-top: 0;
+}
+
+@media (max-width: 700px) {
+  .precipitacaoDerivativesHeader {
+    padding: 20px 18px;
+  }
+
+  .precipitacaoDerivativesSection
+    .precipitacaoDerivativeSection {
+    padding: 18px;
+  }
+}

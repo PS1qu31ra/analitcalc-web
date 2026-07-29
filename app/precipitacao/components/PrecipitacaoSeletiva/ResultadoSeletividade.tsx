@@ -1,5 +1,6 @@
 import {
   useMemo,
+  useState,
 } from "react";
 
 import {
@@ -16,7 +17,8 @@ import {
     ResultadoSeletividadePrecipitacao,
   } from "@/lib/precipitacao/tipos";
 
-  import GraficoSeletividade from "./GraficoSeletividade";
+  import GraficoDerivadas from "./GraficoDerivadas";
+import GraficoSeletividade from "./GraficoSeletividade";
   
   type ResultadoSeletividadeProps = {
     resultado: ResultadoSeletividadePrecipitacao;
@@ -24,6 +26,10 @@ import {
     concentracaoTitulante: number;
     volumeMaximoBureta: number;
   };
+  
+  type AbaResultadoSeletividade =
+    | "visao-geral"
+    | "derivadas";
   
   function obterFormulaAnalito(
     item: ResultadoItemSeletividadePrecipitacao
@@ -112,6 +118,14 @@ import {
     concentracaoTitulante,
     volumeMaximoBureta,
   }: ResultadoSeletividadeProps) {
+    const [
+      abaAtiva,
+      setAbaAtiva,
+    ] =
+      useState<AbaResultadoSeletividade>(
+        "visao-geral"
+      );
+    
     const formulaTitulante =
       obterFormulaTitulante(
         resultado
@@ -231,9 +245,76 @@ const avaliacaoPrincipal =
               ? "Sistema calculado"
               : "Revisar mistura"}
           </span>
-        </header>
-  
-        {itensOrdenados.length >
+          </header>
+
+          <nav
+  className="precipitacaoResultsTabs"
+  aria-label="Visualizações do resultado"
+  role="tablist"
+>
+
+<button
+  type="button"
+  role="tab"
+  id="aba-visao-geral"
+  aria-controls="painel-visao-geral"
+  className={[
+    "precipitacaoResultsTab",
+    abaAtiva ===
+    "visao-geral"
+      ? "precipitacaoResultsTabActive"
+      : "",
+  ].join(" ")}
+  aria-selected={
+    abaAtiva ===
+    "visao-geral"
+  }
+  onClick={() =>
+    setAbaAtiva(
+      "visao-geral"
+    )
+  }
+>
+  Visão geral
+</button>
+
+  <button
+  type="button"
+  role="tab"
+  id="aba-derivadas"
+  aria-controls="painel-derivadas"
+  className={[
+    "precipitacaoResultsTab",
+    abaAtiva ===
+    "derivadas"
+      ? "precipitacaoResultsTabActive"
+      : "",
+  ].join(" ")}
+  aria-selected={
+    abaAtiva ===
+    "derivadas"
+  }
+  onClick={() =>
+    setAbaAtiva(
+      "derivadas"
+    )
+  }
+>
+  Derivadas
+</button>
+</nav>
+
+<div
+  id="painel-visao-geral"
+  role="tabpanel"
+  aria-labelledby="aba-visao-geral"
+  className="precipitacaoResultsTabPanel"
+  hidden={
+    abaAtiva !==
+    "visao-geral"
+  }
+>
+{itensOrdenados.length >
         0 ? (
           <>
             <section className="precipitacaoSelectivityOrderSection">
@@ -1042,18 +1123,61 @@ const avaliacaoPrincipal =
   </p>
 </div>
           </>
-        ) : (
-          <div className="precipitacaoResultMessage precipitacaoResultMessageWarning">
-            <strong>
-              Nenhum resultado disponível
-            </strong>
-  
-            <p>
-              O cálculo não retornou espécies válidas
-              para a análise de seletividade.
-            </p>
-          </div>
-        )}
-      </section>
+                ) : (
+                  <div className="precipitacaoResultMessage precipitacaoResultMessageWarning">
+                    <strong>
+                      Nenhum resultado disponível
+                    </strong>
+        
+                    <p>
+                      O cálculo não retornou espécies válidas
+                      para a análise de seletividade.
+                    </p>
+                  </div>
+                )}
+                </div>
+        
+                <div
+  id="painel-derivadas"
+  role="tabpanel"
+  aria-labelledby="aba-derivadas"
+  className="precipitacaoResultsTabPanel"
+  hidden={
+    abaAtiva !==
+    "derivadas"
+  }
+>
+
+<section className="precipitacaoDerivativesSection">
+  <header className="precipitacaoDerivativesHeader">
+    <div>
+      <span className="precipitacaoSectionLabel">
+        Análise selecionada
+      </span>
+
+      <h3>
+        Derivadas
+      </h3>
+
+      <p>
+        Analise a primeira e a segunda derivadas
+        da curva da mistura.
+      </p>
+    </div>
+  </header>
+
+  <GraficoDerivadas
+    resultado={resultado}
+    volumeAmostra={volumeAmostra}
+    concentracaoTitulante={
+      concentracaoTitulante
+    }
+    volumeMaximoBureta={
+      volumeMaximoBureta
+    }
+  />
+</section>
+                </div>
+              </section>
     );
   }

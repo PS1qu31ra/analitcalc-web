@@ -3,10 +3,16 @@
 import {
   useMemo,
   useRef,
+  useState,
 } from "react";
 
 import {
+  avaliarPontoSeletividadePrecipitacao,
   gerarCurvaSeletividadePrecipitacao,
+} from "@/lib/precipitacao/calculosCurvaSeletividade";
+
+import type {
+  AvaliacaoPontoSeletividadePrecipitacao,
 } from "@/lib/precipitacao/calculosCurvaSeletividade";
 
 import {
@@ -38,6 +44,26 @@ export default function GraficoSeletividade({
 }: GraficoSeletividadeProps) {
   const graficoRef =
     useRef<SVGSVGElement>(null);
+
+    const [
+      volumeConsulta,
+      setVolumeConsulta,
+    ] = useState("");
+  
+    const [
+      avaliacaoPonto,
+      setAvaliacaoPonto,
+    ] =
+      useState<AvaliacaoPontoSeletividadePrecipitacao | null>(
+        null
+      );
+  
+    const [
+      erroConsulta,
+      setErroConsulta,
+    ] = useState<string | null>(
+      null
+    );
 
   const curva =
     useMemo(
@@ -386,6 +412,117 @@ export default function GraficoSeletividade({
     return null;
   }
 
+  const duasPrimeirasSeries =
+  seriesValidas.slice(
+    0,
+    2
+  );
+
+const primeiraSerie =
+  duasPrimeirasSeries[0] ??
+  null;
+
+const segundaSerie =
+  duasPrimeirasSeries[1] ??
+  null;
+
+const volumeInicioPrimeiro =
+  primeiraSerie
+    ? obterVolumeInicioSerie(
+        primeiraSerie.sal.id
+      )
+    : null;
+
+const volumeInicioSegundo =
+  segundaSerie
+    ? obterVolumeInicioSerie(
+        segundaSerie.sal.id
+      )
+    : null;
+
+const intervaloSeletivoValido =
+  volumeInicioPrimeiro !== null &&
+  volumeInicioSegundo !== null &&
+  Number.isFinite(
+    volumeInicioPrimeiro
+  ) &&
+  Number.isFinite(
+    volumeInicioSegundo
+  ) &&
+  volumeInicioPrimeiro >=
+    volumeMinimo &&
+  volumeInicioSegundo <=
+    volumeMaximo &&
+  volumeInicioSegundo >
+    volumeInicioPrimeiro;
+
+const deltaVolumeSeletivo =
+  intervaloSeletivoValido
+    ? volumeInicioSegundo -
+      volumeInicioPrimeiro
+    : null;
+
+const xInicioIntervalo =
+  intervaloSeletivoValido
+    ? converterX(
+        volumeInicioPrimeiro
+      )
+    : null;
+
+const xFimIntervalo =
+  intervaloSeletivoValido
+    ? converterX(
+        volumeInicioSegundo
+      )
+    : null;
+
+const larguraIntervalo =
+  xInicioIntervalo !== null &&
+  xFimIntervalo !== null
+    ? xFimIntervalo -
+      xInicioIntervalo
+    : null;
+
+    const marcadorConsultaValido =
+    avaliacaoPonto !== null &&
+    avaliacaoPonto
+      .dentroIntervaloCalculado &&
+    avaliacaoPonto.pTitulante !==
+      null &&
+    Number.isFinite(
+      avaliacaoPonto.pTitulante
+    ) &&
+    avaliacaoPonto
+      .volumeAdicionado >=
+      volumeMinimo &&
+    avaliacaoPonto
+      .volumeAdicionado <=
+      volumeMaximo &&
+    avaliacaoPonto.pTitulante >=
+      pMinimo &&
+    avaliacaoPonto.pTitulante <=
+      pMaximo;
+
+  const xMarcadorConsulta =
+    marcadorConsultaValido &&
+    avaliacaoPonto
+      ? converterX(
+          avaliacaoPonto
+            .volumeAdicionado
+        )
+      : null;
+
+  const yMarcadorConsulta =
+    marcadorConsultaValido &&
+    avaliacaoPonto &&
+    avaliacaoPonto.pTitulante !==
+      null
+      ? converterY(
+          avaliacaoPonto
+            .pTitulante
+        )
+      : null;
+
   const marcacoesX =
     Array.from(
       {
@@ -498,6 +635,173 @@ export default function GraficoSeletividade({
     return "precipitacaoSelectivityLegendOther";
   }
 
+  function converterTextoParaNumero(
+    valor: string
+  ) {
+    const textoNormalizado =
+      valor
+        .trim()
+        .replace(/\s/g, "")
+        .replace(",", ".");
+
+    if (
+      textoNormalizado === ""
+    ) {
+      return NaN;
+    }
+
+    return Number(
+      textoNormalizado
+    );
+  }
+
+  function avaliarVolumeConsultado() {
+    const volume =
+      converterTextoParaNumero(
+        volumeConsulta
+      );
+
+    if (
+      !Number.isFinite(volume) ||
+      volume < 0
+    ) {
+      setAvaliacaoPonto(
+        null
+      );
+
+      setErroConsulta(
+        "Informe um volume válido, maior ou igual a zero."
+      );
+
+      return;
+    }
+
+    const avaliacao =
+      avaliarPontoSeletividadePrecipitacao({
+        resultado,
+        volumeAdicionado:
+          volume,
+        volumeAmostra,
+        concentracaoTitulante,
+        volumeMaximoAvaliado:
+          volumeMaximo,
+      });
+
+    if (
+      avaliacao.status !==
+      "adequado"
+    ) {
+      setAvaliacaoPonto(
+        null
+      );
+
+      setErroConsulta(
+        avaliacao.mensagemErro ??
+          "Não foi possível avaliar o ponto informado."
+      );
+
+      return;
+    }
+
+    setErroConsulta(null);
+    setAvaliacaoPonto(
+      avaliacao
+    );
+  }
+
+  function tratarTeclaConsulta(
+    evento:
+      React.KeyboardEvent<HTMLInputElement>
+  ) {
+    if (
+      evento.key === "Enter"
+    ) {
+      evento.preventDefault();
+      avaliarVolumeConsultado();
+    }
+  }
+
+  function obterRotuloEstado(
+    estado:
+      | "nao_iniciada"
+      | "inicio"
+      | "em_precipitacao"
+      | "majoritariamente_precipitada"
+      | "praticamente_completa"
+  ) {
+    if (
+      estado ===
+      "nao_iniciada"
+    ) {
+      return "Não iniciada";
+    }
+
+    if (
+      estado === "inicio"
+    ) {
+      return "Primeiros traços";
+    }
+
+    if (
+      estado ===
+      "em_precipitacao"
+    ) {
+      return "Em precipitação";
+    }
+
+    if (
+      estado ===
+      "majoritariamente_precipitada"
+    ) {
+      return "Majoritariamente precipitada";
+    }
+
+    return "Praticamente completa";
+  }
+
+  function obterClasseEstado(
+    estado:
+      | "nao_iniciada"
+      | "inicio"
+      | "em_precipitacao"
+      | "majoritariamente_precipitada"
+      | "praticamente_completa"
+  ) {
+    return `precipitacaoPointState precipitacaoPointState--${estado}`;
+  }
+
+  function formatarValorCientifico(
+    valor: number
+  ) {
+    if (
+      !Number.isFinite(valor)
+    ) {
+      return "—";
+    }
+
+    if (
+      valor === 0
+    ) {
+      return "0";
+    }
+
+    if (
+      Math.abs(valor) >=
+        0.001 &&
+      Math.abs(valor) <
+        10000
+    ) {
+      return formatarNumeroBR(
+        valor,
+        6
+      );
+    }
+
+    return valor
+      .toExponential(4)
+      .replace(".", ",");
+  }
+
   function baixarGrafico() {
     const grafico =
       graficoRef.current;
@@ -569,6 +873,56 @@ export default function GraficoSeletividade({
     estilos.textContent = `
       text {
         font-family: Arial, sans-serif;
+      }
+
+      .selectivityGraphSelectiveRegion {
+        fill: #dcfce7;
+        opacity: 0.48;
+      }
+
+      .selectivityGraphSelectiveBracket {
+        stroke: #15803d;
+        stroke-width: 1.8;
+      }
+
+      .selectivityGraphSelectiveLabel {
+        fill: #166534;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .selectivityGraphConsultedLine {
+        stroke: #0f172a;
+        stroke-width: 2;
+        stroke-dasharray: 3 4;
+      }
+
+      .selectivityGraphConsultedHalo {
+        fill: #ffffff;
+        stroke: #0f172a;
+        stroke-width: 2;
+      }
+
+      .selectivityGraphConsultedMarker {
+        fill: #0f172a;
+      }
+
+      .selectivityGraphConsultedBox {
+        fill: #ffffff;
+        stroke: #cbd5e1;
+        stroke-width: 1.2;
+      }
+
+      .selectivityGraphConsultedText {
+        fill: #0f172a;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .selectivityGraphConsultedTextSecondary {
+        fill: #475569;
+        font-size: 10px;
+        font-weight: 700;
       }
 
       .selectivityGraphGrid {
@@ -850,6 +1204,110 @@ export default function GraficoSeletividade({
         role="img"
         aria-label={`Curvas calculadas de precipitação seletiva com ${curva.formulaTitulante}`}
       >
+
+{intervaloSeletivoValido &&
+          xInicioIntervalo !==
+            null &&
+          larguraIntervalo !==
+            null && (
+            <g>
+              <rect
+                x={
+                  xInicioIntervalo
+                }
+                y={
+                  margemSuperior
+                }
+                width={
+                  larguraIntervalo
+                }
+                height={
+                  alturaUtil
+                }
+                className="selectivityGraphSelectiveRegion"
+              />
+
+              <line
+                x1={
+                  xInicioIntervalo
+                }
+                y1={
+                  margemSuperior +
+                  28
+                }
+                x2={
+                  xInicioIntervalo +
+                  larguraIntervalo
+                }
+                y2={
+                  margemSuperior +
+                  28
+                }
+                className="selectivityGraphSelectiveBracket"
+              />
+
+              <line
+                x1={
+                  xInicioIntervalo
+                }
+                y1={
+                  margemSuperior +
+                  21
+                }
+                x2={
+                  xInicioIntervalo
+                }
+                y2={
+                  margemSuperior +
+                  35
+                }
+                className="selectivityGraphSelectiveBracket"
+              />
+
+              <line
+                x1={
+                  xInicioIntervalo +
+                  larguraIntervalo
+                }
+                y1={
+                  margemSuperior +
+                  21
+                }
+                x2={
+                  xInicioIntervalo +
+                  larguraIntervalo
+                }
+                y2={
+                  margemSuperior +
+                  35
+                }
+                className="selectivityGraphSelectiveBracket"
+              />
+
+              <text
+                x={
+                  xInicioIntervalo +
+                  larguraIntervalo /
+                    2
+                }
+                y={
+                  margemSuperior +
+                  19
+                }
+                textAnchor="middle"
+                className="selectivityGraphSelectiveLabel"
+              >
+                Região seletiva · ΔV ={" "}
+                {formatarNumeroBR(
+                  deltaVolumeSeletivo ??
+                    0,
+                  2
+                )}{" "}
+                mL
+              </text>
+            </g>
+          )}
+
         {marcacoesY.map(
           (
             valor,
@@ -1120,6 +1578,107 @@ export default function GraficoSeletividade({
           )
         )}
 
+{marcadorConsultaValido &&
+          avaliacaoPonto &&
+          xMarcadorConsulta !==
+            null &&
+          yMarcadorConsulta !==
+            null && (
+            <g className="selectivityGraphConsultedPoint">
+              <line
+                x1={
+                  xMarcadorConsulta
+                }
+                y1={
+                  margemSuperior
+                }
+                x2={
+                  xMarcadorConsulta
+                }
+                y2={
+                  altura -
+                  margemInferior
+                }
+                vectorEffect="non-scaling-stroke"
+                className="selectivityGraphConsultedLine"
+              />
+
+              <circle
+                cx={
+                  xMarcadorConsulta
+                }
+                cy={
+                  yMarcadorConsulta
+                }
+                r="8"
+                className="selectivityGraphConsultedHalo"
+              />
+
+              <circle
+                cx={
+                  xMarcadorConsulta
+                }
+                cy={
+                  yMarcadorConsulta
+                }
+                r="4.5"
+                className="selectivityGraphConsultedMarker"
+              />
+
+<g
+                transform={`translate(${
+                  largura -
+                  margemDireita -
+                  156
+                } ${
+                  margemSuperior +
+                  12
+                })`}
+              >
+                <rect
+                  width="144"
+                  height="48"
+                  rx="8"
+                  className="selectivityGraphConsultedBox"
+                />
+
+                <text
+                  x="72"
+                  y="19"
+                  textAnchor="middle"
+                  className="selectivityGraphConsultedText"
+                >
+                  V ={" "}
+                  {formatarNumeroBR(
+                    avaliacaoPonto
+                      .volumeAdicionado,
+                    3
+                  )}{" "}
+                  mL
+                </text>
+
+                <text
+                  x="72"
+                  y="37"
+                  textAnchor="middle"
+                  className="selectivityGraphConsultedTextSecondary"
+                >
+                  p
+                  {
+                    curva.formulaTitulante
+                  }{" "}
+                  ={" "}
+                  {formatarNumeroBR(
+                    avaliacaoPonto
+                      .pTitulante ??
+                      0,
+                    4
+                  )}
+                </text>
+              </g>
+            </g>
+          )}
+
         <text
           x={
             largura / 2
@@ -1208,6 +1767,551 @@ export default function GraficoSeletividade({
         )}
       </footer>
 
+      {intervaloSeletivoValido &&
+        primeiraSerie &&
+        segundaSerie &&
+        deltaVolumeSeletivo !==
+          null && (
+          <div className="precipitacaoSelectivityIntervalSummary">
+            <div>
+              <span>
+                Início do primeiro precipitado
+              </span>
+              <strong>
+                {
+                  primeiraSerie.sal
+                    .formulaExibicao
+                }
+              </strong>
+              <small>
+                {formatarNumeroBR(
+                  volumeInicioPrimeiro ??
+                    0,
+                  3
+                )}{" "}
+                mL
+              </small>
+            </div>
+
+            <div>
+              <span>
+                Intervalo seletivo
+              </span>
+              <strong>
+                ΔV ={" "}
+                {formatarNumeroBR(
+                  deltaVolumeSeletivo,
+                  3
+                )}{" "}
+                mL
+              </strong>
+              <small>
+                Faixa anterior ao início do
+                segundo precipitado
+              </small>
+            </div>
+
+            <div>
+              <span>
+                Início do segundo precipitado
+              </span>
+              <strong>
+                {
+                  segundaSerie.sal
+                    .formulaExibicao
+                }
+              </strong>
+              <small>
+                {formatarNumeroBR(
+                  volumeInicioSegundo ??
+                    0,
+                  3
+                )}{" "}
+                mL
+              </small>
+            </div>
+          </div>
+        )}
+
+<section className="precipitacaoPointConsultation">
+        <header className="precipitacaoPointConsultationHeader">
+          <div>
+            <span className="precipitacaoSectionLabel">
+              Consulta pontual
+            </span>
+
+            <h6>
+              Avaliar um volume específico
+            </h6>
+
+            <p>
+              Informe o volume de{" "}
+              {curva.formulaTitulante}{" "}
+              adicionado para recalcular o
+              equilíbrio e interpretar
+              exclusivamente esse ponto.
+            </p>
+          </div>
+        </header>
+
+        <div className="precipitacaoPointConsultationForm">
+          <label>
+            <span>
+              Volume adicionado
+            </span>
+
+            <div className="precipitacaoPointConsultationInput">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={
+                  volumeConsulta
+                }
+                onChange={(
+                  evento
+                ) => {
+                  setVolumeConsulta(
+                    evento.target
+                      .value
+                  );
+
+                  if (
+                    erroConsulta
+                  ) {
+                    setErroConsulta(
+                      null
+                    );
+                  }
+                }}
+                onKeyDown={
+                  tratarTeclaConsulta
+                }
+                placeholder="Ex.: 12,50"
+                aria-label="Volume de titulante adicionado"
+              />
+
+              <span>
+                mL
+              </span>
+            </div>
+          </label>
+
+          <button
+            type="button"
+            onClick={
+              avaliarVolumeConsultado
+            }
+            className="precipitacaoPointConsultationButton"
+          >
+            Avaliar ponto
+          </button>
+        </div>
+
+        <small className="precipitacaoPointConsultationHint">
+          Faixa exibida no gráfico: 0 a{" "}
+          {formatarNumeroBR(
+            volumeMaximo,
+            2
+          )}{" "}
+          mL. A consulta aceita ponto decimal
+          ou vírgula.
+        </small>
+
+        {erroConsulta && (
+          <div
+            className="precipitacaoPointConsultationError"
+            role="alert"
+          >
+            {erroConsulta}
+          </div>
+        )}
+
+        {avaliacaoPonto && (
+          <div className="precipitacaoPointEvaluation">
+            <header className="precipitacaoPointEvaluationHeader">
+              <div>
+                <span>
+                  Ponto consultado
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    avaliacaoPonto
+                      .volumeAdicionado,
+                    3
+                  )}{" "}
+                  mL
+                </strong>
+              </div>
+
+              <div className={`precipitacaoPointRegion precipitacaoPointRegion--${avaliacaoPonto.regiao}`}>
+                <span>
+                  Região calculada
+                </span>
+
+                <strong>
+                  {
+                    avaliacaoPonto
+                      .tituloRegiao
+                  }
+                </strong>
+              </div>
+            </header>
+
+            {!avaliacaoPonto
+              .dentroIntervaloCalculado &&
+              avaliacaoPonto
+                .mensagemErro && (
+                <div className="precipitacaoPointEvaluationWarning">
+                  {
+                    avaliacaoPonto
+                      .mensagemErro
+                  }
+                </div>
+              )}
+
+            <div className="precipitacaoPointMetrics">
+              <article>
+                <span>
+                  Volume total
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    avaliacaoPonto
+                      .volumeTotal,
+                    3
+                  )}{" "}
+                  mL
+                </strong>
+              </article>
+
+              <article>
+                <span>
+                  p
+                  {
+                    avaliacaoPonto
+                      .formulaTitulante
+                  }
+                </span>
+
+                <strong>
+                  {avaliacaoPonto
+                    .pTitulante !==
+                  null
+                    ? formatarNumeroBR(
+                        avaliacaoPonto
+                          .pTitulante,
+                        4
+                      )
+                    : "Não definido"}
+                </strong>
+              </article>
+
+              <article>
+                <span>
+                  [
+                  {
+                    avaliacaoPonto
+                      .formulaTitulante
+                  }
+                  ] livre
+                </span>
+
+                <strong>
+                  {formatarValorCientifico(
+                    avaliacaoPonto
+                      .concentracaoTitulanteLivre
+                  )}
+                </strong>
+
+                <small>
+                  mol·L⁻¹
+                </small>
+              </article>
+
+              <article>
+                <span>
+                  Titulante formal
+                </span>
+
+                <strong>
+                  {formatarValorCientifico(
+                    avaliacaoPonto
+                      .concentracaoTitulanteFormal
+                  )}
+                </strong>
+
+                <small>
+                  mol·L⁻¹
+                </small>
+              </article>
+
+              <article>
+                <span>
+                  Mistura precipitada
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    avaliacaoPonto
+                      .percentualPrecipitadoMistura,
+                    4
+                  )}
+                  %
+                </strong>
+              </article>
+
+              <article>
+                <span>
+                  Mistura em solução
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    avaliacaoPonto
+                      .percentualEmSolucaoMistura,
+                    4
+                  )}
+                  %
+                </strong>
+              </article>
+            </div>
+
+            <div className="precipitacaoPointInterpretation">
+              <strong>
+                Interpretação do ponto
+              </strong>
+
+              <p>
+                {
+                  avaliacaoPonto
+                    .interpretacao
+                }
+              </p>
+            </div>
+
+            <div className="precipitacaoPointSpecies">
+              <div className="precipitacaoPointSpeciesTitle">
+                <div>
+                  <strong>
+                    Avaliação por espécie
+                  </strong>
+
+                  <small>
+                    Resultado individual no
+                    volume consultado
+                  </small>
+                </div>
+
+                <span>
+                  {
+                    avaliacaoPonto
+                      .quantidadeEspeciesIniciadas
+                  }{" "}
+                  de{" "}
+                  {
+                    avaliacaoPonto
+                      .itens.length
+                  }{" "}
+                  espécies iniciadas
+                </span>
+              </div>
+
+              <div className="precipitacaoPointSpeciesTableWrapper">
+                <table className="precipitacaoPointSpeciesTable">
+                  <thead>
+                    <tr>
+                      <th>
+                        Precipitado
+                      </th>
+
+                      <th>
+                        Estado
+                      </th>
+
+                      <th>
+                        Precipitado
+                      </th>
+
+                      <th>
+                        Em solução
+                      </th>
+
+                      <th>
+                        Concentração livre
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {avaliacaoPonto
+                      .itens.map(
+                        (
+                          item
+                        ) => (
+                          <tr
+                            key={
+                              item.sal
+                                .id
+                            }
+                          >
+                            <td>
+                              <strong>
+                                {
+                                  item
+                                    .formulaPrecipitado
+                                }
+                              </strong>
+
+                              <small>
+                                {
+                                  item
+                                    .ordemPrecipitacao
+                                }
+                                º na ordem
+                                prevista
+                              </small>
+                            </td>
+
+                            <td>
+                              <span
+                                className={obterClasseEstado(
+                                  item.estado
+                                )}
+                              >
+                                {obterRotuloEstado(
+                                  item.estado
+                                )}
+                              </span>
+                            </td>
+
+                            <td>
+                              <strong>
+                                {formatarNumeroBR(
+                                  item
+                                    .percentualPrecipitado,
+                                  4
+                                )}
+                                %
+                              </strong>
+                            </td>
+
+                            <td>
+                              {formatarNumeroBR(
+                                item
+                                  .percentualEmSolucao,
+                                4
+                              )}
+                              %
+                            </td>
+
+                            <td>
+                              <strong>
+                                {formatarValorCientifico(
+                                  item
+                                    .concentracaoAnalitoLivre
+                                )}
+                              </strong>
+
+                              <small>
+                                mol·L⁻¹
+                              </small>
+                            </td>
+                          </tr>
+                        )
+                      )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="precipitacaoPointSpeciesDetails">
+                {avaliacaoPonto
+                  .itens.map(
+                    (
+                      item
+                    ) => (
+                      <article
+                        key={`detalhe-${item.sal.id}`}
+                      >
+                        <div>
+                          <strong>
+                            {
+                              item
+                                .formulaPrecipitado
+                            }
+                          </strong>
+
+                          <span
+                            className={obterClasseEstado(
+                              item.estado
+                            )}
+                          >
+                            {obterRotuloEstado(
+                              item.estado
+                            )}
+                          </span>
+                        </div>
+
+                        <p>
+                          {
+                            item
+                              .descricaoEstado
+                          }
+                        </p>
+
+                        <dl>
+                          <div>
+                            <dt>
+                              Quantidade inicial
+                            </dt>
+
+                            <dd>
+                              {formatarValorCientifico(
+                                item
+                                  .molAnalitoInicial
+                              )}{" "}
+                              mol
+                            </dd>
+                          </div>
+
+                          <div>
+                            <dt>
+                              Quantidade precipitada
+                            </dt>
+
+                            <dd>
+                              {formatarValorCientifico(
+                                item
+                                  .molAnalitoPrecipitado
+                              )}{" "}
+                              mol
+                            </dd>
+                          </div>
+
+                          <div>
+                            <dt>
+                              Quantidade em solução
+                            </dt>
+
+                            <dd>
+                              {formatarValorCientifico(
+                                item
+                                  .molAnalitoLivre
+                              )}{" "}
+                              mol
+                            </dd>
+                          </div>
+                        </dl>
+                      </article>
+                    )
+                  )}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
       <div className="precipitacaoResultScientificNote">
         <strong>
           Leitura do gráfico
@@ -1216,14 +2320,16 @@ export default function GraficoSeletividade({
         <p>
           As linhas verticais indicam o início
           calculado da formação de cada precipitado
-          na mistura. A curva cinza representa o
-          comportamento conjunto, enquanto as
-          curvas coloridas mostram cada sistema
-          isoladamente. A distância entre os inícios
-          auxilia na interpretação, mas a
-          classificação quantitativa depende da
-          fração do primeiro analito já precipitada
-          quando o sistema seguinte começa.
+          na mistura. A área destacada representa
+          o intervalo entre o início do primeiro e
+          do segundo precipitado, identificado como
+          região de separação seletiva. O valor de
+          ΔV mostra a extensão volumétrica dessa
+          região. Uma faixa maior pode facilitar a
+          operação experimental, mas a classificação
+          quantitativa também depende da fração do
+          primeiro analito já precipitada quando o
+          segundo sistema começa a precipitar.
         </p>
       </div>
     </section>
