@@ -273,7 +273,7 @@ import {
                 resultado.concentracaoAnalito,
                 3
               )}
-              <small> mol·L⁻¹</small>
+              <small> mol L⁻¹</small>
             </strong>
   
             <p>

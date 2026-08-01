@@ -401,7 +401,7 @@ export default function AnalisesRetornoTabs({
                               .concentracaoPrecipitanteLivre,
                             3
                           )}{" "}
-                          mol/L
+                          mol L⁻¹
                         </td>
 
                         <td>
@@ -410,7 +410,7 @@ export default function AnalisesRetornoTabs({
                               .concentracaoTitulanteRetornoLivre,
                             3
                           )}{" "}
-                          mol/L
+                          mol L⁻¹
                         </td>
 
                         <td>

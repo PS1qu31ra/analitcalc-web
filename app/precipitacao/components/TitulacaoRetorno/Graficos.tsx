@@ -1339,7 +1339,7 @@ export default function Graficos({
 
             <small>
               {" "}
-              mol/L
+              mol L⁻¹
             </small>
           </strong>
         </article>
@@ -1358,7 +1358,7 @@ export default function Graficos({
 
             <small>
               {" "}
-              mol/L
+              mol L⁻¹
             </small>
           </strong>
         </article>

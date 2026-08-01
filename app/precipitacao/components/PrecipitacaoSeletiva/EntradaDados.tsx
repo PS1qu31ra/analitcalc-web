@@ -472,7 +472,7 @@ const ionTitulanteReferencia =
                       />
 
                       <span>
-                        mol·L⁻¹
+                        mol L⁻¹
                       </span>
                     </div>
                   </label>
@@ -603,7 +603,7 @@ const ionTitulanteReferencia =
               />
 
               <span>
-                mol·L⁻¹
+                mol L⁻¹
               </span>
             </div>
           </label>

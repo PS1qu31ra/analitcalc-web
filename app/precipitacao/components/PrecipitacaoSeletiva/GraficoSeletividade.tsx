@@ -2026,7 +2026,7 @@ const larguraIntervalo =
                 </strong>
 
                 <small>
-                  mol·L⁻¹
+                  mol L⁻¹
                 </small>
               </article>
 
@@ -2043,7 +2043,7 @@ const larguraIntervalo =
                 </strong>
 
                 <small>
-                  mol·L⁻¹
+                  mol L⁻¹
                 </small>
               </article>
 
@@ -2215,7 +2215,7 @@ const larguraIntervalo =
                               </strong>
 
                               <small>
-                                mol·L⁻¹
+                                mol L⁻¹
                               </small>
                             </td>
                           </tr>

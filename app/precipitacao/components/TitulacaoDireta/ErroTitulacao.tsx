@@ -954,7 +954,7 @@ export default function ErroTitulacao({
                       .concentracaoTitulanteLivre,
                     3
                   )}{" "}
-                  mol/L
+                  mol L⁻¹
                 </strong>
               </article>
 
@@ -969,7 +969,7 @@ export default function ErroTitulacao({
                       .concentracaoAnalitoLivre,
                     3
                   )}{" "}
-                  mol/L
+                  mol L⁻¹
                 </strong>
               </article>
 

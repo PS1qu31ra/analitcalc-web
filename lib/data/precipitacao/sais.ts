@@ -1092,7 +1092,7 @@ export const saisPrecipitacao:
       kps: 4e-14,
       corPrecipitado: "branco",
       observacao:
-        "Valor condicional tabelado em força iônica μ = 5,0 mol·L⁻¹.",
+        "Valor condicional tabelado em força iônica μ = 5,0 mol L⁻¹.",
       usos: usosGerais,
     }),
 
@@ -1136,7 +1136,7 @@ export const saisPrecipitacao:
       kps: 2.8e-20,
       corPrecipitado: "branco",
       observacao:
-        "Valor condicional tabelado em força iônica μ = 1,0 mol·L⁻¹.",
+        "Valor condicional tabelado em força iônica μ = 1,0 mol L⁻¹.",
       usos: usosGerais,
     }),
   ];

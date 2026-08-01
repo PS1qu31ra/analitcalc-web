@@ -10,6 +10,8 @@ import {
   type ConfiguracaoAnalitoDireto,
 } from "@/lib/precipitacao/metodosDiretos";
 
+import EquacaoQuimica from "../TitulacaoDireta/EquacaoQuimica";
+
 type EntradaDadosProps = {
   analito: ConfiguracaoAnalitoDireto;
 
@@ -137,10 +139,9 @@ export default function EntradaDados({
                   </span>
 
                   <small>
-                    Forma{" "}
-                    {opcao.precipitado}
-                    (s)
-                  </small>
+  Forma{" "}
+  {opcao.precipitado}
+</small>
                 </button>
               );
             }
@@ -148,15 +149,17 @@ export default function EntradaDados({
         </div>
 
         <div className="precipitacaoSystemSummary">
-          <div>
-            <span>
-              Reação principal
-            </span>
+        <div>
+  <span>
+    Reação principal
+  </span>
 
-            <strong>
-              {analito.equacao}
-            </strong>
-          </div>
+  <div className="precipitacaoMethodsSystemEquation">
+    <EquacaoQuimica
+      equacao={analito.equacao}
+    />
+  </div>
+</div>
 
           <div>
             <span>
@@ -222,9 +225,11 @@ export default function EntradaDados({
                 Reação da retrotitulação
               </small>
 
-              <b>
-                Ag⁺ + SCN⁻ → AgSCN(s)
-              </b>
+              <div className="precipitacaoMethodsEquation">
+  <EquacaoQuimica
+    equacao="Ag⁺(aq) + SCN⁻(aq) ⇌ AgSCN(s)"
+  />
+</div>
             </div>
           </article>
 
@@ -318,7 +323,7 @@ export default function EntradaDados({
               />
 
               <span>
-                mol·L⁻¹
+                mol L⁻¹
               </span>
             </div>
 
@@ -404,7 +409,7 @@ export default function EntradaDados({
               />
 
               <span>
-                mol·L⁻¹
+                mol L⁻¹
               </span>
             </div>
 
@@ -490,7 +495,7 @@ export default function EntradaDados({
               />
 
               <span>
-                mol·L⁻¹
+                mol L⁻¹
               </span>
             </div>
 
@@ -556,7 +561,7 @@ export default function EntradaDados({
           A retrotitulação de Volhard deve ser
           conduzida em meio ácido. O módulo considera
           o sistema Ag⁺/SCN⁻ e o precipitado
-          AgSCN como reação da etapa de retorno.
+          AgSCN(s) como precipitado da etapa de retorno.
         </p>
       </div>
 

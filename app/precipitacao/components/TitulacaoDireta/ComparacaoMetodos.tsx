@@ -8,9 +8,10 @@ import {
 
 import type {
   ConfiguracaoAnalitoDireto,
-  ConfiguracaoMetodoDireto,
   MetodoArgentometricoDireto,
 } from "@/lib/precipitacao/metodosDiretos";
+
+import EquacaoQuimica from "./EquacaoQuimica";
 
 type ComparacaoMetodosProps = {
   analito: ConfiguracaoAnalitoDireto;
@@ -142,16 +143,19 @@ export default function ComparacaoMetodos({
           </article>
 
           <article>
-            <span>Titulante</span>
+  <span>
+    Solução titulante
+  </span>
 
-            <strong>
-              {analito.titulante}
-            </strong>
+  <strong>
+    {analito.titulante}
+  </strong>
 
-            <small>
-              Fonte de Ag⁺
-            </small>
-          </article>
+  <small>
+    Espécie ativa:{" "}
+    {analito.especieAtivaTitulante}
+  </small>
+</article>
 
           <article>
             <span>Precipitado</span>
@@ -166,16 +170,22 @@ export default function ComparacaoMetodos({
           </article>
 
           <article className="precipitacaoMethodsSystemReaction">
-            <span>Reação</span>
+  <span>
+    Reação
+  </span>
 
-            <strong>
-              {analito.equacao}
-            </strong>
+  <div className="precipitacaoMethodsSystemEquation">
+    <EquacaoQuimica
+      equacao={
+        analito.equacao
+      }
+    />
+  </div>
 
-            <small>
-              Reação de precipitação
-            </small>
-          </article>
+  <small>
+    Reação de precipitação
+  </small>
+</article>
         </div>
       </section>
 
@@ -315,119 +325,212 @@ export default function ComparacaoMetodos({
         </header>
 
         <div className="precipitacaoMethodsSelectedSummary">
-          <article>
-            <span>Indicador</span>
+  <article>
+    <span>
+      Indicador
+    </span>
 
-            <strong>
-              {
-                metodoSelecionado.indicador
-              }
-            </strong>
+    <strong>
+      {metodoSelecionado.indicador}
+    </strong>
 
-            <small>
-              Indicador definido na configuração
-            </small>
-          </article>
+    <small>
+      Indicador visual definido para o método
+    </small>
+  </article>
 
-          <article>
-            <span>Tipo de método</span>
+  <article>
+    <span>
+      Faixa de pH
+    </span>
 
-            <strong>
-              {
-                descricoesGerais[
-                  metodoSelecionado.id
-                ].categoria
-              }
-            </strong>
+    <strong>
+      {metodoSelecionado.faixaPH}
+    </strong>
 
-            <small>
-              Classificação didática
-            </small>
-          </article>
+    <small>
+      Condição recomendada para a indicação
+    </small>
+  </article>
 
-          <article>
-            <span>Precipitado principal</span>
+  <article>
+    <span>
+      Titulante
+    </span>
 
-            <strong>
-              {analito.precipitado}
-            </strong>
+    <strong>
+      {analito.titulante}
+    </strong>
 
-            <small>
-              Formado entre Ag⁺ e{" "}
-              {analito.formulaExibicao}
-            </small>
-          </article>
-        </div>
+    <small>
+      Espécie ativa:{" "}
+      {analito.especieAtivaTitulante}
+    </small>
+  </article>
 
-        <div className="precipitacaoMethodsExplanationGrid">
-          <article>
-            <span className="precipitacaoSectionLabel">
-              Princípio cadastrado
-            </span>
+  <article>
+    <span>
+      Precipitado principal
+    </span>
 
-            <h6>
-              Como o ponto final é detectado?
-            </h6>
+    <strong>
+      {analito.precipitado}
+    </strong>
 
-            <p>
-              {
-                metodoSelecionado.principio
-              }
-            </p>
-          </article>
+    <small>
+      Formado entre{" "}
+      {analito.especieAtivaTitulante} e{" "}
+      {analito.formulaExibicao}
+    </small>
+  </article>
+</div>
 
-          <article>
-            <span className="precipitacaoSectionLabel">
-              Mecanismo geral
-            </span>
+<div className="precipitacaoMethodsExplanationGrid">
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Princípio cadastrado
+    </span>
 
-            <h6>
-              O que produz a indicação visual?
-            </h6>
+    <h6>
+      Como o ponto final é detectado?
+    </h6>
 
-            <p>
-              {
-                descricoesGerais[
-                  metodoSelecionado.id
-                ].mecanismo
-              }
-            </p>
-          </article>
+    <p>
+      {metodoSelecionado.principio}
+    </p>
+  </article>
 
-          <article>
-            <span className="precipitacaoSectionLabel">
-              Observação da base
-            </span>
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Mecanismo geral
+    </span>
 
-            <h6>
-              Aplicação ao sistema atual
-            </h6>
+    <h6>
+      O que produz a indicação visual?
+    </h6>
 
-            <p>
-              {
-                metodoSelecionado.observacao
-              }
-            </p>
-          </article>
+    <p>
+      {
+        descricoesGerais[
+          metodoSelecionado.id
+        ].mecanismo
+      }
+    </p>
+  </article>
 
-          <article>
-            <span className="precipitacaoSectionLabel">
-              Interpretação didática
-            </span>
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Reação principal
+    </span>
 
-            <h6>
-              Ponto importante para o estudante
-            </h6>
+    <h6>
+      Formação do precipitado do analito
+    </h6>
 
-            <p>
-              {
-                descricoesGerais[
-                  metodoSelecionado.id
-                ].observacaoDidatica
-              }
-            </p>
-          </article>
-        </div>
+    <div className="precipitacaoMethodsEquation">
+  <EquacaoQuimica
+    equacao={
+      analito.equacao
+    }
+  />
+</div>
+  </article>
+
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Reação indicadora
+    </span>
+
+    <h6>
+      Reconhecimento químico do ponto final
+    </h6>
+
+    <div className="precipitacaoMethodsEquation">
+  <EquacaoQuimica
+    equacao={
+      metodoSelecionado
+        .equacaoIndicador
+    }
+  />
+</div>
+  </article>
+
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Condição de pH
+    </span>
+
+    <h6>
+      Faixa recomendada
+    </h6>
+
+    <p>
+      {metodoSelecionado.faixaPH}
+    </p>
+  </article>
+
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Observação da base
+    </span>
+
+    <h6>
+      Aplicação ao sistema atual
+    </h6>
+
+    <p>
+      {metodoSelecionado.observacao}
+    </p>
+  </article>
+
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Titulante empregado
+    </span>
+
+    <h6>
+      Reagente preparado e espécie ativa
+    </h6>
+
+    <p>
+  A solução utilizada na bureta é{" "}
+  <strong>
+    {analito.titulante
+      .charAt(0)
+      .toLocaleLowerCase(
+        "pt-BR"
+      )}
+    {analito.titulante.slice(
+      1
+    )}
+  </strong>
+  . A espécie que participa diretamente da
+  reação de precipitação é{" "}
+  <strong>
+    {analito.especieAtivaTitulante}
+  </strong>
+  .
+</p>
+  </article>
+
+  <article>
+    <span className="precipitacaoSectionLabel">
+      Interpretação didática
+    </span>
+
+    <h6>
+      Ponto importante para o estudante
+    </h6>
+
+    <p>
+      {
+        descricoesGerais[
+          metodoSelecionado.id
+        ].observacaoDidatica
+      }
+    </p>
+  </article>
+</div>
       </section>
 
       {possuiMaisDeUmMetodo && (
@@ -465,58 +568,154 @@ export default function ComparacaoMetodos({
               </thead>
 
               <tbody>
-                <tr>
-                  <th>Indicador</th>
+  <tr>
+    <th>
+      Indicador
+    </th>
 
-                  {analito.metodos.map(
-                    (metodo) => (
-                      <td key={metodo.id}>
-                        {metodo.indicador}
-                      </td>
-                    )
-                  )}
-                </tr>
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {metodo.indicador}
+        </td>
+      )
+    )}
+  </tr>
 
-                <tr>
-                  <th>Categoria</th>
+  <tr>
+    <th>
+      Faixa de pH
+    </th>
 
-                  {analito.metodos.map(
-                    (metodo) => (
-                      <td key={metodo.id}>
-                        {
-                          descricoesGerais[
-                            metodo.id
-                          ].categoria
-                        }
-                      </td>
-                    )
-                  )}
-                </tr>
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {metodo.faixaPH}
+        </td>
+      )
+    )}
+  </tr>
 
-                <tr>
-                  <th>Princípio</th>
+  <tr>
+    <th>
+      Categoria
+    </th>
 
-                  {analito.metodos.map(
-                    (metodo) => (
-                      <td key={metodo.id}>
-                        {metodo.principio}
-                      </td>
-                    )
-                  )}
-                </tr>
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {
+            descricoesGerais[
+              metodo.id
+            ].categoria
+          }
+        </td>
+      )
+    )}
+  </tr>
 
-                <tr>
-                  <th>Observação</th>
+  <tr>
+    <th>
+      Titulante
+    </th>
 
-                  {analito.metodos.map(
-                    (metodo) => (
-                      <td key={metodo.id}>
-                        {metodo.observacao}
-                      </td>
-                    )
-                  )}
-                </tr>
-              </tbody>
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {analito.titulante}
+        </td>
+      )
+    )}
+  </tr>
+
+  <tr>
+    <th>
+      Espécie ativa
+    </th>
+
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {
+            analito
+              .especieAtivaTitulante
+          }
+        </td>
+      )
+    )}
+  </tr>
+
+  <tr>
+  <th>
+    Reação principal
+  </th>
+
+  {analito.metodos.map(
+    (metodo) => (
+      <td
+        key={metodo.id}
+        className="precipitacaoMethodsEquation"
+      >
+        <EquacaoQuimica
+          equacao={
+            analito.equacao
+          }
+        />
+      </td>
+    )
+  )}
+</tr>
+
+<tr>
+  <th>
+    Reação indicadora
+  </th>
+
+  {analito.metodos.map(
+    (metodo) => (
+      <td
+        key={metodo.id}
+        className="precipitacaoMethodsEquation"
+      >
+        <EquacaoQuimica
+          equacao={
+            metodo
+              .equacaoIndicador
+          }
+        />
+      </td>
+    )
+  )}
+</tr>
+
+  <tr>
+    <th>
+      Princípio
+    </th>
+
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {metodo.principio}
+        </td>
+      )
+    )}
+  </tr>
+
+  <tr>
+    <th>
+      Observação
+    </th>
+
+    {analito.metodos.map(
+      (metodo) => (
+        <td key={metodo.id}>
+          {metodo.observacao}
+        </td>
+      )
+    )}
+  </tr>
+</tbody>
             </table>
           </div>
         </section>

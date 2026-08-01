@@ -738,7 +738,7 @@ const nomeComplexanteAuxiliar =
                 onChange={(event) => setConcMetal(event.target.value)}
                 placeholder="Ex: 0,010"
               />
-              <small>mol·L⁻¹</small>
+              <small>mol L⁻¹</small>
             </label>
 
             <label>
@@ -758,7 +758,7 @@ const nomeComplexanteAuxiliar =
                 onChange={(event) => setConcEDTA(event.target.value)}
                 placeholder="Ex: 0,010"
               />
-              <small>mol·L⁻¹</small>
+              <small>mol L⁻¹</small>
             </label>
 
             <label>
@@ -815,7 +815,7 @@ const nomeComplexanteAuxiliar =
                     }
                     placeholder="Ex: 0,10"
                   />
-                  <small>mol·L⁻¹L</small>
+                  <small>mol L⁻¹L</small>
                 </label>
               </>
             )}
@@ -1200,7 +1200,7 @@ const nomeComplexanteAuxiliar =
                 {concentracaoAuxiliarNumero !== null
                   ? `${formatarCientificoBR(
                       concentracaoAuxiliarNumero
-                    )} mol·L⁻¹`
+                    )} mol L⁻¹`
                   : "-"}
               </strong>
             </div>

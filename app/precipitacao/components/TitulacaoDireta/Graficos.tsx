@@ -1137,7 +1137,7 @@ const marcacoesYInternas = Array.from(
               pontoConsultaCurva.concentracaoTitulanteLivre,
               3
             )}
-            <small> mol/L</small>
+            <small> mol L⁻¹</small>
           </strong>
         </article>
 
@@ -1151,7 +1151,7 @@ const marcacoesYInternas = Array.from(
               pontoConsultaCurva.concentracaoAnalitoLivre,
               3
             )}
-            <small> mol/L</small>
+            <small> mol L⁻¹</small>
           </strong>
         </article>
 

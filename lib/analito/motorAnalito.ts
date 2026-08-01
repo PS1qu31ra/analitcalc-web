@@ -883,7 +883,7 @@ if (
     p.includes("concentracao molar") ||
     p.includes("molaridade") ||
     p.includes("mol por litro") ||
-    p.includes("mol/l")
+    p.includes("mol L⁻¹")
   ) {
     return "concentracao_molar";
   }

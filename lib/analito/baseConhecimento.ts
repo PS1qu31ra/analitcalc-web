@@ -524,12 +524,12 @@ export const baseConhecimento: ItemConhecimento[] = [
       "concentracao molar",
       "molaridade",
       "mol por litro",
-      "mol/l",
+      "mol L⁻¹",
       "mol L",
       "quantidade de matéria por volume",
       "quantidade de materia por volume",
     ],
-    termosContexto: ["concentração", "mol/L", "volume", "quantidade de matéria"],
+    termosContexto: ["concentração", "mol L⁻¹", "volume", "quantidade de matéria"],
     termosEvitar: [
       "concentração do EDTA",
       "concentracao do EDTA",
@@ -540,7 +540,7 @@ export const baseConhecimento: ItemConhecimento[] = [
     respostaCurta:
       "Concentração molar é a quantidade de matéria do soluto dividida pelo volume da solução em litros.",
     respostaCompleta:
-      "A concentração molar, também chamada de molaridade, indica quantos mols de soluto existem em cada litro de solução. Ela é expressa por C = n/V, em que n é a quantidade de matéria em mol e V é o volume da solução em litros. Sua unidade usual é mol·L⁻¹.",
+      "A concentração molar, também chamada de molaridade, indica quantos mols de soluto existem em cada litro de solução. Ela é expressa por C = n/V, em que n é a quantidade de matéria em mol e V é o volume da solução em litros. Sua unidade usual é mol L⁻¹.",
     prioridade: 10,
   },
   {
@@ -664,7 +664,7 @@ export const baseConhecimento: ItemConhecimento[] = [
       "unidades",
       "quais unidades",
       "mol por litro",
-      "mol/l",
+      "mol L⁻¹",
       "ml",
       "l",
       "litro",
@@ -673,7 +673,7 @@ export const baseConhecimento: ItemConhecimento[] = [
       "unidade de concentração",
       "unidade de concentracao",
     ],
-    termosContexto: ["mol/L", "mL", "L", "concentração", "volume"],
+    termosContexto: ["mol L⁻¹", "mL", "L", "concentração", "volume"],
     termosEvitar: [
       "misturei ml e l",
       "erro de conversão",
@@ -682,7 +682,7 @@ export const baseConhecimento: ItemConhecimento[] = [
     respostaCurta:
       "As unidades devem seguir exatamente o que cada campo da interface solicita.",
     respostaCompleta:
-      "Em geral, concentrações molares são expressas em mol·L⁻¹, enquanto volumes podem ser informados em mL ou L, dependendo do campo. É importante seguir a unidade indicada pela interface, porque uma conversão incorreta pode alterar muito o resultado.",
+      "Em geral, concentrações molares são expressas em mol L⁻¹, enquanto volumes podem ser informados em mL ou L, dependendo do campo. É importante seguir a unidade indicada pela interface, porque uma conversão incorreta pode alterar muito o resultado.",
     prioridade: 9,
   },
   {

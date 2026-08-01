@@ -1120,7 +1120,7 @@ export default function ErroTitulacaoRetorno({
                       .concentracaoPrecipitanteLivre,
                     3
                   )}{" "}
-                  mol/L
+                  mol L⁻¹
                 </strong>
               </article>
 
@@ -1135,7 +1135,7 @@ export default function ErroTitulacaoRetorno({
                       .concentracaoTitulanteRetornoLivre,
                     3
                   )}{" "}
-                  mol/L
+                  mol L⁻¹
                 </strong>
               </article>
 
@@ -1203,7 +1203,7 @@ export default function ErroTitulacaoRetorno({
             </strong>
 
             <small>
-              mol/L
+              mol L⁻¹
             </small>
           </div>
 

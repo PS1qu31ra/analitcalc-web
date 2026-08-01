@@ -162,13 +162,40 @@
     background: #f7f7f8;
   }
   
-  .precipitacaoSystemSummary span {
+  .precipitacaoSystemSummary > div > span {
     display: block;
     margin-bottom: 6px;
     color: #71717a;
     font-size: 0.75rem;
     font-weight: 700;
   }
+
+  .precipitacaoSystemSummary
+  .precipitacaoChemicalEquation {
+  display: inline;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-transform: none;
+  white-space: normal;
+}
+
+.precipitacaoSystemSummary
+  .precipitacaoChemicalEquation > span {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
+}
+
+.precipitacaoSystemSummary
+  .precipitacaoChemicalPhysicalState {
+  display: inline;
+  margin-left: 0.04em;
+}
   
   .precipitacaoSystemSummary strong {
     color: #27272a;
@@ -3603,14 +3630,32 @@
   grid-column: 1 / -1;
 }
 
-.precipitacaoMethodsSystemGrid span,
-.precipitacaoMethodsSelectedSummary span {
+.precipitacaoMethodsSystemGrid article > span,
+.precipitacaoMethodsSelectedSummary article > span {
   display: block;
   margin-bottom: 7px;
   color: #71717a;
   font-size: 0.68rem;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.precipitacaoMethodsSystemEquation,
+.precipitacaoMethodsEquation {
+  color: #18181b;
+  font-size: 1.05rem;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.precipitacaoMethodsSystemEquation span,
+.precipitacaoMethodsEquation span {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
 }
 
 .precipitacaoMethodsSystemGrid strong {
@@ -3779,7 +3824,7 @@
 .precipitacaoMethodsSelectedSummary {
   display: grid;
   grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    repeat(4, minmax(0, 1fr));
   gap: 11px;
   margin-top: 17px;
 }
@@ -3830,6 +3875,13 @@
   color: #52525b;
   font-size: 0.8rem;
   line-height: 1.6;
+}
+
+.precipitacaoMethodsEquation {
+  color: #18181b !important;
+  font-size: 0.94rem !important;
+  font-weight: 800;
+  line-height: 1.7 !important;
 }
 
 .precipitacaoMethodsComparison {
@@ -7684,4 +7736,58 @@
     .precipitacaoDerivativeSection {
     padding: 18px;
   }
+}
+
+.precipitacaoMethodsEquation {
+  color: #7f1d1d;
+  font-family:
+    "Times New Roman",
+    Georgia,
+    serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.precipitacaoMethodsExplanationGrid
+  .precipitacaoMethodsEquation {
+  padding: 12px 14px;
+  border: 1px solid #f1d3d3;
+  border-radius: 11px;
+  background: #fffafa;
+}
+
+.precipitacaoMethodsComparisonTableWrapper
+  td.precipitacaoMethodsEquation {
+  color: #7f1d1d;
+  font-size: 0.86rem;
+  white-space: normal;
+}
+
+.precipitacaoMethodsSystemEquation {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  color: #18181b;
+  font-size: 1.05rem;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.precipitacaoMethodsSystemEquation span {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
+}
+
+.precipitacaoChemicalPhysicalState {
+  position: relative;
+  bottom: -0.2em;
+  margin-left: 0.04em;
+  font-size: 0.7em;
+  line-height: 1;
+  vertical-align: baseline;
 }

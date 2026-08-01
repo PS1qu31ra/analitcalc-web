@@ -112,20 +112,18 @@ export default function TitulacaoRetorno() {
       primeiroAnalito,
     ]);
 
-  const salPrincipal =
+    const salPrincipal =
     useMemo(() => {
       return (
         saisPrecipitacao.find(
           (sal) =>
             sal.id ===
-              analito.precipitado ||
-            sal.formula ===
-              analito.precipitado ||
-            sal.formulaExibicao ===
-              analito.precipitado
+            analito.salId
         ) ?? null
       );
-    }, [analito]);
+    }, [
+      analito.salId,
+    ]);
 
   function alterarAnalito(
     novoAnalitoId:

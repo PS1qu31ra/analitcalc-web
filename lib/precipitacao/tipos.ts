@@ -163,7 +163,7 @@ export type ResultadoEquilibrioPrecipitacao = {
   sal: SalPrecipitacao;
 
   /**
-   * Solubilidade molar do precipitado em mol·L⁻¹.
+   * Solubilidade molar do precipitado em mol L⁻¹.
    */
   solubilidadeMolar: number;
 
@@ -205,7 +205,7 @@ export type EntradaTitulacaoDiretaPrecipitacao = {
    * Concentração formal inicial do analito,
    * antes da adição do titulante.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoAnalito: number;
 
@@ -219,7 +219,7 @@ export type EntradaTitulacaoDiretaPrecipitacao = {
   /**
    * Concentração formal do titulante.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoTitulante: number;
 
@@ -298,7 +298,7 @@ export type PontoCurvaTitulacaoDiretaPrecipitacao = {
    * Concentrações livres no equilíbrio químico
    * do ponto avaliado.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoAnalitoLivre: number;
   concentracaoTitulanteLivre: number;
@@ -350,12 +350,219 @@ export type StatusMetodoPrecipitacao =
   | "possivel"
   | "nao_recomendado";
 
+/**
+ * Tipo de mecanismo utilizado para indicar
+ * visual ou instrumentalmente o ponto final.
+ */
+export type TipoIndicadorMetodoPrecipitacao =
+  | "precipitacao"
+  | "complexacao"
+  | "adsorcao"
+  | "eletroquimico";
+
+/**
+ * Informações sobre o titulante empregado
+ * pelo método analítico.
+ *
+ * A fórmula do reagente preparado pode ser
+ * diferente da espécie química efetivamente
+ * envolvida na reação.
+ *
+ * Exemplo:
+ *
+ * Reagente: AgNO₃
+ * Espécie ativa: Ag⁺
+ */
+export type TitulanteMetodoPrecipitacao = {
+  /**
+   * Nome do reagente usado como solução titulante.
+   *
+   * Exemplo:
+   * "Nitrato de prata"
+   */
+  nome: string;
+
+  /**
+   * Fórmula do reagente preparado.
+   *
+   * Exemplo:
+   * "AgNO₃"
+   */
+  formula: string;
+
+  /**
+   * Espécie química efetivamente responsável
+   * pela reação de precipitação.
+   *
+   * Exemplo:
+   * "Ag⁺"
+   */
+  especieAtiva: string;
+};
+
+/**
+ * Condições de meio recomendadas para aplicação
+ * do método.
+ */
+export type MeioMetodoPrecipitacao = {
+  /**
+   * Descrição geral do meio experimental.
+   *
+   * Exemplos:
+   *
+   * "Meio aproximadamente neutro."
+   * "Meio ácido, normalmente acidificado com HNO₃."
+   */
+  descricao: string;
+
+  /**
+   * Limites de pH adotados quando houver uma faixa
+   * definida na base.
+   */
+  phMinimo?: number;
+  phMaximo?: number;
+
+  /**
+   * Reagentes ou condições adicionais importantes.
+   */
+  observacao?: string;
+};
+
+/**
+ * Indicador visual, químico ou instrumental
+ * associado a um método de determinação do
+ * ponto final.
+ */
+export type IndicadorMetodoPrecipitacao = {
+  /**
+   * Identificador interno.
+   *
+   * Exemplos:
+   *
+   * "cromato"
+   * "ferro-iii"
+   * "fluoresceina"
+   * "diclorofluoresceina"
+   */
+  id: string;
+
+  /**
+   * Nome exibido na interface.
+   */
+  nome: string;
+
+  /**
+   * Fórmula química, quando aplicável.
+   */
+  formula?: string;
+
+  /**
+   * Natureza do mecanismo de indicação.
+   */
+  tipo:
+    TipoIndicadorMetodoPrecipitacao;
+
+  /**
+   * Faixa de pH recomendada para o indicador,
+   * quando disponível na base.
+   */
+  phMinimo?: number;
+  phMaximo?: number;
+
+  /**
+   * Mudança visual ou resposta observada no
+   * ponto final.
+   */
+  mudancaVisual?: string;
+
+  /**
+   * Explicação química ou condição adicional.
+   */
+  observacao?: string;
+};
+
+/**
+ * Reação associada à formação do precipitado
+ * principal ou à indicação do ponto final.
+ *
+ * Os estados físicos são armazenados
+ * separadamente para que possam ser exibidos
+ * com subscrito na interface.
+ */
+export type ReacaoMetodoPrecipitacao = {
+  /**
+   * Texto simples para exportação, tabela
+   * ou atributos de acessibilidade.
+   *
+   * Exemplo:
+   *
+   * "2 Ag⁺(aq) + CrO₄²⁻(aq) ⇌ Ag₂CrO₄(s)"
+   */
+  equacao: string;
+
+  /**
+   * Descrição da função dessa reação.
+   *
+   * Exemplos:
+   *
+   * "Reação principal"
+   * "Reação indicadora"
+   */
+  descricao: string;
+};
+
+/**
+ * Estrutura completa de um método de
+ * determinação do ponto final.
+ */
 export type MetodoPrecipitacao = {
   id: MetodoPrecipitacaoId;
+
   nome: string;
+
   principio: string;
-  status: StatusMetodoPrecipitacao;
+
+  status:
+    StatusMetodoPrecipitacao;
+
   justificativa: string;
+
+  /**
+   * Solução titulante normalmente associada
+   * ao método.
+   */
+  titulante?:
+    TitulanteMetodoPrecipitacao;
+
+  /**
+   * Condições recomendadas de pH e meio.
+   */
+  meio?:
+    MeioMetodoPrecipitacao;
+
+  /**
+   * Um método pode aceitar mais de um indicador.
+   *
+   * Exemplo:
+   *
+   * Fajans:
+   * - fluoresceína;
+   * - diclorofluoresceína.
+   */
+  indicadores?:
+    IndicadorMetodoPrecipitacao[];
+
+  /**
+   * Reações principais ou indicadoras
+   * apresentadas na interface.
+   */
+  reacoes?:
+    ReacaoMetodoPrecipitacao[];
+
+  /**
+   * Recomendações e limitações adicionais.
+   */
+  observacoes?: string[];
 };
 
 /* =========================================================
@@ -492,7 +699,7 @@ export type EntradaTitulacaoRetornoPrecipitacao = {
   /**
    * Concentração formal inicial do analito.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoAnalito: number;
 
@@ -505,7 +712,7 @@ export type EntradaTitulacaoRetornoPrecipitacao = {
    * Concentração e volume do reagente precipitante
    * adicionado em excesso.
    *
-   * Concentração: mol·L⁻¹
+   * Concentração: mol L⁻¹
    * Volume: mL
    */
   concentracaoPrecipitanteExcesso: number;
@@ -515,7 +722,7 @@ export type EntradaTitulacaoRetornoPrecipitacao = {
    * Concentração do titulante utilizado para medir
    * o precipitante remanescente.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoTitulanteRetorno: number;
 
@@ -562,7 +769,7 @@ export type ResultadoTitulacaoRetornoPrecipitacao = {
    * Concentração calculada do analito na amostra
    * original.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoAnalito: number;
 
@@ -589,7 +796,7 @@ export type IonMisturaSeletividadePrecipitacao = {
    * Concentração formal inicial desse analito
    * na mistura.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoAnalito: number;
 };
@@ -621,7 +828,7 @@ export type ResultadoItemSeletividadePrecipitacao = {
    * Concentração livre de titulante necessária
    * para o início da precipitação.
    *
-   * Unidade: mol·L⁻¹
+   * Unidade: mol L⁻¹
    */
   concentracaoTitulanteInicioPrecipitacao:
     number;
@@ -685,7 +892,7 @@ export type PontoCurvaTitulacaoRetornoPrecipitacao = {
   molTitulanteRetornoLivre: number;
 
   /**
-   * Concentrações livres em mol·L⁻¹.
+   * Concentrações livres em mol L⁻¹.
    */
   concentracaoPrecipitanteLivre: number;
   concentracaoTitulanteRetornoLivre: number;

@@ -821,7 +821,7 @@ export default function SimulacaoCondicoes({
                 resultado.concentracaoAnalito,
                 4
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -849,7 +849,7 @@ export default function SimulacaoCondicoes({
                 resultado.concentracaoTitulante,
                 4
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -993,7 +993,7 @@ export default function SimulacaoCondicoes({
                   }
                 />
 
-                <span>mol/L</span>
+                <span>mol L⁻¹</span>
               </div>
             </label>
 
@@ -1037,7 +1037,7 @@ export default function SimulacaoCondicoes({
                   }
                 />
 
-                <span>mol/L</span>
+                <span>mol L⁻¹</span>
               </div>
             </label>
 

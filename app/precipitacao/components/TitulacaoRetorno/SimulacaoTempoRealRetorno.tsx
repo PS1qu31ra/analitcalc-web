@@ -904,7 +904,7 @@ export default function SimulacaoTempoRealRetorno({
                   .concentracaoPrecipitanteLivre,
                 3
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -919,7 +919,7 @@ export default function SimulacaoTempoRealRetorno({
                   .concentracaoTitulanteRetornoLivre,
                 3
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
         </div>
@@ -1061,7 +1061,7 @@ export default function SimulacaoTempoRealRetorno({
                             .concentracaoPrecipitanteLivre,
                           3
                         )}{" "}
-                        mol/L
+                        mol L⁻¹
                       </td>
 
                       <td>
@@ -1070,7 +1070,7 @@ export default function SimulacaoTempoRealRetorno({
                             .concentracaoTitulanteRetornoLivre,
                           3
                         )}{" "}
-                        mol/L
+                        mol L⁻¹
                       </td>
 
                       <td>

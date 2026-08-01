@@ -400,7 +400,7 @@ const avaliacaoPrincipal =
                                   .concentracaoTitulanteInicioPrecipitacao,
                                 3
                               )}{" "}
-                              mol/L
+                              mol L⁻¹
                             </strong>
                           </div>
   
@@ -460,7 +460,7 @@ const avaliacaoPrincipal =
   
                   <small>
                     {" "}
-                    mol/L
+                    mol L⁻¹
                   </small>
                 </strong>
   
@@ -560,7 +560,7 @@ const avaliacaoPrincipal =
                             .concentracaoTitulanteInicioPrecipitacao,
                           3
                         )}{" "}
-                        mol/L
+                        mol L⁻¹
                       </small>
                     </article>
   
@@ -583,7 +583,7 @@ const avaliacaoPrincipal =
                             .concentracaoTitulanteInicioPrecipitacao,
                           3
                         )}{" "}
-                        mol/L
+                        mol L⁻¹
                       </small>
                     </article>
   
@@ -1058,7 +1058,7 @@ const avaliacaoPrincipal =
                                 .concentracaoAnalito,
                               3
                             )}{" "}
-                            mol/L
+                            mol L⁻¹
                           </td>
   
                           <td>
@@ -1067,7 +1067,7 @@ const avaliacaoPrincipal =
                                 .concentracaoTitulanteInicioPrecipitacao,
                               3
                             )}{" "}
-                            mol/L
+                            mol L⁻¹
                           </td>
   
                           <td>

@@ -9,6 +9,8 @@ import {
   type MetodoArgentometricoDireto,
 } from "@/lib/precipitacao/metodosDiretos";
 
+import EquacaoQuimica from "./EquacaoQuimica";
+
 type EntradaDadosProps = {
   analito: ConfiguracaoAnalitoDireto;
   metodoId: MetodoArgentometricoDireto;
@@ -99,7 +101,7 @@ export default function EntradaDados({
 
                 <span>{opcao.nome}</span>
 
-                <small>{opcao.precipitado}(s)</small>
+                <small>{opcao.precipitado}</small>
               </button>
             );
           })}
@@ -108,7 +110,11 @@ export default function EntradaDados({
         <div className="precipitacaoSystemSummary">
           <div>
             <span>Reação analítica</span>
-            <strong>{analito.equacao}</strong>
+            <strong>
+  <EquacaoQuimica
+    equacao={analito.equacao}
+  />
+</strong>
           </div>
 
           <div>
@@ -221,7 +227,7 @@ export default function EntradaDados({
                 placeholder="Ex.: 0,0100"
               />
 
-              <span>mol·L⁻¹</span>
+              <span>mol L⁻¹</span>
             </div>
 
             <small>
@@ -264,7 +270,7 @@ export default function EntradaDados({
                 placeholder="Ex.: 0,0100"
               />
 
-              <span>mol·L⁻¹</span>
+              <span>mol L⁻¹</span>
             </div>
 
             <small>

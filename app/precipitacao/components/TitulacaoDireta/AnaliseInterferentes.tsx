@@ -1038,7 +1038,7 @@ export default function AnaliseInterferentes({
                 }}
               />
 
-              <span>mol/L</span>
+              <span>mol L⁻¹</span>
             </div>
 
             {erroEntrada && (
@@ -1170,7 +1170,7 @@ export default function AnaliseInterferentes({
                       .concentracaoTitulanteInicioPrecipitacao,
                     3
                   )}{" "}
-                  mol/L
+                  mol L⁻¹
                 </strong>
 
                 <small>
@@ -1190,7 +1190,7 @@ export default function AnaliseInterferentes({
                       .concentracaoTitulanteInicioPrecipitacao,
                     3
                   )}{" "}
-                  mol/L
+                  mol L⁻¹
                 </strong>
 
                 <small>
@@ -1324,7 +1324,7 @@ export default function AnaliseInterferentes({
                                 .concentracaoTitulanteInicioPrecipitacao,
                               3
                             )}{" "}
-                            mol/L
+                            mol L⁻¹
                           </small>
                         </div>
                       </article>

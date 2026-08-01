@@ -860,7 +860,7 @@ export default function SimulacaoTempoReal({
                   .concentracaoTitulanteLivre,
                 3
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -875,7 +875,7 @@ export default function SimulacaoTempoReal({
                   .concentracaoAnalitoLivre,
                 3
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
         </div>
@@ -1002,7 +1002,7 @@ export default function SimulacaoTempoReal({
                             .concentracaoTitulanteLivre,
                           3
                         )}{" "}
-                        mol/L
+                        mol L⁻¹
                       </td>
 
                       <td>
@@ -1011,7 +1011,7 @@ export default function SimulacaoTempoReal({
                             .concentracaoAnalitoLivre,
                           3
                         )}{" "}
-                        mol/L
+                        mol L⁻¹
                       </td>
 
                       <td>

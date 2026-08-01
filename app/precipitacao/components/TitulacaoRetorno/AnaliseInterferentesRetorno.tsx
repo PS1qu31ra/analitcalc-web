@@ -961,7 +961,7 @@ const percentualReferenciaRemanescente =
               .concentracaoInterferenteAdotada,
             4
           )}{" "}
-          mol/L
+          mol L⁻¹
         </strong>
         .
       </p>

@@ -934,7 +934,7 @@ export default function SimulacaoCondicoesRetorno({
                 resultado.concentracaoAnalito,
                 4
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -962,7 +962,7 @@ export default function SimulacaoCondicoesRetorno({
                 resultado.concentracaoPrecipitanteExcesso,
                 4
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -990,7 +990,7 @@ export default function SimulacaoCondicoesRetorno({
                 resultado.concentracaoTitulanteRetorno,
                 4
               )}{" "}
-              mol/L
+              mol L⁻¹
             </strong>
           </article>
 
@@ -1125,7 +1125,7 @@ export default function SimulacaoCondicoesRetorno({
                 />
 
                 <span>
-                  mol/L
+                  mol L⁻¹
                 </span>
               </div>
             </label>
@@ -1173,7 +1173,7 @@ export default function SimulacaoCondicoesRetorno({
                 />
 
                 <span>
-                  mol/L
+                  mol L⁻¹
                 </span>
               </div>
             </label>
@@ -1221,7 +1221,7 @@ export default function SimulacaoCondicoesRetorno({
                 />
 
                 <span>
-                  mol/L
+                  mol L⁻¹
                 </span>
               </div>
             </label>

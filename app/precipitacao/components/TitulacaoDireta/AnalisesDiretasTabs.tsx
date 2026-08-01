@@ -369,7 +369,7 @@ export default function AnalisesDiretasTabs({
                             ponto.concentracaoTitulanteLivre,
                             3
                           )}{" "}
-                          mol/L
+                          mol L⁻¹
                         </td>
 
                         <td>
@@ -377,7 +377,7 @@ export default function AnalisesDiretasTabs({
                             ponto.concentracaoAnalitoLivre,
                             3
                           )}{" "}
-                          mol/L
+                          mol L⁻¹
                         </td>
 
                         <td>
