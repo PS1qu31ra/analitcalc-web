@@ -81,6 +81,37 @@ function obterTituloRisco(
   return "Interferência potencialmente baixa";
 }
 
+function formatarPercentuaisNoTexto(
+  texto: string
+) {
+  return texto.replace(
+    /(\d+)\.(\d+)%/g,
+    (
+      valorCompleto,
+      parteInteira: string,
+      parteDecimal: string
+    ) => {
+      const valorNumerico =
+        Number(
+          `${parteInteira}.${parteDecimal}`
+        );
+
+      if (
+        !Number.isFinite(
+          valorNumerico
+        )
+      ) {
+        return valorCompleto;
+      }
+
+      return `${formatarNumeroBR(
+        valorNumerico,
+        parteDecimal.length
+      )}%`;
+    }
+  );
+}
+
 export default function AnaliseInterferentesRetorno({
   resultado,
 }: AnaliseInterferentesRetornoProps) {
@@ -952,7 +983,9 @@ const percentualReferenciaRemanescente =
       </strong>
 
       <p>
-        {curvaInterferencia.mensagem}
+      {formatarPercentuaisNoTexto(
+  curvaInterferencia.mensagem
+)}
         {" "}A concentração adotada para o
         interferente foi{" "}
         <strong>
@@ -1268,11 +1301,10 @@ const percentualReferenciaRemanescente =
   </span>
 
   <p>
-    {
-      interferenciaSelecionada
-        .motivo
-    }
-  </p>
+  {formatarPercentuaisNoTexto(
+    interferenciaSelecionada.motivo
+  )}
+</p>
 
   {percentualReferenciaPrecipitada !==
   null &&
@@ -1299,11 +1331,11 @@ const percentualReferenciaRemanescente =
                 </span>
 
                 <p>
-                  {
-                    interferenciaSelecionada
-                      .impactoAnalitico
-                  }
-                </p>
+  {formatarPercentuaisNoTexto(
+    interferenciaSelecionada
+      .impactoAnalitico
+  )}
+</p>
               </article>
 
               <article>

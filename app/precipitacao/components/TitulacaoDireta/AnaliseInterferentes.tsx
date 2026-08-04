@@ -66,6 +66,37 @@ function obterEspecieAnalitoDoSal({
     : ("anion" as const);
 }
 
+function formatarPercentuaisNoTexto(
+  texto: string
+) {
+  return texto.replace(
+    /(\d+)\.(\d+)%/g,
+    (
+      valorCompleto,
+      parteInteira: string,
+      parteDecimal: string
+    ) => {
+      const valorNumerico =
+        Number(
+          `${parteInteira}.${parteDecimal}`
+        );
+
+      if (
+        !Number.isFinite(
+          valorNumerico
+        )
+      ) {
+        return valorCompleto;
+      }
+
+      return `${formatarNumeroBR(
+        valorNumerico,
+        parteDecimal.length
+      )}%`;
+    }
+  );
+}
+
 function obterClasseRisco(
   risco: InterferenciaPrecipitacao["risco"]
 ) {
@@ -1372,10 +1403,12 @@ export default function AnaliseInterferentes({
   </div>
 
   <p>
-    {comparacaoConfiabilidade
+  {formatarPercentuaisNoTexto(
+    comparacaoConfiabilidade
       ?.interpretacao ??
-      "A comparação percentual não foi gerada para os dados atuais."}
-  </p>
+      "A comparação percentual não foi gerada para os dados atuais."
+  )}
+</p>
 
   {avaliacaoSeparacao && (
     <div className="precipitacaoInterferenceKpsComparison">
@@ -1595,8 +1628,10 @@ export default function AnaliseInterferentes({
                   </span>
 
                   <p>
-                  {interpretacaoQuimicaDetalhada}
-                  </p>
+  {formatarPercentuaisNoTexto(
+    interpretacaoQuimicaDetalhada
+  )}
+</p>
                 </article>
 
                 <article>
@@ -1605,8 +1640,10 @@ export default function AnaliseInterferentes({
                   </span>
 
                   <p>
-                    {diagnostico.impacto}
-                  </p>
+  {formatarPercentuaisNoTexto(
+    diagnostico.impacto
+  )}
+</p>
                 </article>
 
                 <article>

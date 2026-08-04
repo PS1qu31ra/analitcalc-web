@@ -13,6 +13,12 @@ import type {
   SalPrecipitacao,
 } from "@/lib/precipitacao/tipos";
 
+import {
+  formatarCientificoBR,
+} from "@/lib/precipitacao/formatadores";
+
+import EquacaoQuimica from "../TitulacaoDireta/EquacaoQuimica";
+
 type ItemMisturaSeletiva = {
   id: string;
   sal: SalPrecipitacao;
@@ -21,16 +27,13 @@ type ItemMisturaSeletiva = {
 };
 
 type EntradaDadosProps = {
-  especieTitulante: EspeciePrecipitacao;
   itens: ItemMisturaSeletiva[];
+
   volumeAmostra: string;
   concentracaoTitulante: string;
   volumeMaximoBureta: string;
-  erro: string;
 
-  onEspecieTitulanteChange: (
-    especie: EspeciePrecipitacao
-  ) => void;
+  erro: string;
 
   onAdicionarItem: () => void;
 
@@ -65,50 +68,12 @@ type EntradaDadosProps = {
   ) => void;
 };
 
-function obterIonTitulante({
-    sal,
-    especieTitulante,
-  }: {
-    sal: SalPrecipitacao;
-    especieTitulante: EspeciePrecipitacao;
-  }) {
-    return especieTitulante === "cation"
-      ? sal.cation
-      : sal.anion;
-  }
-  
-function obterFormulaAnalito({
-  sal,
-  especieTitulante,
-}: {
-  sal: SalPrecipitacao;
-  especieTitulante: EspeciePrecipitacao;
-}) {
-  return especieTitulante === "cation"
-    ? sal.anion.formulaExibicao
-    : sal.cation.formulaExibicao;
-}
-
-function obterFormulaTitulante({
-  sal,
-  especieTitulante,
-}: {
-  sal: SalPrecipitacao;
-  especieTitulante: EspeciePrecipitacao;
-}) {
-  return especieTitulante === "cation"
-    ? sal.cation.formulaExibicao
-    : sal.anion.formulaExibicao;
-}
-
 export default function EntradaDados({
-  especieTitulante,
   itens,
   volumeAmostra,
   concentracaoTitulante,
   volumeMaximoBureta,
   erro,
-  onEspecieTitulanteChange,
   onAdicionarItem,
   onRemoverItem,
   onSalChange,
@@ -118,25 +83,24 @@ export default function EntradaDados({
   onVolumeMaximoBuretaChange,
   onSubmit,
 }: EntradaDadosProps) {
+  /*
+   * A mistura seletiva foi restringida a
+   * precipitados de prata utilizados em
+   * titulação argentométrica direta.
+   *
+   * O óxido de prata é excluído explicitamente.
+   */
   const saisCompativeis =
     saisPrecipitacao.filter(
       (sal) =>
         sal.usos.includes(
           "seletividade"
-        )
+        ) &&
+        sal.cation.formulaExibicao ===
+          "Ag⁺" &&
+        sal.formulaExibicao !==
+          "Ag₂O"
     );
-
-    const primeiroItem =
-  itens[0];
-
-const ionTitulanteReferencia =
-  primeiroItem
-    ? obterIonTitulante({
-        sal:
-          primeiroItem.sal,
-        especieTitulante,
-      })
-    : null;
 
   return (
     <form
@@ -144,6 +108,8 @@ const ionTitulanteReferencia =
       onSubmit={onSubmit}
       noValidate
     >
+      {/* ETAPA 1 */}
+
       <section className="precipitacaoFormBlock">
         <header className="precipitacaoFormBlockHeader">
           <span className="precipitacaoFormStep">
@@ -152,79 +118,60 @@ const ionTitulanteReferencia =
 
           <div>
             <h3>
-              Escolha o tipo de titulante
+              Sistema argentométrico direto
             </h3>
 
             <p>
-              Informe se o reagente precipitante
-              comum corresponde ao cátion ou ao
-              ânion dos sais avaliados.
+              A mistura será titulada diretamente
+              com solução padrão de nitrato de prata.
+              O íon Ag⁺ atua como reagente
+              precipitante comum das espécies
+              selecionadas.
             </p>
           </div>
         </header>
 
-        <div className="precipitacaoSpeciesGrid">
-          <button
-            type="button"
-            aria-pressed={
-              especieTitulante ===
-              "cation"
-            }
-            className={[
-              "precipitacaoSpeciesButton",
-              especieTitulante ===
-              "cation"
-                ? "precipitacaoSpeciesButtonActive"
-                : "",
-            ].join(" ")}
-            onClick={() =>
-              onEspecieTitulanteChange(
-                "cation"
-              )
-            }
-          >
-            <strong>Cátion</strong>
+        <div className="precipitacaoSelectiveSystemBanner">
+          <div className="precipitacaoSelectiveSystemBannerIcon">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+              />
 
+              <path d="M8 12h8" />
+              <path d="M12 8v8" />
+            </svg>
+          </div>
+
+          <div>
             <span>
-              Titulante catiônico comum
+              Titulante comum definido
             </span>
 
-            <small>
-              Exemplo: Ag⁺
-            </small>
-          </button>
+            <strong>
+              Ag⁺
+            </strong>
 
-          <button
-            type="button"
-            aria-pressed={
-              especieTitulante ===
-              "anion"
-            }
-            className={[
-              "precipitacaoSpeciesButton",
-              especieTitulante ===
-              "anion"
-                ? "precipitacaoSpeciesButtonActive"
-                : "",
-            ].join(" ")}
-            onClick={() =>
-              onEspecieTitulanteChange(
-                "anion"
-              )
-            }
-          >
-            <strong>Ânion</strong>
+            <p>
+              Todas as espécies da mistura devem
+              formar precipitados de prata por
+              titulação direta com solução padrão
+              de AgNO₃.
+            </p>
+          </div>
 
-            <span>
-              Titulante aniônico comum
-            </span>
-
-            <small>
-              Exemplo: SCN⁻
-            </small>
-          </button>
+          <span className="precipitacaoSelectiveSystemStatus">
+            Titulação direta
+          </span>
         </div>
       </section>
+
+      {/* ETAPA 2 */}
 
       <section className="precipitacaoFormBlock">
         <header className="precipitacaoFormBlockHeader">
@@ -238,55 +185,12 @@ const ionTitulanteReferencia =
             </h3>
 
             <p>
-              Adicione pelo menos duas espécies
-              que possam formar precipitados com
-              o mesmo titulante.
+              Adicione pelo menos duas espécies que
+              formem precipitados de prata durante
+              a titulação direta com AgNO₃.
             </p>
           </div>
         </header>
-
-        {ionTitulanteReferencia && (
-  <div className="precipitacaoSelectiveSystemBanner">
-    <div className="precipitacaoSelectiveSystemBannerIcon">
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M8 12h8" />
-        <path d="M12 8v8" />
-      </svg>
-    </div>
-
-    <div>
-      <span>
-        Titulante comum definido
-      </span>
-
-      <strong>
-        {
-          ionTitulanteReferencia
-            .formulaExibicao
-        }
-      </strong>
-
-      <p>
-        Todos os precipitados abaixo utilizam{" "}
-        <b>
-          {
-            ionTitulanteReferencia
-              .formulaExibicao
-          }
-        </b>{" "}
-        como reagente precipitante comum.
-      </p>
-    </div>
-
-    <span className="precipitacaoSelectiveSystemStatus">
-      Sistema compatível
-    </span>
-  </div>
-)}
 
         <div className="precipitacaoSelectiveItems">
           {itens.map(
@@ -294,49 +198,26 @@ const ionTitulanteReferencia =
               item,
               indice
             ) => {
-
+              /*
+               * Como o titulante é sempre Ag⁺,
+               * o analito corresponde ao ânion
+               * presente no sal de prata.
+               */
               const formulaAnalito =
-                obterFormulaAnalito({
-                  sal: item.sal,
-                  especieTitulante,
-                });
+                item.sal.anion.formulaExibicao;
 
               const formulaTitulante =
-                obterFormulaTitulante({
-                  sal: item.sal,
-                  especieTitulante,
-                });
+                item.sal.cation.formulaExibicao;
 
-                const equacaoPrecipitacao =
-  especieTitulante === "cation"
-    ? `${formulaTitulante} + ${formulaAnalito} → ${item.sal.formulaExibicao}(s)`
-    : `${formulaAnalito} + ${formulaTitulante} → ${item.sal.formulaExibicao}(s)`;
+              const equacaoPrecipitacao =
+                `${formulaTitulante} + ${formulaAnalito} ⇌ ${item.sal.formulaExibicao}(s)`;
 
-    const saisPermitidos =
-    saisCompativeis.filter(
-      (sal) => {
-        const primeiroDaMistura =
-          indice === 0;
-  
-        const ionTitulante =
-          obterIonTitulante({
-            sal,
-            especieTitulante,
-          });
-  
-        /*
-         * O primeiro card pode definir um novo
-         * sistema. Os demais mostram somente sais
-         * compatíveis com o titulante comum atual.
-         */
-        return (
-          primeiroDaMistura ||
-          !ionTitulanteReferencia ||
-          ionTitulante.id ===
-            ionTitulanteReferencia.id
-        );
-      }
-    );
+              /*
+               * Todos os sais da lista já são
+               * precipitados de prata compatíveis.
+               */
+              const saisPermitidos =
+                saisCompativeis;
 
               return (
                 <article
@@ -344,34 +225,34 @@ const ionTitulanteReferencia =
                   className="precipitacaoSelectiveItemCard"
                 >
                   <header className="precipitacaoSelectiveItemHeader">
-  <div className="precipitacaoSelectiveItemIdentification">
-    <span className="precipitacaoSelectiveItemNumber">
-      {String(
-        indice + 1
-      ).padStart(
-        2,
-        "0"
-      )}
-    </span>
+                    <div className="precipitacaoSelectiveItemIdentification">
+                      <span className="precipitacaoSelectiveItemNumber">
+                        {String(
+                          indice + 1
+                        ).padStart(
+                          2,
+                          "0"
+                        )}
+                      </span>
 
-    <div>
-      <span>
-        Espécie da mistura
-      </span>
+                      <div>
+                        <span>
+                          Espécie da mistura
+                        </span>
 
-      <strong>
-        {formulaAnalito}
-      </strong>
+                        <strong>
+                          {formulaAnalito}
+                        </strong>
 
-      <small>
-        Forma{" "}
-        {
-          item.sal
-            .formulaExibicao
-        }
-      </small>
-    </div>
-  </div>
+                        <small>
+                          Forma{" "}
+                          {
+                            item.sal
+                              .formulaExibicao
+                          }
+                        </small>
+                      </div>
+                    </div>
 
                     {itens.length > 2 && (
                       <button
@@ -399,52 +280,65 @@ const ionTitulanteReferencia =
                       onChange={(event) =>
                         onSalChange(
                           item.id,
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                     >
                       {saisPermitidos.map(
-  (sal) => {
-    const usadoEmOutroItem =
-      itens.some(
-        (outroItem) =>
-          outroItem.id !==
-            item.id &&
-          outroItem.sal.id ===
-            sal.id
-      );
+                        (sal) => {
+                          const usadoEmOutroItem =
+                            itens.some(
+                              (
+                                outroItem
+                              ) =>
+                                outroItem.id !==
+                                  item.id &&
+                                outroItem.sal.id ===
+                                  sal.id
+                            );
 
-    return (
-      <option
-        key={sal.id}
-        value={sal.id}
-        disabled={
-          usadoEmOutroItem
-        }
-      >
-        {sal.formulaExibicao}
-        {" — "}
-        {sal.nome}
-        {usadoEmOutroItem
-          ? " — já selecionado"
-          : ""}
-      </option>
-    );
-  }
-)}
+                          return (
+                            <option
+                              key={
+                                sal.id
+                              }
+                              value={
+                                sal.id
+                              }
+                              disabled={
+                                usadoEmOutroItem
+                              }
+                            >
+                              {
+                                sal.formulaExibicao
+                              }
+                              {" — "}
+                              {
+                                sal.nome
+                              }
+                              {usadoEmOutroItem
+                                ? " — já selecionado"
+                                : ""}
+                            </option>
+                          );
+                        }
+                      )}
                     </select>
                   </label>
 
                   <div className="precipitacaoSelectiveReaction">
-  <span>
-    Reação de precipitação
-  </span>
+                    <span>
+                      Reação de precipitação
+                    </span>
 
-  <strong>
-    {equacaoPrecipitacao}
-  </strong>
-</div>
+                    <strong>
+                      <EquacaoQuimica
+                        equacao={
+                          equacaoPrecipitacao
+                        }
+                      />
+                    </strong>
+                  </div>
 
                   <label className="precipitacaoField">
                     <span>
@@ -464,8 +358,7 @@ const ionTitulanteReferencia =
                         ) =>
                           onConcentracaoChange(
                             item.id,
-                            event.target
-                              .value
+                            event.target.value
                           )
                         }
                         placeholder="Ex.: 0,0100"
@@ -475,54 +368,60 @@ const ionTitulanteReferencia =
                         mol L⁻¹
                       </span>
                     </div>
+
+                    <small>
+                      Concentração inicial da espécie
+                      na mistura.
+                    </small>
                   </label>
 
                   <div className="precipitacaoSystemSummary precipitacaoSelectiveItemSummary">
-  <div>
-    <span>
-      Analito
-    </span>
+                    <div>
+                      <span>
+                        Analito
+                      </span>
 
-    <strong>
-      {formulaAnalito}
-    </strong>
-  </div>
+                      <strong>
+                        {formulaAnalito}
+                      </strong>
+                    </div>
 
-  <div>
-    <span>
-      Titulante comum
-    </span>
+                    <div>
+                      <span>
+                        Titulante comum
+                      </span>
 
-    <strong>
-      {formulaTitulante}
-    </strong>
-  </div>
+                      <strong>
+                        {formulaTitulante}
+                      </strong>
+                    </div>
 
-  <div>
-    <span>
-      Precipitado
-    </span>
+                    <div>
+                      <span>
+                        Precipitado
+                      </span>
 
-    <strong>
-      {
-        item.sal
-          .formulaExibicao
-      }
-    </strong>
-  </div>
+                      <strong>
+                        {
+                          item.sal
+                            .formulaExibicao
+                        }
+                      </strong>
+                    </div>
 
-  <div>
-    <span>
-      Kps adotado
-    </span>
+                    <div>
+                      <span>
+                        Kps adotado
+                      </span>
 
-    <strong>
-      {item.sal.kps.toExponential(
-        2
-      )}
-    </strong>
-  </div>
-</div>
+                      <strong>
+                        {formatarCientificoBR(
+                          item.sal.kps,
+                          2
+                        )}
+                      </strong>
+                    </div>
+                  </div>
                 </article>
               );
             }
@@ -538,6 +437,8 @@ const ionTitulanteReferencia =
         </button>
       </section>
 
+      {/* ETAPA 3 */}
+
       <section className="precipitacaoFormBlock">
         <header className="precipitacaoFormBlockHeader">
           <span className="precipitacaoFormStep">
@@ -550,9 +451,10 @@ const ionTitulanteReferencia =
             </h3>
 
             <p>
-              Informe os dados usados para
-              calcular os volumes de início e
-              construir a curva seletiva.
+              Informe os dados da amostra e da
+              solução padrão de AgNO₃ utilizados
+              para calcular os volumes de início
+              da precipitação.
             </p>
           </div>
         </header>
@@ -578,13 +480,19 @@ const ionTitulanteReferencia =
                 placeholder="Ex.: 25,00"
               />
 
-              <span>mL</span>
+              <span>
+                mL
+              </span>
             </div>
+
+            <small>
+              Volume total da mistura analisada.
+            </small>
           </label>
 
           <label className="precipitacaoField">
             <span>
-              Concentração do titulante
+              Concentração do AgNO₃
             </span>
 
             <div className="precipitacaoInputWithUnit">
@@ -606,6 +514,11 @@ const ionTitulanteReferencia =
                 mol L⁻¹
               </span>
             </div>
+
+            <small>
+              Concentração da solução padrão
+              fornecedora de Ag⁺.
+            </small>
           </label>
 
           <label className="precipitacaoField">
@@ -628,11 +541,20 @@ const ionTitulanteReferencia =
                 placeholder="Ex.: 50,00"
               />
 
-              <span>mL</span>
+              <span>
+                mL
+              </span>
             </div>
+
+            <small>
+              Volume máximo de solução de AgNO₃
+              disponível para a titulação.
+            </small>
           </label>
         </div>
       </section>
+
+      {/* AVISO CIENTÍFICO */}
 
       <div className="precipitacaoScientificNotice">
         <strong>
@@ -640,14 +562,16 @@ const ionTitulanteReferencia =
         </strong>
 
         <p>
-          O sistema calculará a concentração
-          livre de titulante necessária para o
-          início da precipitação de cada espécie.
+          O sistema calculará a concentração livre
+          de Ag⁺ necessária para iniciar a
+          precipitação de cada espécie da mistura.
           Quanto menor essa concentração crítica,
-          mais cedo o precipitado tende a se
-          formar.
+          mais cedo o precipitado de prata tende a
+          se formar durante a titulação direta.
         </p>
       </div>
+
+      {/* ERRO */}
 
       {erro && (
         <div
@@ -658,9 +582,13 @@ const ionTitulanteReferencia =
             Revise os dados informados
           </strong>
 
-          <span>{erro}</span>
+          <span>
+            {erro}
+          </span>
         </div>
       )}
+
+      {/* AÇÃO FINAL */}
 
       <div className="precipitacaoFormActions">
         <div>
@@ -670,11 +598,11 @@ const ionTitulanteReferencia =
 
           <span>
             {itens.length} espécie(s) na
-            mistura · Titulante{" "}
-            {especieTitulante ===
-            "cation"
-              ? "catiônico"
-              : "aniônico"}
+            mistura
+            {" · "}
+            Titulante direto: Ag⁺
+            {" · "}
+            Solução padrão: AgNO₃
           </span>
         </div>
 

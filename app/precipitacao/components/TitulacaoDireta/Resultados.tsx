@@ -11,28 +11,56 @@ type ResultadosProps = {
   resultado: ResultadoTitulacaoDiretaPrecipitacao;
 };
 
-function formatarQuantidadeMol(
-  valor: number
-) {
+function QuantidadeMol({
+  valor,
+}: {
+  valor: number;
+}) {
   if (!Number.isFinite(valor)) {
-    return "—";
+    return <>—</>;
   }
 
   if (valor === 0) {
-    return "0";
+    return (
+      <>
+        0
+        <small> mol</small>
+      </>
+    );
   }
 
   const expoente = Math.floor(
-    Math.log10(Math.abs(valor))
+    Math.log10(
+      Math.abs(valor)
+    )
   );
 
   const mantissa =
-    valor / Math.pow(10, expoente);
+    valor /
+    Math.pow(
+      10,
+      expoente
+    );
 
-  return `${mantissa.toLocaleString("pt-BR", {
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
-  })} × 10^${expoente}`;
+  return (
+    <>
+      {mantissa.toLocaleString(
+        "pt-BR",
+        {
+          minimumFractionDigits: 3,
+          maximumFractionDigits: 3,
+        }
+      )}{" "}
+      × 10
+      <sup>
+        {expoente}
+      </sup>
+      <small>
+        {" "}
+        mol
+      </small>
+    </>
+  );
 }
 
 export default function Resultados({
@@ -101,36 +129,45 @@ export default function Resultados({
         </article>
 
         <article className="precipitacaoResultCard">
-          <span>Quantidade inicial de analito</span>
+  <span>
+    Quantidade inicial de analito
+  </span>
 
-          <strong>
-          {formatarQuantidadeMol(
-  resultado.molAnalito
-)}
-            <small> mol</small>
-          </strong>
+  <strong>
+    <QuantidadeMol
+      valor={
+        resultado.molAnalito
+      }
+    />
+  </strong>
 
-          <p>
-            Quantidade de matéria de {formulaAnalito} presente
-            inicialmente na amostra.
-          </p>
-        </article>
+  <p>
+    Quantidade de matéria de{" "}
+    {formulaAnalito} presente
+    inicialmente na amostra.
+  </p>
+</article>
 
-        <article className="precipitacaoResultCard">
-          <span>Titulante necessário no PE</span>
+<article className="precipitacaoResultCard">
+  <span>
+    Titulante necessário no PE
+  </span>
 
-          <strong>
-          {formatarQuantidadeMol(
-  resultado.molTitulantePE
-)}
-            <small> mol</small>
-          </strong>
+  <strong>
+    <QuantidadeMol
+      valor={
+        resultado.molTitulantePE
+      }
+    />
+  </strong>
 
-          <p>
-            Quantidade de {formulaTitulante} necessária para
-            alcançar o ponto de equivalência.
-          </p>
-        </article>
+  <p>
+    Quantidade de{" "}
+    {formulaTitulante} necessária
+    para alcançar o ponto de
+    equivalência.
+  </p>
+</article>
 
         <article className="precipitacaoResultCard">
           <span>Relação estequiométrica</span>

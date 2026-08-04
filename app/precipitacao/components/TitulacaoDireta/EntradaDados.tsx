@@ -11,6 +11,11 @@ import {
 
 import EquacaoQuimica from "./EquacaoQuimica";
 
+import {
+  formatarCientificoBR,
+} from "@/lib/precipitacao/formatadores";
+
+
 type EntradaDadosProps = {
   analito: ConfiguracaoAnalitoDireto;
   metodoId: MetodoArgentometricoDireto;
@@ -126,9 +131,17 @@ export default function EntradaDados({
           </div>
 
           <div>
-            <span>Kps adotado</span>
-            <strong>{kps.toExponential(2)}</strong>
-          </div>
+  <span>
+    Kps adotado
+  </span>
+
+  <strong>
+    {formatarCientificoBR(
+      kps,
+      2
+    )}
+  </strong>
+</div>
         </div>
       </section>
 
@@ -171,7 +184,11 @@ export default function EntradaDados({
 
                 <strong>{metodo.nome}</strong>
 
-                <p>{metodo.principio}</p>
+                <p>
+  <EquacaoQuimica
+    equacao={metodo.principio}
+  />
+</p>
 
                 <div>
                   <small>Indicador recomendado</small>
@@ -186,11 +203,13 @@ export default function EntradaDados({
           <strong>Compatibilidade química confirmada</strong>
 
           <p>
-            Para {analito.formulaExibicao}, o sistema selecionou{" "}
-            {metodoSelecionado.nome} com{" "}
-            {metodoSelecionado.indicador}.{" "}
-            {metodoSelecionado.observacao}
-          </p>
+  Para {analito.formulaExibicao}, o sistema selecionou{" "}
+  {metodoSelecionado.nome} com{" "}
+  {metodoSelecionado.indicador}.{" "}
+  <EquacaoQuimica
+    equacao={metodoSelecionado.observacao}
+  />
+</p>
         </div>
       </section>
 

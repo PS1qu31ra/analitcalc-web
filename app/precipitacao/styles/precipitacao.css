@@ -7791,3 +7791,17 @@
   line-height: 1;
   vertical-align: baseline;
 }
+
+.precipitacaoResultCard > strong sup {
+  position: relative;
+  top: -0.35em;
+  margin-left: 1px;
+  font-size: 0.62em;
+  line-height: 0;
+  vertical-align: baseline;
+}
+
+.precipitacaoResultCard > strong small {
+  font-size: 0.75rem;
+  font-weight: 700;
+}

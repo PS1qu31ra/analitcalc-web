@@ -83,44 +83,36 @@ function obterEspecieAnalito(
 
 export default function PrecipitacaoSeletiva() {
   const saisCompativeis =
-    useMemo(
-      () =>
-        saisPrecipitacao.filter(
-          (sal) =>
-            sal.usos.includes(
-              "seletividade"
-            )
-        ),
-      []
-    );
+  useMemo(
+    () =>
+      saisPrecipitacao.filter(
+        (sal) =>
+          sal.usos.includes(
+            "seletividade"
+          ) &&
+          sal.cation.formulaExibicao ===
+            "Ag⁺" &&
+          sal.formulaExibicao !==
+            "Ag₂O"
+      ),
+    []
+  );
 
   const primeiroSal =
     saisCompativeis[0];
 
-  const segundoSal =
+    const segundoSal =
     primeiroSal
       ? saisCompativeis.find(
           (sal) =>
             sal.id !==
-              primeiroSal.id &&
-            sal.cation.id ===
-              primeiroSal.cation.id
-        ) ??
-        saisCompativeis.find(
-          (sal) =>
-            sal.id !==
             primeiroSal.id
-        ) ??
-        primeiroSal
+        )
       : undefined;
 
-  const [
-    especieTitulante,
-    setEspecieTitulante,
-  ] =
-    useState<EspeciePrecipitacao>(
-      "cation"
-    );
+      const especieTitulante:
+      EspeciePrecipitacao =
+      "cation";
 
   const [
     itens,
@@ -210,126 +202,6 @@ export default function PrecipitacaoSeletiva() {
     setErro("");
   }
 
-  function alterarEspecieTitulante(
-    novaEspecie:
-      EspeciePrecipitacao
-  ) {
-    if (
-      novaEspecie ===
-      especieTitulante
-    ) {
-      return;
-    }
-
-    const primeiroItemAtual =
-      itens[0];
-
-    if (!primeiroItemAtual) {
-      setEspecieTitulante(
-        novaEspecie
-      );
-
-      limparResultado();
-
-      return;
-    }
-
-    /*
-     * O primeiro sal define o novo íon
-     * titulante comum após a troca entre
-     * cátion e ânion.
-     */
-    const ionTitulanteReferencia =
-      obterIonTitulanteDoSal({
-        sal:
-          primeiroItemAtual.sal,
-        especieTitulante:
-          novaEspecie,
-      });
-
-    const saisDoMesmoSistema =
-      saisCompativeis.filter(
-        (sal) => {
-          const ionDoSal =
-            obterIonTitulanteDoSal({
-              sal,
-              especieTitulante:
-                novaEspecie,
-            });
-
-          return (
-            ionDoSal.id ===
-            ionTitulanteReferencia.id
-          );
-        }
-      );
-
-    if (
-      saisDoMesmoSistema.length <
-      itens.length
-    ) {
-      setErro(
-        `O sistema com ${ionTitulanteReferencia.formulaExibicao} possui apenas ${saisDoMesmoSistema.length} precipitado(s) disponível(is), quantidade insuficiente para manter ${itens.length} espécies diferentes.`
-      );
-
-      return;
-    }
-
-    const idsUtilizados =
-      new Set<string>();
-
-    const novosItens =
-      itens.map(
-        (item) => {
-          const salAtualCompativel =
-            saisDoMesmoSistema.find(
-              (sal) =>
-                sal.id ===
-                  item.sal.id &&
-                !idsUtilizados.has(
-                  sal.id
-                )
-            );
-
-          const salSubstituto =
-            salAtualCompativel ??
-            saisDoMesmoSistema.find(
-              (sal) =>
-                !idsUtilizados.has(
-                  sal.id
-                )
-            );
-
-          if (!salSubstituto) {
-            return item;
-          }
-
-          idsUtilizados.add(
-            salSubstituto.id
-          );
-
-          return {
-            ...item,
-            sal: salSubstituto,
-            especieAnalito:
-              obterEspecieAnalito(
-                novaEspecie
-              ),
-          };
-        }
-      );
-
-    setEspecieTitulante(
-      novaEspecie
-    );
-
-    setItens(
-      novosItens
-    );
-
-    limparResultado();
-  }
-
   function adicionarItem() {
     const primeiroItem =
       itens[0];
@@ -347,7 +219,7 @@ export default function PrecipitacaoSeletiva() {
       !ionTitulanteReferencia
     ) {
       setErro(
-        "Não foi possível identificar o titulante comum da mistura."
+        "Não foi possível confirmar Ag⁺ como titulante comum da mistura."
       );
 
       return;
@@ -695,7 +567,7 @@ export default function PrecipitacaoSeletiva() {
       !ionTitulanteReferencia
     ) {
       setErro(
-        "Não foi possível identificar o titulante comum da mistura."
+        "Não foi possível confirmar Ag⁺ como titulante comum da mistura."
       );
 
       return;
@@ -752,7 +624,7 @@ export default function PrecipitacaoSeletiva() {
         0
     ) {
       setErro(
-        "Informe uma concentração positiva e válida para o titulante."
+        "Informe uma concentração positiva e válida para a solução de AgNO₃."
       );
 
       return;
@@ -861,70 +733,61 @@ export default function PrecipitacaoSeletiva() {
   return (
     <section className="precipitacaoSelectiveSection">
       <EntradaDados
-        especieTitulante={
-          especieTitulante
-        }
-        itens={
-          itens
-        }
-        volumeAmostra={
-          volumeAmostra
-        }
-        concentracaoTitulante={
-          concentracaoTitulante
-        }
-        volumeMaximoBureta={
-          volumeMaximoBureta
-        }
-        erro={
-          erro
-        }
-        onEspecieTitulanteChange={
-          alterarEspecieTitulante
-        }
-        onAdicionarItem={
-          adicionarItem
-        }
-        onRemoverItem={
-          removerItem
-        }
-        onSalChange={
-          alterarSal
-        }
-        onConcentracaoChange={
-          alterarConcentracao
-        }
-        onVolumeAmostraChange={(
-          valor
-        ) => {
-          setVolumeAmostra(
-            valor
-          );
-
-          limparResultado();
-        }}
-        onConcentracaoTitulanteChange={(
-          valor
-        ) => {
-          setConcentracaoTitulante(
-            valor
-          );
-
-          limparResultado();
-        }}
-        onVolumeMaximoBuretaChange={(
-          valor
-        ) => {
-          setVolumeMaximoBureta(
-            valor
-          );
-
-          limparResultado();
-        }}
-        onSubmit={
-          calcular
-        }
-      />
+  itens={
+    itens
+  }
+  volumeAmostra={
+    volumeAmostra
+  }
+  concentracaoTitulante={
+    concentracaoTitulante
+  }
+  volumeMaximoBureta={
+    volumeMaximoBureta
+  }
+  erro={
+    erro
+  }
+  onAdicionarItem={
+    adicionarItem
+  }
+  onRemoverItem={
+    removerItem
+  }
+  onSalChange={
+    alterarSal
+  }
+  onConcentracaoChange={
+    alterarConcentracao
+  }
+  onVolumeAmostraChange={(
+    valor
+  ) => {
+    setVolumeAmostra(
+      valor
+    );
+    limparResultado();
+  }}
+  onConcentracaoTitulanteChange={(
+    valor
+  ) => {
+    setConcentracaoTitulante(
+      valor
+    );
+    limparResultado();
+  }}
+  onVolumeMaximoBuretaChange={(
+    valor
+  ) => {
+    setVolumeMaximoBureta(
+      valor
+    );
+    limparResultado();
+  }}
+  onSubmit={
+    calcular
+  }
+/>
 
       {resultado &&
         dadosCalculados && (
