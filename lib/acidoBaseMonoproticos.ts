@@ -14,6 +14,288 @@ import {
   } from "./data/reacoesAcidoBaseMono";
   
   const KW_25C = 1e-14;
+
+  const LIMITE_MINIMO_H = 1e-14;
+const LIMITE_MAXIMO_H = 1;
+
+function resolverConcentracaoHPorBissecao(
+  funcaoResiduo: (
+    concentracaoH: number
+  ) => number
+) {
+  let logHMinimo =
+    Math.log10(
+      LIMITE_MINIMO_H
+    );
+
+  let logHMaximo =
+    Math.log10(
+      LIMITE_MAXIMO_H
+    );
+
+  let residuoMinimo =
+    funcaoResiduo(
+      10 ** logHMinimo
+    );
+
+  let residuoMaximo =
+    funcaoResiduo(
+      10 ** logHMaximo
+    );
+
+  if (
+    !Number.isFinite(
+      residuoMinimo
+    ) ||
+    !Number.isFinite(
+      residuoMaximo
+    )
+  ) {
+    return NaN;
+  }
+
+  /*
+   * Em condições químicas usuais, a raiz
+   * estará entre 10⁻¹⁴ e 1 mol L⁻¹.
+   */
+  if (
+    residuoMinimo === 0
+  ) {
+    return (
+      10 ** logHMinimo
+    );
+  }
+
+  if (
+    residuoMaximo === 0
+  ) {
+    return (
+      10 ** logHMaximo
+    );
+  }
+
+  /*
+   * Proteção caso os limites não envolvam
+   * uma mudança de sinal devido a dados
+   * extremos ou inconsistentes.
+   */
+  if (
+    residuoMinimo *
+      residuoMaximo >
+    0
+  ) {
+    return NaN;
+  }
+
+  for (
+    let iteracao = 0;
+    iteracao < 160;
+    iteracao += 1
+  ) {
+    const logHMeio =
+      (
+        logHMinimo +
+        logHMaximo
+      ) /
+      2;
+
+    const concentracaoHMeio =
+      10 ** logHMeio;
+
+    const residuoMeio =
+      funcaoResiduo(
+        concentracaoHMeio
+      );
+
+    if (
+      !Number.isFinite(
+        residuoMeio
+      )
+    ) {
+      return NaN;
+    }
+
+    if (
+      Math.abs(
+        residuoMeio
+      ) <
+      1e-16
+    ) {
+      return concentracaoHMeio;
+    }
+
+    if (
+      residuoMinimo *
+        residuoMeio <=
+      0
+    ) {
+      logHMaximo =
+        logHMeio;
+
+      residuoMaximo =
+        residuoMeio;
+    } else {
+      logHMinimo =
+        logHMeio;
+
+      residuoMinimo =
+        residuoMeio;
+    }
+  }
+
+  return (
+    10 **
+    (
+      (
+        logHMinimo +
+        logHMaximo
+      ) /
+      2
+    )
+  );
+}
+
+function calcularHAcidoFracoComBaseForte({
+  ka,
+  molAcidoInicial,
+  molBaseAdicionada,
+  volumeTotalL,
+}: {
+  ka: number;
+  molAcidoInicial: number;
+  molBaseAdicionada: number;
+  volumeTotalL: number;
+}) {
+  if (
+    ka <= 0 ||
+    molAcidoInicial <= 0 ||
+    volumeTotalL <= 0
+  ) {
+    return NaN;
+  }
+
+  const concentracaoTotalAcido =
+    molAcidoInicial /
+    volumeTotalL;
+
+  /*
+   * A base forte adiciona seu cátion
+   * espectador ao meio. Para NaOH, essa
+   * concentração corresponde a [Na⁺].
+   */
+  const concentracaoCationForte =
+    molBaseAdicionada /
+    volumeTotalL;
+
+  return resolverConcentracaoHPorBissecao(
+    (h) => {
+      const oh =
+        KW_25C / h;
+
+      /*
+       * Distribuição do sistema HA/A⁻:
+       *
+       * [A⁻] =
+       * Ctotal · Ka / (Ka + [H⁺])
+       */
+      const concentracaoA =
+        (
+          concentracaoTotalAcido *
+          ka
+        ) /
+        (
+          ka + h
+        );
+
+      /*
+       * Balanço de carga:
+       *
+       * [H⁺] + [Na⁺]
+       * =
+       * [A⁻] + [OH⁻]
+       */
+      return (
+        h +
+        concentracaoCationForte -
+        concentracaoA -
+        oh
+      );
+    }
+  );
+}
+
+function calcularHBaseFracaComAcidoForte({
+  kb,
+  molBaseInicial,
+  molAcidoAdicionado,
+  volumeTotalL,
+}: {
+  kb: number;
+  molBaseInicial: number;
+  molAcidoAdicionado: number;
+  volumeTotalL: number;
+}) {
+  if (
+    kb <= 0 ||
+    molBaseInicial <= 0 ||
+    volumeTotalL <= 0
+  ) {
+    return NaN;
+  }
+
+  const kaConjugado =
+    KW_25C / kb;
+
+  const concentracaoTotalBase =
+    molBaseInicial /
+    volumeTotalL;
+
+  /*
+   * O ácido forte adiciona seu ânion
+   * espectador ao meio. Para HCl, essa
+   * concentração corresponde a [Cl⁻].
+   */
+  const concentracaoAnionForte =
+    molAcidoAdicionado /
+    volumeTotalL;
+
+  return resolverConcentracaoHPorBissecao(
+    (h) => {
+      const oh =
+        KW_25C / h;
+
+      /*
+       * Distribuição do sistema BH⁺/B:
+       *
+       * [BH⁺] =
+       * Ctotal · [H⁺] /
+       * (Ka + [H⁺])
+       */
+      const concentracaoBH =
+        (
+          concentracaoTotalBase *
+          h
+        ) /
+        (
+          kaConjugado + h
+        );
+
+      /*
+       * Balanço de carga:
+       *
+       * [H⁺] + [BH⁺]
+       * =
+       * [Cl⁻] + [OH⁻]
+       */
+      return (
+        h +
+        concentracaoBH -
+        concentracaoAnionForte -
+        oh
+      );
+    }
+  );
+}
   
   export type TipoSistemaMonoprotico =
     | "acido-forte-com-base-forte"
@@ -315,147 +597,178 @@ import {
       }
     }
   
-    if (resultado.tipoSistema === "acido-fraco-com-base-forte") {
-      const ka = resultado.titulado.constante;
-      const pka = resultado.titulado.pValor;
-  
-      if (volumeAdicionado === 0) {
-        const h = calcularConcentracaoHAcidoFraco(ka, concTitulado);
-  
+    if (
+      resultado.tipoSistema ===
+      "acido-fraco-com-base-forte"
+    ) {
+      const ka =
+        resultado.titulado
+          .constante;
+    
+      const h =
+        calcularHAcidoFracoComBaseForte({
+          ka,
+          molAcidoInicial:
+            molTituladoInicial,
+          molBaseAdicionada:
+            molTitulanteAdicionado,
+          volumeTotalL,
+        });
+    
+      if (
+        !Number.isFinite(h) ||
+        h <= 0
+      ) {
         return {
-          volume: volumeAdicionado,
-          ph: phPorConcentracaoH(h),
+          volume:
+            volumeAdicionado,
+          ph: null,
+          regiao:
+            "Não calculado",
+          explicacao:
+            "Não foi possível resolver o equilíbrio do sistema ácido fraco/base forte para este volume.",
+        };
+      }
+    
+      const ph =
+        phPorConcentracaoH(
+          h
+        );
+    
+      if (
+        volumeAdicionado === 0
+      ) {
+        return {
+          volume:
+            volumeAdicionado,
+          ph,
           regiao: "Início",
           explicacao:
-            "No início, há apenas ácido fraco em solução. O pH é calculado pelo equilíbrio de dissociação ácida.",
+            "No início, há apenas ácido fraco em solução. O pH foi obtido pela resolução simultânea do equilíbrio ácido, do balanço de massa e do balanço de carga.",
         };
       }
-  
+    
       if (antesPE) {
-        const molHA = molTituladoInicial - molTitulanteAdicionado;
-        const molA = molTitulanteAdicionado;
-  
-        if (molA <= 0 || molHA <= 0) {
-          const concentracaoHA = molHA / volumeTotalL;
-          const h = calcularConcentracaoHAcidoFraco(ka, concentracaoHA);
-  
-          return {
-            volume: volumeAdicionado,
-            ph: phPorConcentracaoH(h),
-            regiao: "Antes do PE",
-            explicacao:
-              "Ainda predomina ácido fraco não neutralizado. O pH é calculado pelo equilíbrio ácido.",
-          };
-        }
-  
-        const ph = pka + Math.log10(molA / molHA);
-  
         return {
-          volume: volumeAdicionado,
+          volume:
+            volumeAdicionado,
           ph,
-          regiao: "Região tampão",
+          regiao:
+            "Região tampão",
           explicacao:
-            "Antes do PE, coexistem ácido fraco HA e sua base conjugada A⁻. O pH é calculado pela equação de Henderson-Hasselbalch.",
+            "Antes do ponto de equivalência, coexistem o ácido fraco HA e sua base conjugada A⁻. O pH foi calculado por balanço de massa, balanço de carga e equilíbrio químico.",
         };
       }
-  
+    
       if (noPE) {
-        const concentracaoA = molTituladoInicial / volumeTotalL;
-        const kb = KW_25C / ka;
-        const oh = calcularConcentracaoOHBaseFraca(kb, concentracaoA);
-  
         return {
-          volume: volumeAdicionado,
-          ph: phPorConcentracaoOH(oh),
-          regiao: "Ponto de equivalência",
+          volume:
+            volumeAdicionado,
+          ph,
+          regiao:
+            "Ponto de equivalência",
           explicacao:
-            "No PE, todo ácido fraco foi convertido em base conjugada A⁻. O pH fica básico devido à hidrólise dessa base conjugada.",
+            "No ponto de equivalência, o ácido fraco foi convertido predominantemente em sua base conjugada A⁻. O pH básico resulta da hidrólise, calculada pelo equilíbrio completo do sistema.",
         };
       }
-  
+    
       if (aposPE) {
-        const excessoOH = molTitulanteAdicionado - molTituladoInicial;
-        const oh = excessoOH / volumeTotalL;
-  
         return {
-          volume: volumeAdicionado,
-          ph: phPorConcentracaoOH(oh),
-          regiao: "Após o PE",
+          volume:
+            volumeAdicionado,
+          ph,
+          regiao:
+            "Após o PE",
           explicacao:
-            "Após o PE, a base forte adicionada está em excesso. O pH é dominado pela concentração de OH⁻ excedente.",
+            "Após o ponto de equivalência, há base forte em excesso. O pH foi calculado pelo balanço de carga completo, considerando também o sistema conjugado HA/A⁻.",
         };
       }
     }
   
-    if (resultado.tipoSistema === "base-fraca-com-acido-forte") {
-      const kb = resultado.titulado.constante;
-      const pkb = resultado.titulado.pValor;
-  
-      if (volumeAdicionado === 0) {
-        const oh = calcularConcentracaoOHBaseFraca(kb, concTitulado);
-  
+    if (
+      resultado.tipoSistema ===
+      "base-fraca-com-acido-forte"
+    ) {
+      const kb =
+        resultado.titulado
+          .constante;
+    
+      const h =
+        calcularHBaseFracaComAcidoForte({
+          kb,
+          molBaseInicial:
+            molTituladoInicial,
+          molAcidoAdicionado:
+            molTitulanteAdicionado,
+          volumeTotalL,
+        });
+    
+      if (
+        !Number.isFinite(h) ||
+        h <= 0
+      ) {
         return {
-          volume: volumeAdicionado,
-          ph: phPorConcentracaoOH(oh),
+          volume:
+            volumeAdicionado,
+          ph: null,
+          regiao:
+            "Não calculado",
+          explicacao:
+            "Não foi possível resolver o equilíbrio do sistema base fraca/ácido forte para este volume.",
+        };
+      }
+    
+      const ph =
+        phPorConcentracaoH(
+          h
+        );
+    
+      if (
+        volumeAdicionado === 0
+      ) {
+        return {
+          volume:
+            volumeAdicionado,
+          ph,
           regiao: "Início",
           explicacao:
-            "No início, há apenas base fraca em solução. O pH é calculado pelo equilíbrio de basicidade.",
+            "No início, há apenas base fraca em solução. O pH foi obtido pela resolução simultânea do equilíbrio básico, do balanço de massa e do balanço de carga.",
         };
       }
-  
+    
       if (antesPE) {
-        const molB = molTituladoInicial - molTitulanteAdicionado;
-        const molBH = molTitulanteAdicionado;
-  
-        if (molB <= 0 || molBH <= 0) {
-          const concentracaoB = molB / volumeTotalL;
-          const oh = calcularConcentracaoOHBaseFraca(kb, concentracaoB);
-  
-          return {
-            volume: volumeAdicionado,
-            ph: phPorConcentracaoOH(oh),
-            regiao: "Antes do PE",
-            explicacao:
-              "Ainda predomina base fraca não neutralizada. O pH é calculado pelo equilíbrio básico.",
-          };
-        }
-  
-        const poh = pkb + Math.log10(molBH / molB);
-        const ph = 14 - poh;
-  
         return {
-          volume: volumeAdicionado,
+          volume:
+            volumeAdicionado,
           ph,
-          regiao: "Região tampão",
+          regiao:
+            "Região tampão",
           explicacao:
-            "Antes do PE, coexistem base fraca B e seu ácido conjugado BH⁺. O pH é calculado pela forma básica da equação de Henderson-Hasselbalch.",
+            "Antes do ponto de equivalência, coexistem a base fraca B e seu ácido conjugado BH⁺. O pH foi calculado por balanço de massa, balanço de carga e equilíbrio químico.",
         };
       }
-  
+    
       if (noPE) {
-        const concentracaoBH = molTituladoInicial / volumeTotalL;
-        const ka = KW_25C / kb;
-        const h = calcularConcentracaoHAcidoFraco(ka, concentracaoBH);
-  
         return {
-          volume: volumeAdicionado,
-          ph: phPorConcentracaoH(h),
-          regiao: "Ponto de equivalência",
+          volume:
+            volumeAdicionado,
+          ph,
+          regiao:
+            "Ponto de equivalência",
           explicacao:
-            "No PE, toda base fraca foi convertida em ácido conjugado BH⁺. O pH fica ácido devido à hidrólise desse ácido conjugado.",
+            "No ponto de equivalência, a base fraca foi convertida predominantemente em seu ácido conjugado BH⁺. O pH ácido resulta da hidrólise, calculada pelo equilíbrio completo do sistema.",
         };
       }
-  
+    
       if (aposPE) {
-        const excessoH = molTitulanteAdicionado - molTituladoInicial;
-        const h = excessoH / volumeTotalL;
-  
         return {
-          volume: volumeAdicionado,
-          ph: phPorConcentracaoH(h),
-          regiao: "Após o PE",
+          volume:
+            volumeAdicionado,
+          ph,
+          regiao:
+            "Após o PE",
           explicacao:
-            "Após o PE, o ácido forte adicionado está em excesso. O pH é dominado pela concentração de H⁺ excedente.",
+            "Após o ponto de equivalência, há ácido forte em excesso. O pH foi calculado pelo balanço de carga completo, considerando também o sistema conjugado B/BH⁺.",
         };
       }
     }
@@ -469,33 +782,111 @@ import {
   }
   
   export function gerarCurvaMonoprotica(
-    resultado: ResultadoSistemaMonoprotico
+    resultado:
+      ResultadoSistemaMonoprotico
   ): CurvaAcidoBaseMonoprotica {
-    const volumeMaximo = Math.max(
-      resultado.entradas.volBureta,
-      resultado.volumePE * 2
-    );
+    const volumeMaximo =
+      Math.max(
+        resultado.entradas
+          .volBureta,
+        resultado.volumePE * 2
+      );
   
-    const passo = Math.max(volumeMaximo / 400, 0.05);
+    const passo =
+      Math.max(
+        volumeMaximo / 400,
+        0.05
+      );
   
-    const pontos: PontoCurvaAcidoBaseMono[] = [];
+    const quantidadePassos =
+      Math.ceil(
+        volumeMaximo /
+        passo
+      );
   
-    for (let volume = 0; volume <= volumeMaximo; volume += passo) {
-      pontos.push(calcularPhPorVolumeMonoprotico(resultado, volume));
+    const pontos:
+      PontoCurvaAcidoBaseMono[] =
+      [];
+  
+    for (
+      let indice = 0;
+      indice <=
+        quantidadePassos;
+      indice += 1
+    ) {
+      const volume =
+        Math.min(
+          indice * passo,
+          volumeMaximo
+        );
+  
+      pontos.push(
+        calcularPhPorVolumeMonoprotico(
+          resultado,
+          volume
+        )
+      );
     }
   
-    const jaTemPE = pontos.some(
-      (ponto) => Math.abs(ponto.volume - resultado.volumePE) <= passo / 2
-    );
+    /*
+     * Insere o PE exato, porque ele pode não
+     * coincidir com a malha regular da curva.
+     */
+    const jaTemPE =
+      pontos.some(
+        (ponto) =>
+          Math.abs(
+            ponto.volume -
+              resultado.volumePE
+          ) <
+          1e-9
+      );
   
     if (!jaTemPE) {
-      pontos.push(calcularPhPorVolumeMonoprotico(resultado, resultado.volumePE));
+      pontos.push(
+        calcularPhPorVolumeMonoprotico(
+          resultado,
+          resultado.volumePE
+        )
+      );
     }
   
-    pontos.sort((a, b) => a.volume - b.volume);
+    /*
+     * Remove eventuais volumes repetidos
+     * produzidos pelo limite final e pelo PE.
+     */
+    const pontosOrdenados =
+      pontos.sort(
+        (pontoA, pontoB) =>
+          pontoA.volume -
+          pontoB.volume
+      );
+  
+    const pontosUnicos =
+      pontosOrdenados.filter(
+        (
+          ponto,
+          indice,
+          array
+        ) => {
+          if (indice === 0) {
+            return true;
+          }
+  
+          return (
+            Math.abs(
+              ponto.volume -
+                array[indice - 1]
+                  .volume
+            ) >
+            1e-9
+          );
+        }
+      );
   
     return {
-      pontos,
+      pontos:
+        pontosUnicos,
       passo,
       volumeMaximo,
     };
