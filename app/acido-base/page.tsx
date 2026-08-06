@@ -777,11 +777,16 @@ const tabelaSegundaDerivadaMono =
                   </div>
 
                   <div className="resultCard">
-                    <span>Concentração no PE</span>
-                    <strong>
-                      {formatarNumeroBR(resultadoMono.concentracaoNoPE, 5)} mol L⁻¹
-                    </strong>
-                  </div>
+  <span>Concentração no PE</span>
+
+  <strong className="resultValue">
+    {formatarNumeroBR(resultadoMono.concentracaoNoPE, 5)}
+  </strong>
+
+  <span className="resultUnit">
+    mol&nbsp;L⁻¹
+  </span>
+</div>
 
                   <div className="resultCard">
                     <span>Equivalências</span>
@@ -1215,28 +1220,6 @@ const tabelaSegundaDerivadaMono =
           (dpH/dV). A 2ª derivada ajuda a localizar a região de maior mudança
           de concavidade, geralmente próxima ao ponto de equivalência.
         </p>
-
-        <div className="resultGrid curveSummaryGrid">
-          <div className="resultCard">
-            <span>Pontos da curva</span>
-            <strong>{curvaMono.pontos.length}</strong>
-          </div>
-
-          <div className="resultCard">
-            <span>Pontos com derivadas</span>
-            <strong>{derivadasMono.length}</strong>
-          </div>
-
-          <div className="resultCard">
-            <span>Equivalências</span>
-            <strong>1</strong>
-          </div>
-
-          <div className="resultCard">
-            <span>Passo da curva</span>
-            <strong>{formatarNumeroBR(curvaMono.passo, 2)} mL</strong>
-          </div>
-        </div>
 
         {resumoDerivadaMono && (
           <div className="equivalenceVolumePanel">
@@ -2805,25 +2788,6 @@ const tabelaSegundaDerivada =
           ocorre mudança de concavidade da curva, geralmente próximo ao ponto
           de equivalência.
         </p>
-
-        <div className="resultGrid curveSummaryGrid">
-          <div className="resultCard">
-            <span>Pontos da curva</span>
-            <strong>{curvaPoli.pontos.length}</strong>
-          </div>
-          <div className="resultCard">
-            <span>Pontos com derivadas</span>
-            <strong>{derivadasPoli.length}</strong>
-          </div>
-          <div className="resultCard">
-            <span>Nº de equivalências</span>
-            <strong>{resultadoPoli.numeroEquivalencias}</strong>
-          </div>
-          <div className="resultCard">
-            <span>Passo da curva</span>
-            <strong>{formatarNumeroBR(curvaPoli.passo, 2)} mL</strong>
-          </div>
-        </div>
 
         <div className="equivalenceVolumePanel">
   <span className="eyebrow">Leitura analítica</span>

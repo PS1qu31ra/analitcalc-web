@@ -5186,3 +5186,22 @@ section.container.calculatorSection + section.container.calculatorSection {
     padding: 22px;
   }
 }
+
+.resultValue {
+  display: block;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.resultUnit {
+  display: block;
+  margin-top: 0.2rem;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  text-transform: none !important;
+  font-variant: normal;
+  white-space: nowrap;
+}

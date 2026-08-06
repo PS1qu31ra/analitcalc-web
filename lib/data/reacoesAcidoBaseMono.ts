@@ -285,6 +285,22 @@ export type ReacaoAcidoBaseMono = {
     return reacoesAcidoBaseMono.find((reacao) => reacao.chaveReacao === chave);
   }
   
+  function formatarNomeTitulanteMono(nome: string, formula: string) {
+    const ehAcido = acidosFortesComoTitulantes.some(
+      (acido) => acido.formula === formula
+    );
+  
+    if (!ehAcido) {
+      return nome;
+    }
+  
+    if (nome.toLowerCase().startsWith("ácido ")) {
+      return nome;
+    }
+  
+    return `Ácido ${nome.charAt(0).toLowerCase()}${nome.slice(1)}`;
+  }
+
   export function listarTitulantesMono() {
     const mapa = new Map<
       string,
@@ -293,9 +309,14 @@ export type ReacaoAcidoBaseMono = {
   
     reacoesAcidoBaseMono.forEach((reacao) => {
       mapa.set(reacao.formulaTitulante, {
-        nome: reacao.titulanteExibicao,
+        nome: formatarNomeTitulanteMono(
+          reacao.titulanteExibicao,
+          reacao.formulaTitulante
+        ),
         formula: reacao.formulaTitulante,
-        formulaExibicao: formatarFormulaQuimicaMono(reacao.formulaTitulante),
+        formulaExibicao: formatarFormulaQuimicaMono(
+          reacao.formulaTitulante
+        ),
       });
     });
   
