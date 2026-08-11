@@ -3766,10 +3766,27 @@ function montarResumoDerivadasPoli(
 ): ResumoDerivadaPE[] {
   if (!derivadas.length) return [];
 
-  const passoEstimado =
-    derivadas.length > 1
-      ? Math.abs(derivadas[1].volume - derivadas[0].volume)
-      : 0.5;
+  const intervalos = derivadas
+  .slice(1)
+  .map((item, index) =>
+    Math.abs(
+      item.volume -
+      derivadas[index].volume
+    )
+  )
+  .filter(
+    (valor) =>
+      Number.isFinite(valor) &&
+      valor > 0
+  )
+  .sort((a, b) => a - b);
+
+const passoEstimado =
+  intervalos.length > 0
+    ? intervalos[
+        Math.floor(intervalos.length / 2)
+      ]
+    : 0.5;
 
   const volumeMinimoAnalise = Math.max(resultado.volumePE1 * 0.12, 1);
 
@@ -3829,10 +3846,66 @@ function montarResumoDerivadasPoli(
       return anterior * atual < 0;
     });
 
+    const cruzamentosD2: {
+      volume: number;
+      d2: number;
+    }[] = [];
+    
+    for (let i = 1; i < candidatosD2.length; i += 1) {
+      const anterior = candidatosD2[i - 1];
+      const atual = candidatosD2[i];
+    
+      if (
+        anterior.d2 === null ||
+        atual.d2 === null
+      ) {
+        continue;
+      }
+    
+      if (anterior.d2 === 0) {
+        cruzamentosD2.push({
+          volume: anterior.volume,
+          d2: 0,
+        });
+    
+        continue;
+      }
+    
+      if (atual.d2 === 0) {
+        cruzamentosD2.push({
+          volume: atual.volume,
+          d2: 0,
+        });
+    
+        continue;
+      }
+    
+      if (anterior.d2 * atual.d2 < 0) {
+        /*
+         * Interpolação do cruzamento por zero.
+         *
+         * Não altera o PE calculado.
+         * Apenas estima onde D² cruza zero
+         * entre os dois pontos.
+         */
+        const volumeZero =
+          anterior.volume +
+          ((0 - anterior.d2) *
+            (atual.volume - anterior.volume)) /
+            (atual.d2 - anterior.d2);
+    
+        cruzamentosD2.push({
+          volume: volumeZero,
+          d2: 0,
+        });
+      }
+    }
+    
     const melhorD2 =
-      candidatosD2.length > 0 && temTrocaSinalD2
-        ? candidatosD2.reduce((melhor, atual) =>
-            Math.abs(atual.d2 ?? 0) < Math.abs(melhor.d2 ?? 0)
+      cruzamentosD2.length > 0
+        ? cruzamentosD2.reduce((melhor, atual) =>
+            Math.abs(atual.volume - resultado.volumePE) <
+            Math.abs(melhor.volume - resultado.volumePE)
               ? atual
               : melhor
           )
@@ -3851,8 +3924,15 @@ function montarResumoDerivadasPoli(
       volumeTeorico: volumePE,
       volumePicoD1: detectavelD1 ? melhorD1?.volume ?? null : null,
       valorPicoD1: detectavelD1 ? melhorD1?.d1 ?? null : null,
-      volumeZeroD2: detectavelD2 ? melhorD2?.volume ?? null : null,
-      valorD2: detectavelD2 ? melhorD2?.d2 ?? null : null,
+      volumeZeroD2:
+  detectavelD2
+    ? melhorD2?.volume ?? null
+    : null,
+
+valorD2:
+  detectavelD2
+    ? melhorD2?.d2 ?? null
+    : null,
       detectavelD1,
       detectavelD2,
       detectavelGeral,
@@ -3864,12 +3944,35 @@ function montarResumoDerivadasPoli(
 function calcularDerivadasCurvaMonoprotica(
   curva: CurvaAcidoBaseMonoprotica
 ): PontoDerivadaAcidoBase[] {
-  const pontosValidos = curva.pontos.filter(
-    (ponto) => ponto.ph !== null && Number.isFinite(ponto.ph)
-  );
+  const pontosValidos = curva.pontos
+    .filter(
+      (ponto) =>
+        ponto.ph !== null &&
+        Number.isFinite(ponto.ph) &&
+        Number.isFinite(ponto.volume)
+    )
+    .sort((a, b) => a.volume - b.volume);
 
-  const derivadasBase: PontoDerivadaAcidoBase[] = pontosValidos.map(
-    (ponto, index, array) => {
+  if (pontosValidos.length < 3) {
+    return [];
+  }
+
+  /*
+   * 1ª DERIVADA
+   *
+   * Diferença central:
+   *
+   *          pH(i+1) - pH(i-1)
+   * dpH/dV = -----------------
+   *           V(i+1) - V(i-1)
+   *
+   * A derivada permanece localizada em V(i).
+   *
+   * Isso é importante porque não deslocamos o
+   * ponto calculado pela curva/busca binária.
+   */
+  const primeiraDerivada: PontoDerivadaAcidoBase[] =
+    pontosValidos.map((ponto, index, array) => {
       if (index === 0 || index === array.length - 1) {
         return {
           volume: ponto.volume,
@@ -3883,7 +3986,12 @@ function calcularDerivadasCurvaMonoprotica(
 
       const deltaV = proximo.volume - anterior.volume;
 
-      if (!Number.isFinite(deltaV) || deltaV === 0) {
+      if (
+        anterior.ph === null ||
+        proximo.ph === null ||
+        !Number.isFinite(deltaV) ||
+        deltaV <= 0
+      ) {
         return {
           volume: ponto.volume,
           d1: null,
@@ -3891,50 +3999,60 @@ function calcularDerivadasCurvaMonoprotica(
         };
       }
 
-      const d1 = ((proximo.ph ?? 0) - (anterior.ph ?? 0)) / deltaV;
+      const d1 =
+        (proximo.ph - anterior.ph) / deltaV;
 
       return {
         volume: ponto.volume,
         d1,
         d2: null,
       };
-    }
-  );
+    });
 
-  const derivadasComSegunda = derivadasBase.map((ponto, index, array) => {
+  /*
+   * 2ª DERIVADA
+   *
+   * Aplicamos novamente diferença central,
+   * agora sobre os valores da 1ª derivada.
+   *
+   * A coordenada continua sendo V(i).
+   */
+  return primeiraDerivada.map((ponto, index, array) => {
     if (
       index === 0 ||
-      index === array.length - 1 ||
-      array[index - 1].d1 === null ||
-      array[index + 1].d1 === null
+      index === array.length - 1
     ) {
-      return {
-        ...ponto,
-        d2: null,
-      };
+      return ponto;
     }
 
     const anterior = array[index - 1];
     const proximo = array[index + 1];
 
-    const deltaV = proximo.volume - anterior.volume;
-
-    if (!Number.isFinite(deltaV) || deltaV === 0) {
-      return {
-        ...ponto,
-        d2: null,
-      };
+    if (
+      anterior.d1 === null ||
+      proximo.d1 === null
+    ) {
+      return ponto;
     }
 
-    const d2 = ((proximo.d1 ?? 0) - (anterior.d1 ?? 0)) / deltaV;
+    const deltaV =
+      proximo.volume - anterior.volume;
+
+    if (
+      !Number.isFinite(deltaV) ||
+      deltaV <= 0
+    ) {
+      return ponto;
+    }
+
+    const d2 =
+      (proximo.d1 - anterior.d1) / deltaV;
 
     return {
       ...ponto,
       d2,
     };
   });
-
-  return derivadasComSegunda;
 }
 
 function montarResumoDerivadaMono(
