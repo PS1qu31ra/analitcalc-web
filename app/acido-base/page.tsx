@@ -527,6 +527,84 @@ setMensagemMono("Sistema monoprótico avaliado com sucesso.");
     setPontosTempoRealMono([]);
   }
 
+  function avaliarDetectabilidadePEMono() {
+    if (!resultadoMono) {
+      return null;
+    }
+  
+    const volumePE = resultadoMono.volumePE;
+  
+    const intervalo = Math.max(volumePE * 0.02, 0.5);
+  
+    const volumeAntes = Math.max(0, volumePE - intervalo);
+    const volumeDepois = volumePE + intervalo;
+  
+    const pontoAntes = calcularPhPorVolumeMonoprotico(
+      resultadoMono,
+      volumeAntes
+    );
+  
+    const pontoDepois = calcularPhPorVolumeMonoprotico(
+      resultadoMono,
+      volumeDepois
+    );
+  
+    if (
+      pontoAntes.ph === null ||
+      pontoDepois.ph === null ||
+      !Number.isFinite(pontoAntes.ph) ||
+      !Number.isFinite(pontoDepois.ph)
+    ) {
+      return {
+        nivel: "Não calculado",
+        classe: "neutral",
+        deltaPH: null,
+        texto:
+          "Não foi possível calcular a variação de pH ao redor do ponto de equivalência.",
+      };
+    }
+  
+    const deltaPH = Math.abs(pontoDepois.ph - pontoAntes.ph);
+  
+    if (deltaPH >= 3) {
+      return {
+        nivel: "Alta detectabilidade",
+        classe: "high",
+        deltaPH,
+        texto:
+          "O ponto de equivalência apresenta uma variação brusca de pH em sua vizinhança, sendo claramente identificado na curva de titulação.",
+      };
+    }
+  
+    if (deltaPH >= 1) {
+      return {
+        nivel: "Detectabilidade moderada",
+        classe: "medium",
+        deltaPH,
+        texto:
+          "O ponto de equivalência apresenta uma variação perceptível de pH, embora o salto da curva seja menos pronunciado.",
+      };
+    }
+  
+    if (deltaPH >= 0.3) {
+      return {
+        nivel: "Baixa detectabilidade",
+        classe: "low",
+        deltaPH,
+        texto:
+          "O ponto de equivalência existe estequiometricamente, mas a variação de pH em sua vizinhança é pequena e pode ser difícil de identificar visualmente.",
+      };
+    }
+  
+    return {
+      nivel: "Muito baixa / pouco detectável",
+      classe: "veryLow",
+      deltaPH,
+      texto:
+        "O ponto de equivalência é definido pelo cálculo estequiométrico, porém não produz uma variação de pH suficientemente pronunciada para ser identificada com segurança apenas pela curva.",
+    };
+  }
+
   function baixarGraficoMonoPorSeletor(seletor: string, nomeArquivo: string) {
     const svgOriginal = document.querySelector(seletor) as SVGSVGElement | null;
   
@@ -597,6 +675,9 @@ const resumoDerivadaMono =
   resultadoMono && derivadasMono.length > 0
     ? montarResumoDerivadaMono(resultadoMono, derivadasMono)
     : null;
+
+    const detectabilidadePEMono =
+  resultadoMono ? avaliarDetectabilidadePEMono() : null;
 
 const tabelaPrimeiraDerivadaMono =
   resultadoMono && curvaMono
@@ -921,6 +1002,62 @@ const tabelaSegundaDerivadaMono =
                     </strong>
                   </div>
                 </div>
+
+                {detectabilidadePEMono && (
+  <div className="equivalenceVolumePanel">
+    <span className="eyebrow">Ponto de equivalência</span>
+    <h3>Detectabilidade do PE</h3>
+
+    <div className="equivalenceVolumeGrid">
+      <div className="equivalenceVolumeCard">
+        <span>PE</span>
+
+        <div className="equivalenceVolumeValues">
+          <div>
+            <small>Volume</small>
+            <strong>
+              {formatarNumeroBR(resultadoMono.volumePE, 2)} mL
+            </strong>
+          </div>
+
+          <div>
+            <small>pH</small>
+            <strong>
+              {(() => {
+                const pontoPE = calcularPhPorVolumeMonoprotico(
+                  resultadoMono,
+                  resultadoMono.volumePE
+                );
+
+                return pontoPE.ph === null
+                  ? "-"
+                  : formatarNumeroBR(pontoPE.ph, 2);
+              })()}
+            </strong>
+          </div>
+        </div>
+
+        <div
+          className={`detectabilityBox ${detectabilidadePEMono.classe}`}
+        >
+          <strong>{detectabilidadePEMono.nivel}</strong>
+
+          <small>
+            ΔpH ao redor do PE:{" "}
+            {detectabilidadePEMono.deltaPH === null
+              ? "-"
+              : formatarNumeroBR(
+                  detectabilidadePEMono.deltaPH,
+                  2
+                )}
+          </small>
+
+          <p>{detectabilidadePEMono.texto}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
                 <div className="chartBox acidBaseChartBox">
                 <div className="chartHeader">
@@ -3902,14 +4039,14 @@ const passoEstimado =
     }
     
     const melhorD2 =
-      cruzamentosD2.length > 0
-        ? cruzamentosD2.reduce((melhor, atual) =>
-            Math.abs(atual.volume - resultado.volumePE) <
-            Math.abs(melhor.volume - resultado.volumePE)
-              ? atual
-              : melhor
-          )
-        : null;
+  cruzamentosD2.length > 0
+    ? cruzamentosD2.reduce((melhor, atual) =>
+        Math.abs(atual.volume - volumePE) <
+        Math.abs(melhor.volume - volumePE)
+          ? atual
+          : melhor
+      )
+    : null;
 
     const detectavelD1 = temPicoD1;
     const detectavelD2 = temPicoD1 && temTrocaSinalD2;
@@ -4063,70 +4200,185 @@ function montarResumoDerivadaMono(
 
   const passoEstimado =
     derivadas.length > 1
-      ? Math.abs(derivadas[1].volume - derivadas[0].volume)
+      ? Math.abs(
+          derivadas[1].volume -
+          derivadas[0].volume
+        )
       : 0.5;
 
-  const janela = Math.max(resultado.volumePE * 0.08, passoEstimado * 8, 1);
+  const janela = Math.max(
+    resultado.volumePE * 0.08,
+    passoEstimado * 8,
+    1
+  );
 
   const candidatos = derivadas.filter(
-    (item) => Math.abs(item.volume - resultado.volumePE) <= janela
+    (item) =>
+      Math.abs(
+        item.volume - resultado.volumePE
+      ) <= janela
   );
 
   const candidatosD1 = candidatos.filter(
-    (item) => item.d1 !== null && Number.isFinite(item.d1)
+    (item) =>
+      item.d1 !== null &&
+      Number.isFinite(item.d1)
   );
 
   const candidatosD2 = candidatos.filter(
-    (item) => item.d2 !== null && Number.isFinite(item.d2)
+    (item) =>
+      item.d2 !== null &&
+      Number.isFinite(item.d2)
   );
 
+  /*
+   * PICO/VALE DA PRIMEIRA DERIVADA
+   */
   const melhorD1 =
     candidatosD1.length > 0
-      ? candidatosD1.reduce((melhor, atual) =>
-          Math.abs(atual.d1 ?? 0) > Math.abs(melhor.d1 ?? 0)
-            ? atual
-            : melhor
-        )
-      : null;
-
-  const melhorD2 =
-    candidatosD2.length > 0
-      ? candidatosD2.reduce((melhor, atual) =>
-          Math.abs(atual.d2 ?? 0) < Math.abs(melhor.d2 ?? 0) ? atual : melhor
+      ? candidatosD1.reduce(
+          (melhor, atual) =>
+            Math.abs(atual.d1 ?? 0) >
+            Math.abs(melhor.d1 ?? 0)
+              ? atual
+              : melhor
         )
       : null;
 
   const maiorD1Local =
     candidatosD1.length > 0
-      ? Math.max(...candidatosD1.map((item) => Math.abs(item.d1 ?? 0)))
+      ? Math.max(
+          ...candidatosD1.map((item) =>
+            Math.abs(item.d1 ?? 0)
+          )
+        )
       : 0;
 
-  const temTrocaSinalD2 = candidatosD2.some((item, index, array) => {
-    if (index === 0) return false;
+  /*
+   * ZERO DA SEGUNDA DERIVADA
+   *
+   * Procuramos mudança de sinal e
+   * interpolamos o cruzamento por zero.
+   */
+  const cruzamentosD2: {
+    volume: number;
+    d2: number;
+  }[] = [];
 
-    const anterior = array[index - 1].d2;
-    const atual = item.d2;
+  for (
+    let i = 1;
+    i < candidatosD2.length;
+    i += 1
+  ) {
+    const anterior = candidatosD2[i - 1];
+    const atual = candidatosD2[i];
 
-    if (anterior === null || atual === null) return false;
+    if (
+      anterior.d2 === null ||
+      atual.d2 === null
+    ) {
+      continue;
+    }
 
-    return anterior * atual < 0;
-  });
+    if (anterior.d2 === 0) {
+      cruzamentosD2.push({
+        volume: anterior.volume,
+        d2: 0,
+      });
 
-  const detectavelD1 = maiorD1Local >= 0.35;
-  const detectavelD2 = detectavelD1 && temTrocaSinalD2;
-  const detectavelGeral = detectavelD1;
+      continue;
+    }
 
-  const interpretacao = detectavelGeral
-  ? "A curva apresenta uma mudança brusca de pH próxima ao ponto de equivalência. Por isso, a 1ª derivada forma um pico/vale bem definido, indicando que o PE pode ser localizado com boa precisão pela análise derivativa."
-  : "Este ponto existe pelo cálculo estequiométrico, mas a variação de pH ao redor do PE é pouco intensa. Por isso, o pico/vale da 1ª derivada pode ser discreto e a localização do PE pela derivada pode ser menos evidente.";
+    if (atual.d2 === 0) {
+      cruzamentosD2.push({
+        volume: atual.volume,
+        d2: 0,
+      });
+
+      continue;
+    }
+
+    if (anterior.d2 * atual.d2 < 0) {
+      const volumeZero =
+        anterior.volume +
+        ((0 - anterior.d2) *
+          (atual.volume -
+            anterior.volume)) /
+          (atual.d2 - anterior.d2);
+
+      cruzamentosD2.push({
+        volume: volumeZero,
+        d2: 0,
+      });
+    }
+  }
+
+  /*
+   * Escolhe o cruzamento de D2 = 0
+   * mais próximo do PE teórico.
+   */
+  const melhorD2 =
+    cruzamentosD2.length > 0
+      ? cruzamentosD2.reduce(
+          (melhor, atual) =>
+            Math.abs(
+              atual.volume -
+                resultado.volumePE
+            ) <
+            Math.abs(
+              melhor.volume -
+                resultado.volumePE
+            )
+              ? atual
+              : melhor
+        )
+      : null;
+
+  /*
+   * DETECTABILIDADE
+   */
+  const detectavelD1 =
+    maiorD1Local >= 0.35;
+
+  const detectavelD2 =
+    detectavelD1 &&
+    melhorD2 !== null;
+
+  const detectavelGeral =
+    detectavelD1 &&
+    detectavelD2;
+
+  const interpretacao =
+    detectavelGeral
+      ? "A curva apresenta uma mudança brusca de pH próxima ao ponto de equivalência. A 1ª derivada apresenta pico/vale definido e a 2ª derivada apresenta cruzamento por zero compatível com o PE, permitindo sua localização pela análise derivativa."
+      : "Este ponto existe pelo cálculo estequiométrico, mas não apresenta simultaneamente um pico/vale suficientemente definido na 1ª derivada e um cruzamento por zero confiável na 2ª derivada. Portanto, não deve ser considerado detectável com segurança pela análise derivativa.";
 
   return {
     pe: 1,
-    volumeTeorico: resultado.volumePE,
-    volumePicoD1: detectavelD1 ? melhorD1?.volume ?? null : null,
-    valorPicoD1: detectavelD1 ? melhorD1?.d1 ?? null : null,
-    volumeZeroD2: detectavelD2 ? melhorD2?.volume ?? null : null,
-    valorD2: detectavelD2 ? melhorD2?.d2 ?? null : null,
+
+    volumeTeorico:
+      resultado.volumePE,
+
+    volumePicoD1:
+      detectavelD1
+        ? melhorD1?.volume ?? null
+        : null,
+
+    valorPicoD1:
+      detectavelD1
+        ? melhorD1?.d1 ?? null
+        : null,
+
+    volumeZeroD2:
+      detectavelD2
+        ? melhorD2?.volume ?? null
+        : null,
+
+    valorD2:
+      detectavelD2
+        ? melhorD2?.d2 ?? null
+        : null,
+
     detectavelD1,
     detectavelD2,
     detectavelGeral,
@@ -6580,15 +6832,17 @@ function GraficoDerivadaMonoprotico({
         />
       )}
 
-      <line
-        x1={xScale(resultado.volumePE)}
-        x2={xScale(resultado.volumePE)}
-        y1={margem.top}
-        y2={margem.top + alturaGrafico}
-        stroke="#111111"
-        strokeWidth="1.8"
-        strokeDasharray="8 6"
-      />
+{pontoDetectavel && (
+  <line
+    x1={xScale(resultado.volumePE)}
+    x2={xScale(resultado.volumePE)}
+    y1={margem.top}
+    y2={margem.top + alturaGrafico}
+    stroke="#111111"
+    strokeWidth="1.8"
+    strokeDasharray="8 6"
+  />
+)}
 
       <path
         d={pathDerivada}
