@@ -209,10 +209,26 @@ export type ReacaoAcidoBaseMono = {
     acido: TabelaAcidoForte,
     base: TabelaBaseMono
   ): ReacaoAcidoBaseMono {
+    const baseEhForte =
+      base.formula === "KOH" ||
+      base.formula === "NaOH";
+  
     const produto =
-      base.formula === "KOH" || base.formula === "NaOH"
+      baseEhForte
         ? `${base.conjugado}${acido.anion} + H2O`
         : `${base.conjugado}${acido.anion}`;
+  
+    /*
+     * Ácido forte + base forte:
+     * reação representada com seta simples.
+     *
+     * Ácido forte + base fraca:
+     * reação representada com seta de equilíbrio.
+     */
+    const setaReacao =
+      baseEhForte
+        ? "→"
+        : "⇌";
   
     return {
       id,
@@ -220,10 +236,14 @@ export type ReacaoAcidoBaseMono = {
       tituladoExibicao: base.nome,
       formulaTitulante: acido.formula,
       formulaTitulado: base.formula,
-      chaveReacao: chaveReacao(acido.formula, base.formula),
-      equacaoExibicao: formatarFormulaQuimicaMono(
-        `${acido.formula} + ${base.formula} → ${produto}`
+      chaveReacao: chaveReacao(
+        acido.formula,
+        base.formula
       ),
+      equacaoExibicao:
+        formatarFormulaQuimicaMono(
+          `${acido.formula} + ${base.formula} ${setaReacao} ${produto}`
+        ),
       ativo: true,
       obs: `${acido.obs} + ${base.obs}`,
     };
@@ -234,7 +254,35 @@ export type ReacaoAcidoBaseMono = {
     base: TabelaBaseForte,
     acido: TabelaAcidoMono
   ): ReacaoAcidoBaseMono {
-    const produto = base.cation === "K" ? acido.sal.K : acido.sal.Na;
+    const produto =
+      base.cation === "K"
+        ? acido.sal.K
+        : acido.sal.Na;
+  
+    /*
+     * Identifica se o ácido cadastrado
+     * é fraco a partir da classificação
+     * presente na própria base de dados.
+     *
+     * "Ácido muito fraco" também entra
+     * nesta condição.
+     */
+    const acidoEhFraco =
+      acido.obs
+        .toLowerCase()
+        .includes("fraco");
+  
+    /*
+     * Base forte + ácido fraco:
+     * seta de equilíbrio.
+     *
+     * Base forte + ácido forte:
+     * seta simples.
+     */
+    const setaReacao =
+      acidoEhFraco
+        ? "⇌"
+        : "→";
   
     return {
       id,
@@ -242,10 +290,14 @@ export type ReacaoAcidoBaseMono = {
       tituladoExibicao: acido.nome,
       formulaTitulante: base.formula,
       formulaTitulado: acido.formula,
-      chaveReacao: chaveReacao(base.formula, acido.formula),
-      equacaoExibicao: formatarFormulaQuimicaMono(
-        `${base.formula} + ${acido.formula} → ${produto} + H2O`
+      chaveReacao: chaveReacao(
+        base.formula,
+        acido.formula
       ),
+      equacaoExibicao:
+        formatarFormulaQuimicaMono(
+          `${base.formula} + ${acido.formula} ${setaReacao} ${produto} + H2O`
+        ),
       ativo: true,
       obs: `Base forte + ${acido.obs.toLowerCase()}`,
     };

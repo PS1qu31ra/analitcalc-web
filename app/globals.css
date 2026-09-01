@@ -5205,3 +5205,890 @@ section.container.calculatorSection + section.container.calculatorSection {
   font-variant: normal;
   white-space: nowrap;
 }
+
+/* =========================================================
+   EFEITO DA CONCENTRAÇÃO
+   ========================================================= */
+
+/*
+ * Espaçamento entre o cabeçalho da comparação
+ * e a área efetiva do gráfico.
+ */
+ .efeitoConcentracaoChartWrapper {
+  width: 100%;
+  margin-top: 32px;
+  margin-bottom: 36px;
+  padding: 12px 8px 4px;
+}
+
+
+/* =========================================================
+   MÉTRICAS DO PE
+   ========================================================= */
+
+.efeitoConcentracaoMetrics {
+  margin-top: 8px;
+  margin-bottom: 32px;
+  gap: 16px;
+}
+
+.efeitoConcentracaoMetrics article {
+  min-height: 104px;
+  padding: 20px 22px;
+}
+
+
+/* =========================================================
+   ALTERAÇÕES APLICADAS
+   ========================================================= */
+
+.efeitoConcentracaoChanges {
+  margin-top: 8px;
+  padding-top: 28px;
+}
+
+.efeitoConcentracaoChanges > h6 {
+  margin-top: 10px;
+  margin-bottom: 24px;
+}
+
+.efeitoConcentracaoChangesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+
+/* =========================================================
+   CARD TITULADO / TITULANTE
+   ========================================================= */
+
+.efeitoConcentracaoChangeCard {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  min-height: 180px;
+
+  padding: 24px 26px;
+
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.72);
+}
+
+
+/* =========================================================
+   IDENTIFICAÇÃO TITULADO / TITULANTE
+   ========================================================= */
+
+.efeitoConcentracaoChangeLabel {
+  align-self: flex-start;
+
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 30px;
+
+  margin-bottom: 24px;
+  padding: 5px 11px;
+
+  border-radius: 9px;
+
+  background: rgba(185, 28, 28, 0.08);
+
+  color: #991b1b;
+
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   ORIGINAL → SIMULADO
+   ========================================================= */
+
+.efeitoConcentracaoChangeValues {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    44px
+    minmax(0, 1fr);
+
+  align-items: end;
+
+  width: 100%;
+
+  gap: 18px;
+}
+
+.efeitoConcentracaoChangeValues > div {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  gap: 7px;
+}
+
+.efeitoConcentracaoChangeValues > div:last-child {
+  align-items: flex-start;
+}
+
+.efeitoConcentracaoChangeValues small {
+  color: #6b7280;
+
+  font-size: 0.74rem;
+  font-weight: 800;
+
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+}
+
+.efeitoConcentracaoChangeValues strong {
+  color: #111827;
+
+  font-size: 1.25rem;
+  font-weight: 800;
+
+  line-height: 1.1;
+}
+
+
+/* =========================================================
+   SETA
+   ========================================================= */
+
+.efeitoConcentracaoArrow {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding-bottom: 2px;
+
+  color: #991b1b;
+
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   UNIDADE
+   ========================================================= */
+
+.efeitoConcentracaoUnit {
+  display: block;
+
+  margin-top: 16px;
+
+  color: #6b7280;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .efeitoConcentracaoChartWrapper {
+    margin-top: 28px;
+    margin-bottom: 32px;
+  }
+
+  .efeitoConcentracaoChangesGrid {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .efeitoConcentracaoChangesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .efeitoConcentracaoChangeCard {
+    min-height: 160px;
+  }
+}
+
+@media (max-width: 560px) {
+  .efeitoConcentracaoChartWrapper {
+    margin-top: 22px;
+    margin-bottom: 26px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .efeitoConcentracaoChangeCard {
+    padding: 20px;
+  }
+
+  .efeitoConcentracaoChangeValues {
+    grid-template-columns:
+      minmax(0, 1fr)
+      30px
+      minmax(0, 1fr);
+
+    gap: 8px;
+  }
+
+  .efeitoConcentracaoChangeValues strong {
+    font-size: 1.05rem;
+  }
+
+  .efeitoConcentracaoArrow {
+    font-size: 1.35rem;
+  }
+}
+
+/* =========================================================
+   EFEITO DA CONCENTRAÇÃO — RESUMO
+   ========================================================= */
+
+   .efeitoConcentracaoResumo {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 36px 0 52px;
+  }
+  
+  .efeitoConcentracaoResumoGrid {
+    width: 100%;
+    max-width: 1080px;
+  
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  
+    gap: 18px;
+  }
+  
+  .efeitoConcentracaoResumoCard {
+    box-sizing: border-box;
+  
+    min-width: 0;
+    min-height: 130px;
+  
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  
+    padding: 24px 28px;
+  
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    border-radius: 18px;
+  
+    background: #ffffff;
+  
+    box-shadow:
+      0 1px 2px rgba(17, 24, 39, 0.03),
+      0 8px 24px rgba(17, 24, 39, 0.035);
+  }
+  
+  .efeitoConcentracaoResumoCard span {
+    margin-bottom: 10px;
+  
+    color: #6b7280;
+  
+    font-size: 0.82rem;
+    font-weight: 800;
+  
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+  }
+  
+  .efeitoConcentracaoResumoCard strong {
+    color: #111827;
+  
+    font-size: 1.55rem;
+    font-weight: 800;
+  
+    line-height: 1.15;
+  }
+  
+  
+  /* =========================================================
+     ALTERAÇÕES APLICADAS
+     ========================================================= */
+  
+  .efeitoConcentracaoAlteracoes {
+    box-sizing: border-box;
+  
+    width: 100%;
+    max-width: 1180px;
+  
+    margin: 0 auto 40px;
+  
+    padding: 38px;
+  
+    border: 1px solid rgba(17, 24, 39, 0.1);
+    border-radius: 24px;
+  
+    background: #ffffff;
+  
+    box-shadow:
+      0 1px 2px rgba(17, 24, 39, 0.02),
+      0 10px 30px rgba(17, 24, 39, 0.025);
+  }
+  
+  
+  /* =========================================================
+     CABEÇALHO
+     ========================================================= */
+  
+  .efeitoConcentracaoAlteracoesHeader {
+    margin-bottom: 30px;
+  }
+  
+  .efeitoConcentracaoAlteracoesHeader > span {
+    display: block;
+  
+    margin-bottom: 10px;
+  
+    color: #991b1b;
+  
+    font-size: 0.82rem;
+    font-weight: 800;
+  
+    letter-spacing: 0.06em;
+  
+    text-transform: uppercase;
+  }
+  
+  .efeitoConcentracaoAlteracoesHeader h5 {
+    margin: 0 0 8px;
+  
+    color: #111827;
+  
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+  
+  .efeitoConcentracaoAlteracoesHeader p {
+    margin: 0;
+  
+    color: #6b7280;
+  
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  
+  
+  /* =========================================================
+     GRID TITULADO / TITULANTE
+     ========================================================= */
+  
+  .efeitoConcentracaoAlteracoesGrid {
+    display: grid;
+  
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  
+    gap: 20px;
+  }
+  
+  
+  /* =========================================================
+     CARD DE ALTERAÇÃO
+     ========================================================= */
+  
+  .efeitoConcentracaoAlteracaoCard {
+    box-sizing: border-box;
+  
+    min-width: 0;
+  
+    padding: 24px;
+  
+    border: 1px solid rgba(17, 24, 39, 0.1);
+    border-radius: 18px;
+  
+    background: #fafafa;
+  }
+  
+  .efeitoConcentracaoAlteracaoTitulo {
+    display: inline-flex;
+  
+    align-items: center;
+    justify-content: center;
+  
+    margin-bottom: 24px;
+  
+    padding: 6px 12px;
+  
+    border-radius: 8px;
+  
+    background: rgba(153, 27, 27, 0.08);
+  
+    color: #991b1b;
+  
+    font-size: 0.78rem;
+    font-weight: 800;
+  
+    letter-spacing: 0.04em;
+  
+    text-transform: uppercase;
+  }
+  
+  
+  /* =========================================================
+     ORIGINAL → SIMULADO
+     ========================================================= */
+  
+  .efeitoConcentracaoComparacao {
+    width: 100%;
+  
+    display: grid;
+  
+    grid-template-columns:
+      minmax(0, 1fr)
+      52px
+      minmax(0, 1fr);
+  
+    align-items: center;
+  
+    gap: 14px;
+  }
+  
+  .efeitoConcentracaoValor {
+    min-width: 0;
+  
+    display: flex;
+    flex-direction: column;
+  
+    gap: 5px;
+  }
+  
+  .efeitoConcentracaoValor small {
+    color: #6b7280;
+  
+    font-size: 0.72rem;
+    font-weight: 800;
+  
+    letter-spacing: 0.05em;
+  
+    text-transform: uppercase;
+  }
+  
+  .efeitoConcentracaoValor strong {
+    color: #111827;
+  
+    font-size: 1.35rem;
+    font-weight: 800;
+  
+    line-height: 1.15;
+  }
+  
+  .efeitoConcentracaoValor span {
+    color: #6b7280;
+  
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .efeitoConcentracaoSeta {
+    display: flex;
+  
+    align-items: center;
+    justify-content: center;
+  
+    color: #991b1b;
+  
+    font-size: 1.7rem;
+    font-weight: 800;
+  }
+  
+  
+  /* =========================================================
+     RESPONSIVIDADE
+     ========================================================= */
+  
+  @media (max-width: 1000px) {
+    .efeitoConcentracaoResumoGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  
+    .efeitoConcentracaoAlteracoesGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .efeitoConcentracaoResumo {
+      margin: 28px 0 38px;
+    }
+  
+    .efeitoConcentracaoResumoGrid {
+      grid-template-columns: 1fr;
+    }
+  
+    .efeitoConcentracaoAlteracoes {
+      padding: 24px 18px;
+      border-radius: 18px;
+    }
+  
+    .efeitoConcentracaoAlteracaoCard {
+      padding: 20px 16px;
+    }
+  
+    .efeitoConcentracaoComparacao {
+      grid-template-columns:
+        minmax(0, 1fr)
+        32px
+        minmax(0, 1fr);
+  
+      gap: 8px;
+    }
+  
+    .efeitoConcentracaoValor strong {
+      font-size: 1.1rem;
+    }
+  
+    .efeitoConcentracaoSeta {
+      font-size: 1.35rem;
+    }
+  }
+
+  /* =========================================================
+   EFEITO DA CONCENTRAÇÃO — RESUMO
+   ========================================================= */
+
+.efeitoConcentracaoResumo {
+  box-sizing: border-box;
+
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin: 42px 0 56px;
+
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.efeitoConcentracaoResumoGrid {
+  width: 100%;
+  max-width: 1080px;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+.efeitoConcentracaoResumoCard {
+  box-sizing: border-box;
+
+  min-width: 0;
+  min-height: 130px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 24px 28px;
+
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(17, 24, 39, 0.03),
+    0 8px 24px rgba(17, 24, 39, 0.035);
+}
+
+.efeitoConcentracaoResumoCard span {
+  margin-bottom: 10px;
+
+  color: #6b7280;
+
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.efeitoConcentracaoResumoCard strong {
+  color: #111827;
+
+  font-size: 1.55rem;
+  font-weight: 800;
+
+  line-height: 1.15;
+}
+
+
+/* =========================================================
+   ALTERAÇÕES APLICADAS
+   ========================================================= */
+
+.efeitoConcentracaoAlteracoes {
+  box-sizing: border-box;
+
+  width: calc(100% - 80px);
+  max-width: 1180px;
+
+  margin: 0 auto 48px;
+
+  padding: 38px;
+
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  border-radius: 24px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 2px rgba(17, 24, 39, 0.02),
+    0 10px 30px rgba(17, 24, 39, 0.025);
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.efeitoConcentracaoAlteracoesHeader {
+  margin-bottom: 30px;
+}
+
+.efeitoConcentracaoAlteracoesHeader > span {
+  display: block;
+
+  margin-bottom: 10px;
+
+  color: #991b1b;
+
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  letter-spacing: 0.06em;
+
+  text-transform: uppercase;
+}
+
+.efeitoConcentracaoAlteracoesHeader h5 {
+  margin: 0 0 8px;
+
+  color: #111827;
+
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.efeitoConcentracaoAlteracoesHeader p {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   GRID TITULADO / TITULANTE
+   ========================================================= */
+
+.efeitoConcentracaoAlteracoesGrid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 24px;
+}
+
+
+/* =========================================================
+   CARD DE ALTERAÇÃO
+   ========================================================= */
+
+.efeitoConcentracaoAlteracaoCard {
+  box-sizing: border-box;
+
+  min-width: 0;
+
+  padding: 26px;
+
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  border-radius: 18px;
+
+  background: #fafafa;
+}
+
+.efeitoConcentracaoAlteracaoTitulo {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 24px;
+
+  padding: 6px 12px;
+
+  border-radius: 8px;
+
+  background: rgba(153, 27, 27, 0.08);
+
+  color: #991b1b;
+
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  letter-spacing: 0.04em;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   ORIGINAL → SIMULADO
+   ========================================================= */
+
+.efeitoConcentracaoComparacao {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    52px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+.efeitoConcentracaoValor {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.efeitoConcentracaoValor small {
+  color: #6b7280;
+
+  font-size: 0.72rem;
+  font-weight: 800;
+
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+}
+
+.efeitoConcentracaoValor strong {
+  color: #111827;
+
+  font-size: 1.35rem;
+  font-weight: 800;
+
+  line-height: 1.15;
+}
+
+.efeitoConcentracaoValor span {
+  color: #6b7280;
+
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.efeitoConcentracaoSeta {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #991b1b;
+
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE — TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .efeitoConcentracaoResumo {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .efeitoConcentracaoResumoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .efeitoConcentracaoAlteracoes {
+    width: calc(100% - 56px);
+  }
+
+  .efeitoConcentracaoAlteracoesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE — CELULAR
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .efeitoConcentracaoResumo {
+    margin: 28px 0 38px;
+
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .efeitoConcentracaoResumoGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .efeitoConcentracaoAlteracoes {
+    width: calc(100% - 28px);
+
+    margin-left: auto;
+    margin-right: auto;
+
+    padding: 24px 18px;
+
+    border-radius: 18px;
+  }
+
+  .efeitoConcentracaoAlteracaoCard {
+    padding: 20px 16px;
+  }
+
+  .efeitoConcentracaoComparacao {
+    grid-template-columns:
+      minmax(0, 1fr)
+      32px
+      minmax(0, 1fr);
+
+    gap: 8px;
+  }
+
+  .efeitoConcentracaoValor strong {
+    font-size: 1.1rem;
+  }
+
+  .efeitoConcentracaoSeta {
+    font-size: 1.35rem;
+  }
+}

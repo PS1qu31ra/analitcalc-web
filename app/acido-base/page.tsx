@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import "../precipitacao/styles/precipitacao.css";
+
 import {
   avaliarSistemaPoliprotico,
   calcularPhPorVolumePoliprotico,
@@ -38,6 +40,8 @@ import {
 
 import { indicadoresAcidoBaseMono } from "../../lib/data/indicadoresAcidoBaseMono";
 
+import { formatarCientificoBR } from "../../lib/precipitacao/formatadores";
+
 import { useAnalitBot } from "../contexts/AnalitBotContext";
 
 type TipoSistemaAcidoBase = "mono" | "poli";
@@ -48,6 +52,7 @@ type AbaAcidoBase =
   | "curva"
   | "indicadores"
   | "derivadas"
+  | "efeitoConcentracao"
   | "tempoReal";
 
 type RankingIndicadorAcidoBase = {
@@ -113,6 +118,411 @@ type LinhaTabelaSegundaDerivada = {
   segundaDerivada: number | null;
   status: string;
 };
+
+function GraficoEfeitoConcentracaoMono({
+  curvaOriginal,
+  curvaSimulada,
+  peOriginal,
+  peSimulado,
+}: {
+  curvaOriginal: CurvaAcidoBaseMonoprotica;
+  curvaSimulada: CurvaAcidoBaseMonoprotica;
+  peOriginal: number;
+  peSimulado: number;
+}) {
+  const largura = 1000;
+  const altura = 430;
+
+  const margemEsquerda = 70;
+  const margemDireita = 30;
+  const margemSuperior = 30;
+  const margemInferior = 65;
+
+  const larguraUtil =
+    largura -
+    margemEsquerda -
+    margemDireita;
+
+  const alturaUtil =
+    altura -
+    margemSuperior -
+    margemInferior;
+
+  const pontosOriginais =
+    curvaOriginal.pontos.filter(
+      (ponto) =>
+        Number.isFinite(ponto.volume) &&
+        ponto.ph !== null &&
+        Number.isFinite(ponto.ph)
+    );
+
+  const pontosSimulados =
+    curvaSimulada.pontos.filter(
+      (ponto) =>
+        Number.isFinite(ponto.volume) &&
+        ponto.ph !== null &&
+        Number.isFinite(ponto.ph)
+    );
+
+  if (
+    pontosOriginais.length === 0 ||
+    pontosSimulados.length === 0
+  ) {
+    return null;
+  }
+
+  const volumeMaximo = Math.max(
+    ...pontosOriginais.map(
+      (ponto) => ponto.volume
+    ),
+    ...pontosSimulados.map(
+      (ponto) => ponto.volume
+    ),
+    peOriginal,
+    peSimulado
+  );
+
+  const volumeGrafico =
+    volumeMaximo > 0
+      ? volumeMaximo * 1.03
+      : 1;
+
+  const x = (volume: number) =>
+    margemEsquerda +
+    (volume / volumeGrafico) *
+      larguraUtil;
+
+  const y = (ph: number) =>
+    margemSuperior +
+    ((14 - ph) / 14) *
+      alturaUtil;
+
+  const montarPolyline = (
+    pontos: typeof pontosOriginais
+  ) =>
+    pontos
+      .map(
+        (ponto) =>
+          `${x(ponto.volume)},${y(
+            ponto.ph as number
+          )}`
+      )
+      .join(" ");
+
+  const curvaOriginalSvg =
+    montarPolyline(pontosOriginais);
+
+  const curvaSimuladaSvg =
+    montarPolyline(pontosSimulados);
+
+  const marcacoesPh = [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+  ];
+
+  const numeroMarcacoesX = 6;
+
+  const marcacoesVolume =
+    Array.from(
+      {
+        length:
+          numeroMarcacoesX + 1,
+      },
+      (_, index) =>
+        (volumeGrafico /
+          numeroMarcacoesX) *
+        index
+    );
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        overflowX: "auto",
+      }}
+    >
+      <svg
+        viewBox={`0 0 ${largura} ${altura}`}
+        role="img"
+        aria-label="Comparação entre a curva original e a curva simulada após alteração das concentrações"
+        style={{
+          display: "block",
+          width: "100%",
+          minWidth: "720px",
+          height: "auto",
+        }}
+      >
+        {marcacoesPh.map((ph) => (
+          <g key={`ph-${ph}`}>
+            <line
+              x1={margemEsquerda}
+              x2={
+                largura -
+                margemDireita
+              }
+              y1={y(ph)}
+              y2={y(ph)}
+              stroke="currentColor"
+              strokeOpacity="0.08"
+              strokeWidth="1"
+            />
+
+            <text
+              x={
+                margemEsquerda -
+                15
+              }
+              y={y(ph) + 5}
+              textAnchor="end"
+              fontSize="14"
+              fill="currentColor"
+              opacity="0.7"
+            >
+              {ph}
+            </text>
+          </g>
+        ))}
+
+        {marcacoesVolume.map(
+          (volume, index) => (
+            <g
+              key={`volume-${index}`}
+            >
+              <line
+                x1={x(volume)}
+                x2={x(volume)}
+                y1={
+                  margemSuperior
+                }
+                y2={
+                  altura -
+                  margemInferior
+                }
+                stroke="currentColor"
+                strokeOpacity="0.05"
+                strokeWidth="1"
+              />
+
+              <text
+                x={x(volume)}
+                y={
+                  altura -
+                  margemInferior +
+                  25
+                }
+                textAnchor="middle"
+                fontSize="14"
+                fill="currentColor"
+                opacity="0.7"
+              >
+                {formatarNumeroBR(
+                  volume,
+                  1
+                )}
+              </text>
+            </g>
+          )
+        )}
+
+        <line
+          x1={margemEsquerda}
+          x2={
+            margemEsquerda
+          }
+          y1={margemSuperior}
+          y2={
+            altura -
+            margemInferior
+          }
+          stroke="currentColor"
+          strokeOpacity="0.4"
+          strokeWidth="1.5"
+        />
+
+        <line
+          x1={margemEsquerda}
+          x2={
+            largura -
+            margemDireita
+          }
+          y1={
+            altura -
+            margemInferior
+          }
+          y2={
+            altura -
+            margemInferior
+          }
+          stroke="currentColor"
+          strokeOpacity="0.4"
+          strokeWidth="1.5"
+        />
+
+        <text
+          x="20"
+          y={
+            margemSuperior +
+            alturaUtil / 2
+          }
+          textAnchor="middle"
+          fontSize="15"
+          fontWeight="600"
+          fill="currentColor"
+          transform={`rotate(-90 20 ${
+            margemSuperior +
+            alturaUtil / 2
+          })`}
+        >
+          pH
+        </text>
+
+        <text
+          x={
+            margemEsquerda +
+            larguraUtil / 2
+          }
+          y={altura - 12}
+          textAnchor="middle"
+          fontSize="15"
+          fontWeight="600"
+          fill="currentColor"
+        >
+          Volume de titulante (mL)
+        </text>
+
+        <line
+          x1={x(peOriginal)}
+          x2={x(peOriginal)}
+          y1={margemSuperior}
+          y2={
+            altura -
+            margemInferior
+          }
+          stroke="#6b7280"
+          strokeWidth="2"
+          strokeDasharray="8 6"
+        />
+
+        <line
+          x1={x(peSimulado)}
+          x2={x(peSimulado)}
+          y1={margemSuperior}
+          y2={
+            altura -
+            margemInferior
+          }
+          stroke="#991b1b"
+          strokeWidth="2"
+          strokeDasharray="8 6"
+        />
+
+        <polyline
+          points={curvaOriginalSvg}
+          fill="none"
+          stroke="#6b7280"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <polyline
+          points={curvaSimuladaSvg}
+          fill="none"
+          stroke="#b91c1c"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <g>
+          <rect
+            x={
+              largura -
+              margemDireita -
+              275
+            }
+            y="18"
+            width="265"
+            height="78"
+            rx="12"
+            fill="white"
+            fillOpacity="0.94"
+            stroke="currentColor"
+            strokeOpacity="0.12"
+          />
+
+          <line
+            x1={
+              largura -
+              margemDireita -
+              255
+            }
+            x2={
+              largura -
+              margemDireita -
+              215
+            }
+            y1="44"
+            y2="44"
+            stroke="#6b7280"
+            strokeWidth="4"
+          />
+
+          <text
+            x={
+              largura -
+              margemDireita -
+              202
+            }
+            y="49"
+            fontSize="14"
+            fontWeight="600"
+            fill="currentColor"
+          >
+            Condição original
+          </text>
+
+          <line
+            x1={
+              largura -
+              margemDireita -
+              255
+            }
+            x2={
+              largura -
+              margemDireita -
+              215
+            }
+            y1="73"
+            y2="73"
+            stroke="#b91c1c"
+            strokeWidth="4"
+          />
+
+          <text
+            x={
+              largura -
+              margemDireita -
+              202
+            }
+            y="78"
+            fontSize="14"
+            fontWeight="600"
+            fill="currentColor"
+          >
+            Condição simulada
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
 
 export default function AcidoBasePage() {
   const [tipoSistema, setTipoSistema] =
@@ -240,20 +650,34 @@ export default function AcidoBasePage() {
               </button>
 
               <button
-                type="button"
-                className={abaMono === "derivadas" ? "active" : ""}
-                onClick={() => setAbaMono("derivadas")}
-              >
-                Derivadas
-              </button>
+  type="button"
+  className={abaMono === "derivadas" ? "active" : ""}
+  onClick={() => setAbaMono("derivadas")}
+>
+  Derivadas
+</button>
 
-              <button
-                type="button"
-                className={abaMono === "tempoReal" ? "active" : ""}
-                onClick={() => setAbaMono("tempoReal")}
-              >
-                Tempo real
-              </button>
+<button
+  type="button"
+  className={
+    abaMono === "efeitoConcentracao"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaMono("efeitoConcentracao")
+  }
+>
+  Efeito da concentração
+</button>
+
+<button
+  type="button"
+  className={abaMono === "tempoReal" ? "active" : ""}
+  onClick={() => setAbaMono("tempoReal")}
+>
+  Tempo real
+</button>
             </div>
           </section>
 
@@ -340,6 +764,37 @@ function ModuloMonoprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   const [curvaMono, setCurvaMono] =
     useState<CurvaAcidoBaseMonoprotica | null>(null);
 
+    const [
+      concTituladoEfeitoMono,
+      setConcTituladoEfeitoMono,
+    ] = useState("");
+    
+    const [
+      concTitulanteEfeitoMono,
+      setConcTitulanteEfeitoMono,
+    ] = useState("");
+    
+    const [
+      resultadoEfeitoMono,
+      setResultadoEfeitoMono,
+    ] =
+      useState<ResultadoSistemaMonoprotico | null>(
+        null
+      );
+    
+    const [
+      curvaEfeitoMono,
+      setCurvaEfeitoMono,
+    ] =
+      useState<CurvaAcidoBaseMonoprotica | null>(
+        null
+      );
+    
+    const [
+      mensagemEfeitoMono,
+      setMensagemEfeitoMono,
+    ] = useState("");
+
   const [volumeConsultaMono, setVolumeConsultaMono] = useState("");
 
   const [pontoConsultaMono, setPontoConsultaMono] =
@@ -381,6 +836,81 @@ const [pontosTempoRealMono, setPontosTempoRealMono] = useState<
       resumoCalculo: "Nenhum sistema monoprótico foi avaliado ainda.",
       contextoTexto: "Nenhum sistema monoprótico foi avaliado ainda.",
     });
+  }
+
+  function aplicarEfeitoConcentracaoMono() {
+    setMensagemEfeitoMono("");
+  
+    if (!resultadoMono) {
+      setMensagemEfeitoMono(
+        "Avalie primeiro o sistema monoprótico na aba Visão geral."
+      );
+      return;
+    }
+  
+    const novaConcTitulado =
+      converterNumeroMono(
+        concTituladoEfeitoMono
+      );
+  
+    const novaConcTitulante =
+      converterNumeroMono(
+        concTitulanteEfeitoMono
+      );
+  
+    if (
+      !Number.isFinite(novaConcTitulado) ||
+      !Number.isFinite(novaConcTitulante) ||
+      novaConcTitulado <= 0 ||
+      novaConcTitulante <= 0
+    ) {
+      setMensagemEfeitoMono(
+        "Informe concentrações positivas e válidas para o titulado e o titulante."
+      );
+      return;
+    }
+  
+    try {
+      const simulacao =
+        avaliarSistemaMonoprotico({
+          titulante:
+            resultadoMono.entradas.titulante,
+  
+          titulado:
+            resultadoMono.entradas.titulado,
+  
+          concTitulante:
+            novaConcTitulante,
+  
+          concTitulado:
+            novaConcTitulado,
+  
+          volTitulado:
+            resultadoMono.entradas.volTitulado,
+  
+          volBureta:
+            resultadoMono.entradas.volBureta,
+        });
+  
+      const curvaSimulada =
+        gerarCurvaMonoprotica(simulacao);
+  
+      setResultadoEfeitoMono(simulacao);
+      setCurvaEfeitoMono(curvaSimulada);
+  
+      setMensagemEfeitoMono(
+        "Novas concentrações aplicadas com sucesso."
+      );
+    } catch (erro) {
+      setResultadoEfeitoMono(null);
+      setCurvaEfeitoMono(null);
+  
+      setMensagemEfeitoMono(
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível calcular o efeito das novas concentrações."
+      );
+    }
   }
 
   function avaliarMonoprotico() {
@@ -657,16 +1187,17 @@ setMensagemMono("Sistema monoprótico avaliado com sucesso.");
   }
   
   const rankingIndicadoresMono = resultadoMono
-    ? montarRankingIndicadoresMono(resultadoMono)
-    : [];
-  
-  const indicadorMonoAtivo =
-    indicadorMonoSelecionado &&
-    rankingIndicadoresMono.some(
-      (item) => item.nome === indicadorMonoSelecionado.nome
-    )
-      ? indicadorMonoSelecionado
-      : rankingIndicadoresMono[0] ?? null;
+  ? montarRankingIndicadoresMono(resultadoMono)
+  : [];
+
+const indicadorMonoAtivo =
+  indicadorMonoSelecionado &&
+  rankingIndicadoresMono.some(
+    (item) =>
+      item.nome === indicadorMonoSelecionado.nome
+  )
+    ? indicadorMonoSelecionado
+    : rankingIndicadoresMono[0] ?? null;
 
       const derivadasMono =
   curvaMono && resultadoMono ? calcularDerivadasCurvaMonoprotica(curvaMono) : [];
@@ -904,30 +1435,33 @@ const tabelaSegundaDerivadaMono =
                 <p>{resultadoMono.resumo}</p>
 
                 <div className="resultGrid">
-                  <div className="resultCard">
-                    <span>Constante do titulado</span>
-                    <strong>
-                      {resultadoMono.titulado.classe === "ácido"
-                        ? `Ka = ${resultadoMono.titulado.constante.toExponential(
-                            2
-                          )}`
-                        : `Kb = ${resultadoMono.titulado.constante.toExponential(
-                            2
-                          )}`}
-                    </strong>
+                <div className="resultCard">
+  <span>Constante do titulado</span>
 
-                    <small>
-                      {resultadoMono.titulado.classe === "ácido"
-                        ? `pKa = ${formatarNumeroBR(
-                            resultadoMono.titulado.pValor,
-                            2
-                          )}`
-                        : `pKb = ${formatarNumeroBR(
-                            resultadoMono.titulado.pValor,
-                            2
-                          )}`}
-                    </small>
-                  </div>
+  <strong>
+    {resultadoMono.titulado.classe === "ácido"
+      ? `Ka = ${formatarCientificoBR(
+          resultadoMono.titulado.constante,
+          2
+        )}`
+      : `Kb = ${formatarCientificoBR(
+          resultadoMono.titulado.constante,
+          2
+        )}`}
+  </strong>
+
+  <small>
+    {resultadoMono.titulado.classe === "ácido"
+      ? `pKa = ${formatarNumeroBR(
+          resultadoMono.titulado.pValor,
+          2
+        )}`
+      : `pKb = ${formatarNumeroBR(
+          resultadoMono.titulado.pValor,
+          2
+        )}`}
+  </small>
+</div>
 
                   <div className="resultCard">
                     <span>Mol inicial do titulado</span>
@@ -1610,6 +2144,577 @@ const tabelaSegundaDerivadaMono =
   </div>
 )}
 
+{abaAtiva === "efeitoConcentracao" && (
+  <section className="precipitacaoSimulationSection">
+    <header className="precipitacaoSimulationIntro">
+      <span className="precipitacaoSectionLabel">
+        Comparação de cenários
+      </span>
+
+      <h5>
+        Efeito da concentração
+      </h5>
+
+      <p>
+        Altere as concentrações do titulado e do
+        titulante e compare o novo cenário com as
+        condições originais da titulação. O sistema
+        recalcula o ponto de equivalência e permite
+        avaliar o efeito da concentração sobre o
+        sistema ácido-base.
+      </p>
+    </header>
+
+    {!resultadoMono || !curvaMono ? (
+      <section className="precipitacaoSimulationOriginal">
+        <header>
+          <span className="precipitacaoSectionLabel">
+            Análise necessária
+          </span>
+
+          <h6>
+            Avalie primeiro o sistema
+          </h6>
+        </header>
+
+        <p>
+          Realize primeiro a avaliação do sistema
+          monoprótico para utilizar o efeito da
+          concentração.
+        </p>
+      </section>
+    ) : (
+      <>
+        <section className="precipitacaoSimulationOriginal">
+          <header>
+            <span className="precipitacaoSectionLabel">
+              Condição original
+            </span>
+
+            <h6>
+              Dados usados como referência
+            </h6>
+          </header>
+
+          <div className="precipitacaoSimulationOriginalGrid">
+            <article>
+              <span>
+                Concentração do titulado
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoMono.entradas.concTitulado,
+                  4
+                )}{" "}
+                mol L⁻¹
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Volume do titulado
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoMono.entradas.volTitulado,
+                  2
+                )}{" "}
+                mL
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Concentração do titulante
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoMono.entradas.concTitulante,
+                  4
+                )}{" "}
+                mol L⁻¹
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Capacidade da bureta
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoMono.entradas.volBureta,
+                  2
+                )}{" "}
+                mL
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Sistema
+              </span>
+
+              <strong>
+                {resultadoMono.tipoSistema}
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                PE original
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoMono.volumePE,
+                  2
+                )}{" "}
+                mL
+              </strong>
+            </article>
+          </div>
+        </section>
+
+        <section className="precipitacaoSimulationPresets">
+          <header>
+            <span className="precipitacaoSectionLabel">
+              Cenários rápidos
+            </span>
+
+            <h6>
+              Observe o efeito da concentração
+            </h6>
+          </header>
+
+          <div className="precipitacaoSimulationPresetButtons">
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulado * 2,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulante,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulado 2× mais concentrado
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulado * 0.5,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulante,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulado 50% mais diluído
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulado,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulante * 2,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulante 2× mais concentrado
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulado,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulante * 0.5,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulante 50% mais diluído
+            </button>
+          </div>
+        </section>
+
+        <div className="precipitacaoSimulationWorkspace">
+          <aside className="precipitacaoSimulationControls">
+            <span className="precipitacaoSectionLabel">
+              Parâmetros simulados
+            </span>
+
+            <h6>
+              Configure o novo cenário
+            </h6>
+
+            <div className="precipitacaoSimulationForm">
+              <label>
+                Concentração do titulado
+
+                <div className="precipitacaoSimulationInputGroup">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={concTituladoEfeitoMono}
+                    onChange={(event) =>
+                      setConcTituladoEfeitoMono(
+                        event.target.value
+                      )
+                    }
+                    placeholder={formatarNumeroBR(
+                      resultadoMono.entradas.concTitulado,
+                      4
+                    )}
+                  />
+
+                  <span>mol L⁻¹</span>
+                </div>
+              </label>
+
+              <label>
+                Concentração do titulante
+
+                <div className="precipitacaoSimulationInputGroup">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={concTitulanteEfeitoMono}
+                    onChange={(event) =>
+                      setConcTitulanteEfeitoMono(
+                        event.target.value
+                      )
+                    }
+                    placeholder={formatarNumeroBR(
+                      resultadoMono.entradas.concTitulante,
+                      4
+                    )}
+                  />
+
+                  <span>mol L⁻¹</span>
+                </div>
+              </label>
+
+              {mensagemEfeitoMono && (
+                <p className="precipitacaoSimulationError">
+                  {mensagemEfeitoMono}
+                </p>
+              )}
+
+              <button
+                type="button"
+                className="precipitacaoSimulationApplyButton"
+                onClick={aplicarEfeitoConcentracaoMono}
+              >
+                Aplicar simulação
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="precipitacaoSimulationResetButton"
+              onClick={() => {
+                setConcTituladoEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulado,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoMono(
+                  formatarNumeroBR(
+                    resultadoMono.entradas.concTitulante,
+                    4
+                  )
+                );
+
+                setResultadoEfeitoMono(null);
+                setCurvaEfeitoMono(null);
+                setMensagemEfeitoMono("");
+              }}
+            >
+              Restaurar valores originais
+            </button>
+          </aside>
+
+          <section className="precipitacaoSimulationGraphCard">
+            <header>
+              <div>
+                <span className="precipitacaoSectionLabel">
+                  Comparação experimental
+                </span>
+
+                <h6>
+                  Condição original × condição simulada
+                </h6>
+              </div>
+            </header>
+
+            {resultadoEfeitoMono &&
+  curvaEfeitoMono && (
+    <div className="efeitoConcentracaoChartWrapper">
+      <GraficoEfeitoConcentracaoMono
+        curvaOriginal={curvaMono}
+        curvaSimulada={curvaEfeitoMono}
+        peOriginal={resultadoMono.volumePE}
+        peSimulado={resultadoEfeitoMono.volumePE}
+      />
+    </div>
+  )}
+
+            {!resultadoEfeitoMono ? (
+              <div className="precipitacaoSimulationDiagnosis">
+                <span className="precipitacaoSectionLabel">
+                  Aguardando simulação
+                </span>
+
+                <h6>
+                  Configure uma nova concentração
+                </h6>
+
+                <p>
+                  Altere uma ou ambas as concentrações
+                  e aplique a simulação para comparar
+                  o novo ponto de equivalência com a
+                  condição original.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* =========================================================
+    RESUMO DO EFEITO DA CONCENTRAÇÃO
+   ========================================================= */}
+
+<div className="efeitoConcentracaoResumo">
+  <div className="efeitoConcentracaoResumoGrid">
+    <article className="efeitoConcentracaoResumoCard">
+      <span>PE original</span>
+
+      <strong>
+        {formatarNumeroBR(resultadoMono.volumePE, 2)} mL
+      </strong>
+    </article>
+
+    <article className="efeitoConcentracaoResumoCard">
+      <span>PE simulado</span>
+
+      <strong>
+        {formatarNumeroBR(resultadoEfeitoMono.volumePE, 2)} mL
+      </strong>
+    </article>
+
+    <article className="efeitoConcentracaoResumoCard">
+      <span>ΔPE</span>
+
+      <strong>
+        {formatarNumeroBR(
+          resultadoEfeitoMono.volumePE - resultadoMono.volumePE,
+          2
+        )}{" "}
+        mL
+      </strong>
+    </article>
+
+    <article className="efeitoConcentracaoResumoCard">
+      <span>Variação do PE</span>
+
+      <strong>
+        {formatarNumeroBR(
+          ((resultadoEfeitoMono.volumePE - resultadoMono.volumePE) /
+            resultadoMono.volumePE) *
+            100,
+          2
+        )}
+        %
+      </strong>
+    </article>
+  </div>
+</div>
+
+
+{/* =========================================================
+    ALTERAÇÕES APLICADAS
+   ========================================================= */}
+
+<div className="efeitoConcentracaoAlteracoes">
+  <div className="efeitoConcentracaoAlteracoesHeader">
+    <span>Alterações aplicadas</span>
+
+    <h5>Comparação das concentrações</h5>
+
+    <p>
+      Valores utilizados na condição original e na condição
+      simulada.
+    </p>
+  </div>
+
+  <div className="efeitoConcentracaoAlteracoesGrid">
+  <article className="efeitoConcentracaoAlteracaoCard">
+    <div className="efeitoConcentracaoAlteracaoTitulo">
+      Titulado
+    </div>
+
+    <div className="efeitoConcentracaoComparacao">
+      <div className="efeitoConcentracaoValor">
+        <small>Original</small>
+
+        <strong>
+          {formatarNumeroBR(
+            resultadoMono.entradas.concTitulado,
+            4
+          )}
+        </strong>
+
+        <span>mol L⁻¹</span>
+      </div>
+
+      <div className="efeitoConcentracaoSeta">
+        →
+      </div>
+
+      <div className="efeitoConcentracaoValor">
+        <small>Simulado</small>
+
+        <strong>
+          {formatarNumeroBR(
+            resultadoEfeitoMono.entradas.concTitulado,
+            4
+          )}
+        </strong>
+
+        <span>mol L⁻¹</span>
+      </div>
+    </div>
+  </article>
+
+  <article className="efeitoConcentracaoAlteracaoCard">
+    <div className="efeitoConcentracaoAlteracaoTitulo">
+      Titulante
+    </div>
+
+    <div className="efeitoConcentracaoComparacao">
+      <div className="efeitoConcentracaoValor">
+        <small>Original</small>
+
+        <strong>
+          {formatarNumeroBR(
+            resultadoMono.entradas.concTitulante,
+            4
+          )}
+        </strong>
+
+        <span>mol L⁻¹</span>
+      </div>
+
+      <div className="efeitoConcentracaoSeta">
+        →
+      </div>
+
+      <div className="efeitoConcentracaoValor">
+        <small>Simulado</small>
+
+        <strong>
+          {formatarNumeroBR(
+            resultadoEfeitoMono.entradas.concTitulante,
+            4
+          )}
+        </strong>
+
+        <span>mol L⁻¹</span>
+      </div>
+    </div>
+  </article>
+</div>
+</div>
+              </>
+            )}
+          </section>
+        </div>
+
+        {resultadoEfeitoMono && curvaEfeitoMono && (
+          <section className="precipitacaoSimulationDiagnosis">
+            <span className="precipitacaoSectionLabel">
+              Interpretação
+            </span>
+
+            <h6>
+              Efeito observado
+            </h6>
+
+            <p>
+              O ponto de equivalência passou de{" "}
+              <strong>
+                {formatarNumeroBR(
+                  resultadoMono.volumePE,
+                  2
+                )}{" "}
+                mL
+              </strong>{" "}
+              para{" "}
+              <strong>
+                {formatarNumeroBR(
+                  resultadoEfeitoMono.volumePE,
+                  2
+                )}{" "}
+                mL
+              </strong>
+              .
+            </p>
+
+            <p>
+              A alteração da concentração modifica a
+              quantidade de matéria presente ou o
+              volume de titulante necessário para
+              atingir a equivalência, permitindo
+              visualizar experimentalmente o efeito
+              da concentração sobre a titulação.
+            </p>
+          </section>
+        )}
+      </>
+    )}
+  </section>
+)}
+
 {abaAtiva === "tempoReal" && (
   <div className="resultsPanel curveMainPanel">
     <span className="eyebrow">Simulação em tempo real</span>
@@ -2201,14 +3306,17 @@ setMensagemPoli("Sistema avaliado com sucesso.");
     : [];
 
 const blocoIndicadorAtivo =
-  rankingsIndicadoresPoli.find((item) => item.pe === peIndicadorAtivo) ??
+  rankingsIndicadoresPoli.find(
+    (item) => item.pe === peIndicadorAtivo
+  ) ??
   rankingsIndicadoresPoli[0] ??
   null;
 
 const indicadorAtivo =
   indicadorSelecionado &&
   blocoIndicadorAtivo &&
-  indicadorSelecionado.pe === blocoIndicadorAtivo.pe
+  indicadorSelecionado.pe ===
+    blocoIndicadorAtivo.pe
     ? indicadorSelecionado
     : blocoIndicadorAtivo?.ranking[0] ?? null;
 
@@ -2477,24 +3585,29 @@ const tabelaSegundaDerivada =
                 <p>{resultadoPoli.resumo}</p>
 
                 <div className="resultGrid">
-                  {resultadoPoli.constantes.map((item) => (
-                    <div className="resultCard" key={item.etapa}>
-                      <span>
-                        {resultadoPoli.titulado.classe === "ácido"
-                          ? `Ka${item.etapa}`
-                          : `Kb${item.etapa}`}
-                      </span>
+                {resultadoPoli.constantes.map((item) => (
+  <div className="resultCard" key={item.etapa}>
+    <span>
+      {resultadoPoli.titulado.classe === "ácido"
+        ? `Ka${item.etapa}`
+        : `Kb${item.etapa}`}
+    </span>
 
-                      <strong>{item.constante.toExponential(2)}</strong>
+    <strong>
+      {formatarCientificoBR(
+        item.constante,
+        2
+      )}
+    </strong>
 
-                      <small>
-                        {resultadoPoli.titulado.classe === "ácido"
-                          ? `pKa${item.etapa}`
-                          : `pKb${item.etapa}`}{" "}
-                        = {formatarNumeroBR(item.pValor, 2)}
-                      </small>
-                    </div>
-                  ))}
+    <small>
+      {resultadoPoli.titulado.classe === "ácido"
+        ? `pKa${item.etapa}`
+        : `pKb${item.etapa}`}{" "}
+      = {formatarNumeroBR(item.pValor, 2)}
+    </small>
+  </div>
+))}
 
                   {resultadoPoli.volumesPE.map((volume, index) => (
                     <div className="resultCard" key={`pe-${index + 1}`}>
@@ -4206,13 +5319,59 @@ function montarResumoDerivadaMono(
         )
       : 0.5;
 
+  /*
+   * LIMITE PARA ANÁLISE DA DERIVADA
+   *
+   * Aplicamos ao sistema monoprótico o mesmo
+   * critério utilizado no sistema poliprótico.
+   *
+   * A região inicial da curva é desconsiderada
+   * para evitar que variações muito precoces
+   * interfiram na identificação do pico relevante
+   * da primeira derivada.
+   */
+  const volumeMinimoAnalise = Math.max(
+    resultado.volumePE * 0.12,
+    1
+  );
+
+  const derivadasUteis = derivadas.filter(
+    (item) =>
+      item.volume >= volumeMinimoAnalise
+  );
+
+  /*
+   * Determina o maior valor absoluto da
+   * primeira derivada em toda a região útil.
+   *
+   * Esse valor será utilizado como referência
+   * para estabelecer a relevância do pico
+   * encontrado próximo ao ponto de equivalência.
+   */
+  const valoresD1Globais = derivadasUteis
+    .map((item) =>
+      Math.abs(item.d1 ?? 0)
+    )
+    .filter((valor) =>
+      Number.isFinite(valor)
+    );
+
+  const maiorD1Global =
+    valoresD1Globais.length > 0
+      ? Math.max(...valoresD1Globais)
+      : 0;
+
+  /*
+   * JANELA DE BUSCA AO REDOR DO
+   * PONTO DE EQUIVALÊNCIA TEÓRICO
+   */
   const janela = Math.max(
     resultado.volumePE * 0.08,
     passoEstimado * 8,
     1
   );
 
-  const candidatos = derivadas.filter(
+  const candidatos = derivadasUteis.filter(
     (item) =>
       Math.abs(
         item.volume - resultado.volumePE
@@ -4336,9 +5495,22 @@ function montarResumoDerivadaMono(
 
   /*
    * DETECTABILIDADE
+   *
+   * Para o ponto ser considerado detectável
+   * pela primeira derivada, o pico local deve:
+   *
+   * 1. possuir intensidade absoluta >= 0,35;
+   * 2. existir um pico global válido;
+   * 3. possuir intensidade de pelo menos 18%
+   *    do maior pico global da curva.
+   *
+   * Este é o mesmo limite utilizado atualmente
+   * no sistema poliprótico.
    */
   const detectavelD1 =
-    maiorD1Local >= 0.35;
+    maiorD1Local >= 0.35 &&
+    maiorD1Global > 0 &&
+    maiorD1Local >= maiorD1Global * 0.18;
 
   const detectavelD2 =
     detectavelD1 &&
@@ -4625,7 +5797,13 @@ function montarRankingIndicadoresPoli(
 ): BlocoRankingIndicadorAcidoBase[] {
   return resultado.volumesPE.map((volumePE, index) => {
     const pe = index + 1;
-    const pontoPE = calcularPhPorVolumePoliprotico(resultado, volumePE);
+
+    const pontoPE =
+      calcularPhPorVolumePoliprotico(
+        resultado,
+        volumePE
+      );
+
     const phPE = pontoPE.ph;
 
     if (phPE === null) {
@@ -4637,11 +5815,26 @@ function montarRankingIndicadoresPoli(
       };
     }
 
-    const ranking = indicadoresAcidoBase
+    /*
+     * Calcula TODOS os indicadores normalmente
+     * para este ponto de equivalência.
+     *
+     * A Fenolftaleína não recebe nenhum
+     * tratamento especial durante o cálculo.
+     */
+    const rankingCalculado = indicadoresAcidoBase
       .map((indicador) => {
-        const phMin = Number(indicador.phMinimo);
-        const phMax = Number(indicador.phMaximo);
-        const phCentral = Number(indicador.phCentral);
+        const phMin = Number(
+          indicador.phMinimo
+        );
+
+        const phMax = Number(
+          indicador.phMaximo
+        );
+
+        const phCentral = Number(
+          indicador.phCentral
+        );
 
         if (
           !Number.isFinite(phMin) ||
@@ -4651,9 +5844,19 @@ function montarRankingIndicadoresPoli(
           return null;
         }
 
-        const cobrePE = phPE >= phMin && phPE <= phMax;
-        const erro = Math.abs(phPE - phCentral);
-        const score = calcularScoreIndicadorPoli(erro, cobrePE);
+        const cobrePE =
+          phPE >= phMin &&
+          phPE <= phMax;
+
+        const erro = Math.abs(
+          phPE - phCentral
+        );
+
+        const score =
+          calcularScoreIndicadorPoli(
+            erro,
+            cobrePE
+          );
 
         return {
           pe,
@@ -4668,18 +5871,24 @@ function montarRankingIndicadoresPoli(
           cobrePE,
           erro,
           score,
-          justificativa: montarJustificativaIndicador({
-            nome: indicador.nome,
-            phPE,
-            phMin,
-            phMax,
-            phCentral,
-            cobrePE,
-            erro,
-          }),
+          justificativa:
+            montarJustificativaIndicador({
+              nome: indicador.nome,
+              phPE,
+              phMin,
+              phMax,
+              phCentral,
+              cobrePE,
+              erro,
+            }),
         };
       })
-      .filter((item): item is RankingIndicadorAcidoBase => item !== null)
+      .filter(
+        (
+          item
+        ): item is RankingIndicadorAcidoBase =>
+          item !== null
+      )
       .sort((a, b) => {
         if (a.cobrePE !== b.cobrePE) {
           return a.cobrePE ? -1 : 1;
@@ -4690,8 +5899,49 @@ function montarRankingIndicadoresPoli(
         }
 
         return a.erro - b.erro;
-      })
-      .slice(0, 6);
+      });
+
+    /*
+     * Localiza a Fenolftaleína depois que
+     * todos os cálculos e o ranking matemático
+     * já foram realizados.
+     */
+    const fenolftaleina =
+      rankingCalculado.find(
+        (item) =>
+          item.nome === "Fenolftaleína"
+      ) ?? null;
+
+    /*
+     * Remove a Fenolftaleína da posição
+     * originalmente obtida para evitar
+     * duplicidade.
+     *
+     * Os demais continuam exatamente na
+     * ordem determinada pelo cálculo.
+     */
+    const demaisIndicadores =
+      rankingCalculado.filter(
+        (item) =>
+          item.nome !== "Fenolftaleína"
+      );
+
+    /*
+     * Mantemos 6 indicadores exibidos:
+     *
+     * 1º Fenolftaleína
+     * 2º melhor indicador calculado
+     * 3º segundo melhor calculado
+     * ...
+     * 6º quinto melhor calculado
+     */
+    const ranking =
+      fenolftaleina
+        ? [
+            fenolftaleina,
+            ...demaisIndicadores.slice(0, 5),
+          ]
+        : demaisIndicadores.slice(0, 6);
 
     return {
       pe,
@@ -4716,7 +5966,17 @@ function montarRankingIndicadoresMono(
 
   const phPE = pontoPE.ph;
 
-  return indicadoresAcidoBaseMono
+  /*
+   * Primeiro calculamos TODOS os indicadores normalmente.
+   *
+   * Nenhum cálculo da Fenolftaleína é alterado:
+   * - score;
+   * - erro;
+   * - cobertura do PE;
+   * - faixa de viragem;
+   * - justificativa.
+   */
+  const rankingCalculado = indicadoresAcidoBaseMono
     .map((indicador) => {
       const phMin = Number(indicador.phMin);
       const phMax = Number(indicador.phMax);
@@ -4730,9 +5990,19 @@ function montarRankingIndicadoresMono(
         return null;
       }
 
-      const cobrePE = phPE >= phMin && phPE <= phMax;
-      const erro = Math.abs(phPE - phCentral);
-      const score = calcularScoreIndicadorPoli(erro, cobrePE);
+      const cobrePE =
+        phPE >= phMin &&
+        phPE <= phMax;
+
+      const erro = Math.abs(
+        phPE - phCentral
+      );
+
+      const score =
+        calcularScoreIndicadorPoli(
+          erro,
+          cobrePE
+        );
 
       return {
         pe: 1,
@@ -4743,22 +6013,30 @@ function montarRankingIndicadoresMono(
         phMax,
         phCentral,
         faixa: indicador.faixa,
-        categoria: cobrePE ? "Cobre o PE" : "Próximo ao PE",
+        categoria: cobrePE
+          ? "Cobre o PE"
+          : "Próximo ao PE",
         cobrePE,
         erro,
         score,
-        justificativa: montarJustificativaIndicador({
-          nome: indicador.nome,
-          phPE,
-          phMin,
-          phMax,
-          phCentral,
-          cobrePE,
-          erro,
-        }),
+        justificativa:
+          montarJustificativaIndicador({
+            nome: indicador.nome,
+            phPE,
+            phMin,
+            phMax,
+            phCentral,
+            cobrePE,
+            erro,
+          }),
       };
     })
-    .filter((item): item is RankingIndicadorAcidoBase => item !== null)
+    .filter(
+      (
+        item
+      ): item is RankingIndicadorAcidoBase =>
+        item !== null
+    )
     .sort((a, b) => {
       if (a.cobrePE !== b.cobrePE) {
         return a.cobrePE ? -1 : 1;
@@ -4769,8 +6047,49 @@ function montarRankingIndicadoresMono(
       }
 
       return a.erro - b.erro;
-    })
-    .slice(0, 8);
+    });
+
+  /*
+   * A Fenolftaleína é retirada da posição
+   * obtida pelo ranking matemático.
+   *
+   * Ela continuará contendo os resultados
+   * calculados normalmente.
+   */
+  const fenolftaleina =
+    rankingCalculado.find(
+      (item) =>
+        item.nome === "Fenolftaleína"
+    ) ?? null;
+
+  /*
+   * Os demais indicadores permanecem
+   * exatamente na ordem calculada.
+   */
+  const demaisIndicadores =
+    rankingCalculado.filter(
+      (item) =>
+        item.nome !== "Fenolftaleína"
+    );
+
+  /*
+   * A apresentação final será:
+   *
+   * 1º Fenolftaleína
+   * 2º melhor indicador calculado
+   * 3º segundo melhor calculado
+   * ...
+   *
+   * Mantemos o limite visual de 8 indicadores.
+   */
+  if (fenolftaleina) {
+    return [
+      fenolftaleina,
+      ...demaisIndicadores.slice(0, 7),
+    ];
+  }
+
+  return demaisIndicadores.slice(0, 8);
 }
 
 function calcularScoreIndicadorPoli(erro: number, cobrePE: boolean) {
