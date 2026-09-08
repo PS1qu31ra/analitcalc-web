@@ -524,6 +524,465 @@ function GraficoEfeitoConcentracaoMono({
   );
 }
 
+function GraficoEfeitoConcentracaoPoli({
+  curvaOriginal,
+  curvaSimulada,
+  volumesPEOriginais,
+  volumesPESimulados,
+}: {
+  curvaOriginal: CurvaAcidoBasePoliprotica;
+  curvaSimulada: CurvaAcidoBasePoliprotica;
+  volumesPEOriginais: number[];
+  volumesPESimulados: number[];
+}) {
+  const largura = 1000;
+  const altura = 430;
+
+  const margemEsquerda = 70;
+  const margemDireita = 30;
+  const margemSuperior = 38;
+  const margemInferior = 65;
+
+  const larguraUtil =
+    largura -
+    margemEsquerda -
+    margemDireita;
+
+  const alturaUtil =
+    altura -
+    margemSuperior -
+    margemInferior;
+
+  const pontosOriginais =
+    curvaOriginal.pontos.filter(
+      (ponto) =>
+        Number.isFinite(ponto.volume) &&
+        ponto.ph !== null &&
+        Number.isFinite(ponto.ph)
+    );
+
+  const pontosSimulados =
+    curvaSimulada.pontos.filter(
+      (ponto) =>
+        Number.isFinite(ponto.volume) &&
+        ponto.ph !== null &&
+        Number.isFinite(ponto.ph)
+    );
+
+  if (
+    pontosOriginais.length === 0 ||
+    pontosSimulados.length === 0
+  ) {
+    return null;
+  }
+
+  const volumeMaximo = Math.max(
+    ...pontosOriginais.map(
+      (ponto) => ponto.volume
+    ),
+    ...pontosSimulados.map(
+      (ponto) => ponto.volume
+    ),
+    ...volumesPEOriginais,
+    ...volumesPESimulados
+  );
+
+  const volumeGrafico =
+    volumeMaximo > 0
+      ? volumeMaximo * 1.03
+      : 1;
+
+  const x = (volume: number) =>
+    margemEsquerda +
+    (volume / volumeGrafico) *
+      larguraUtil;
+
+  const y = (ph: number) =>
+    margemSuperior +
+    ((14 - ph) / 14) *
+      alturaUtil;
+
+  const montarPolyline = (
+    pontos: typeof pontosOriginais
+  ) =>
+    pontos
+      .map(
+        (ponto) =>
+          `${x(ponto.volume)},${y(
+            ponto.ph as number
+          )}`
+      )
+      .join(" ");
+
+  const curvaOriginalSvg =
+    montarPolyline(
+      pontosOriginais
+    );
+
+  const curvaSimuladaSvg =
+    montarPolyline(
+      pontosSimulados
+    );
+
+  const marcacoesPh = [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+  ];
+
+  const numeroMarcacoesX = 6;
+
+  const marcacoesVolume =
+    Array.from(
+      {
+        length:
+          numeroMarcacoesX + 1,
+      },
+      (_, index) =>
+        (volumeGrafico /
+          numeroMarcacoesX) *
+        index
+    );
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        overflowX: "auto",
+      }}
+    >
+      <svg
+        viewBox={`0 0 ${largura} ${altura}`}
+        role="img"
+        aria-label="Comparação entre as curvas polipróticas original e simulada"
+        style={{
+          display: "block",
+          width: "100%",
+          minWidth: "720px",
+          height: "auto",
+        }}
+      >
+        {marcacoesPh.map((ph) => (
+          <g
+            key={`poli-efeito-ph-${ph}`}
+          >
+            <line
+              x1={margemEsquerda}
+              x2={
+                largura -
+                margemDireita
+              }
+              y1={y(ph)}
+              y2={y(ph)}
+              stroke="currentColor"
+              strokeOpacity="0.08"
+              strokeWidth="1"
+            />
+
+            <text
+              x={
+                margemEsquerda -
+                15
+              }
+              y={y(ph) + 5}
+              textAnchor="end"
+              fontSize="14"
+              fill="currentColor"
+              opacity="0.7"
+            >
+              {ph}
+            </text>
+          </g>
+        ))}
+
+        {marcacoesVolume.map(
+          (volume, index) => (
+            <g
+              key={`poli-efeito-volume-${index}`}
+            >
+              <line
+                x1={x(volume)}
+                x2={x(volume)}
+                y1={
+                  margemSuperior
+                }
+                y2={
+                  altura -
+                  margemInferior
+                }
+                stroke="currentColor"
+                strokeOpacity="0.05"
+                strokeWidth="1"
+              />
+
+              <text
+                x={x(volume)}
+                y={
+                  altura -
+                  margemInferior +
+                  25
+                }
+                textAnchor="middle"
+                fontSize="14"
+                fill="currentColor"
+                opacity="0.7"
+              >
+                {formatarNumeroBR(
+                  volume,
+                  1
+                )}
+              </text>
+            </g>
+          )
+        )}
+
+        <line
+          x1={margemEsquerda}
+          x2={
+            margemEsquerda
+          }
+          y1={margemSuperior}
+          y2={
+            altura -
+            margemInferior
+          }
+          stroke="currentColor"
+          strokeOpacity="0.4"
+          strokeWidth="1.5"
+        />
+
+        <line
+          x1={margemEsquerda}
+          x2={
+            largura -
+            margemDireita
+          }
+          y1={
+            altura -
+            margemInferior
+          }
+          y2={
+            altura -
+            margemInferior
+          }
+          stroke="currentColor"
+          strokeOpacity="0.4"
+          strokeWidth="1.5"
+        />
+
+        <text
+          x="20"
+          y={
+            margemSuperior +
+            alturaUtil / 2
+          }
+          textAnchor="middle"
+          fontSize="15"
+          fontWeight="600"
+          fill="currentColor"
+          transform={`rotate(-90 20 ${
+            margemSuperior +
+            alturaUtil / 2
+          })`}
+        >
+          pH
+        </text>
+
+        <text
+          x={
+            margemEsquerda +
+            larguraUtil / 2
+          }
+          y={altura - 12}
+          textAnchor="middle"
+          fontSize="15"
+          fontWeight="600"
+          fill="currentColor"
+        >
+          Volume de titulante (mL)
+        </text>
+
+        {volumesPEOriginais.map(
+          (volume, index) => (
+            <g
+              key={`pe-original-${index}`}
+            >
+              <line
+                x1={x(volume)}
+                x2={x(volume)}
+                y1={
+                  margemSuperior
+                }
+                y2={
+                  altura -
+                  margemInferior
+                }
+                stroke="#6b7280"
+                strokeWidth="1.8"
+                strokeDasharray="8 6"
+                opacity="0.8"
+              />
+
+              <text
+                x={x(volume) + 5}
+                y={
+                  margemSuperior +
+                  14
+                }
+                fontSize="11"
+                fontWeight="700"
+                fill="#6b7280"
+              >
+                PE{index + 1}
+              </text>
+            </g>
+          )
+        )}
+
+        {volumesPESimulados.map(
+          (volume, index) => (
+            <g
+              key={`pe-simulado-${index}`}
+            >
+              <line
+                x1={x(volume)}
+                x2={x(volume)}
+                y1={
+                  margemSuperior
+                }
+                y2={
+                  altura -
+                  margemInferior
+                }
+                stroke="#991b1b"
+                strokeWidth="1.8"
+                strokeDasharray="4 5"
+                opacity="0.85"
+              />
+
+              <text
+                x={x(volume) + 5}
+                y={
+                  margemSuperior +
+                  29
+                }
+                fontSize="11"
+                fontWeight="700"
+                fill="#991b1b"
+              >
+                PE{index + 1}
+              </text>
+            </g>
+          )
+        )}
+
+        <polyline
+          points={curvaOriginalSvg}
+          fill="none"
+          stroke="#6b7280"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <polyline
+          points={curvaSimuladaSvg}
+          fill="none"
+          stroke="#b91c1c"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <g>
+          <rect
+            x={
+              largura -
+              margemDireita -
+              275
+            }
+            y="18"
+            width="265"
+            height="78"
+            rx="12"
+            fill="white"
+            fillOpacity="0.94"
+            stroke="currentColor"
+            strokeOpacity="0.12"
+          />
+
+          <line
+            x1={
+              largura -
+              margemDireita -
+              255
+            }
+            x2={
+              largura -
+              margemDireita -
+              215
+            }
+            y1="44"
+            y2="44"
+            stroke="#6b7280"
+            strokeWidth="4"
+          />
+
+          <text
+            x={
+              largura -
+              margemDireita -
+              202
+            }
+            y="49"
+            fontSize="14"
+            fontWeight="600"
+            fill="currentColor"
+          >
+            Condição original
+          </text>
+
+          <line
+            x1={
+              largura -
+              margemDireita -
+              255
+            }
+            x2={
+              largura -
+              margemDireita -
+              215
+            }
+            y1="73"
+            y2="73"
+            stroke="#b91c1c"
+            strokeWidth="4"
+          />
+
+          <text
+            x={
+              largura -
+              margemDireita -
+              202
+            }
+            y="78"
+            fontSize="14"
+            fontWeight="600"
+            fill="currentColor"
+          >
+            Condição simulada
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 export default function AcidoBasePage() {
   const [tipoSistema, setTipoSistema] =
     useState<TipoSistemaAcidoBase>("mono");
@@ -722,20 +1181,34 @@ export default function AcidoBasePage() {
               </button>
 
               <button
-                type="button"
-                className={abaPoli === "derivadas" ? "active" : ""}
-                onClick={() => setAbaPoli("derivadas")}
-              >
-                Derivadas
-              </button>
+  type="button"
+  className={abaPoli === "derivadas" ? "active" : ""}
+  onClick={() => setAbaPoli("derivadas")}
+>
+  Derivadas
+</button>
 
-              <button
-                type="button"
-                className={abaPoli === "tempoReal" ? "active" : ""}
-                onClick={() => setAbaPoli("tempoReal")}
-              >
-                Tempo real
-              </button>
+<button
+  type="button"
+  className={
+    abaPoli === "efeitoConcentracao"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaPoli("efeitoConcentracao")
+  }
+>
+  Efeito da concentração
+</button>
+
+<button
+  type="button"
+  className={abaPoli === "tempoReal" ? "active" : ""}
+  onClick={() => setAbaPoli("tempoReal")}
+>
+  Tempo real
+</button>
             </div>
           </section>
 
@@ -2957,6 +3430,37 @@ function ModuloPoliprotico({ abaAtiva }: { abaAtiva: AbaAcidoBase }) {
   const [curvaPoli, setCurvaPoli] =
     useState<CurvaAcidoBasePoliprotica | null>(null);
 
+    const [
+      concTituladoEfeitoPoli,
+      setConcTituladoEfeitoPoli,
+    ] = useState("");
+    
+    const [
+      concTitulanteEfeitoPoli,
+      setConcTitulanteEfeitoPoli,
+    ] = useState("");
+    
+    const [
+      resultadoEfeitoPoli,
+      setResultadoEfeitoPoli,
+    ] =
+      useState<ResultadoSistemaPoliprotico | null>(
+        null
+      );
+    
+    const [
+      curvaEfeitoPoli,
+      setCurvaEfeitoPoli,
+    ] =
+      useState<CurvaAcidoBasePoliprotica | null>(
+        null
+      );
+    
+    const [
+      mensagemEfeitoPoli,
+      setMensagemEfeitoPoli,
+    ] = useState("");
+
   const [volumeConsulta, setVolumeConsulta] = useState("");
 
   const [pontoConsulta, setPontoConsulta] =
@@ -2981,16 +3485,109 @@ const [indicadorSelecionado, setIndicadorSelecionado] =
     return Number(String(valor).replace(",", "."));
   }
 
+  function aplicarEfeitoConcentracaoPoli() {
+    setMensagemEfeitoPoli("");
+  
+    if (!resultadoPoli) {
+      setMensagemEfeitoPoli(
+        "Avalie primeiro o sistema poliprótico na aba Visão geral."
+      );
+      return;
+    }
+  
+    const novaConcTitulado =
+      converterNumero(
+        concTituladoEfeitoPoli
+      );
+  
+    const novaConcTitulante =
+      converterNumero(
+        concTitulanteEfeitoPoli
+      );
+  
+    if (
+      !Number.isFinite(novaConcTitulado) ||
+      !Number.isFinite(novaConcTitulante) ||
+      novaConcTitulado <= 0 ||
+      novaConcTitulante <= 0
+    ) {
+      setMensagemEfeitoPoli(
+        "Informe concentrações positivas e válidas para o titulado e o titulante."
+      );
+  
+      return;
+    }
+  
+    try {
+      const simulacao =
+        avaliarSistemaPoliprotico({
+          titulante:
+            resultadoPoli.entradas.titulante,
+  
+          titulado:
+            resultadoPoli.entradas.titulado,
+  
+          concTitulante:
+            novaConcTitulante,
+  
+          concTitulado:
+            novaConcTitulado,
+  
+          volTitulado:
+            resultadoPoli.entradas.volTitulado,
+  
+          volBureta:
+            resultadoPoli.entradas.volBureta,
+        });
+  
+      const curvaSimulada =
+        gerarCurvaPoliprotica(
+          simulacao
+        );
+  
+      setResultadoEfeitoPoli(
+        simulacao
+      );
+  
+      setCurvaEfeitoPoli(
+        curvaSimulada
+      );
+  
+      setMensagemEfeitoPoli(
+        "Novas concentrações aplicadas com sucesso."
+      );
+    } catch (erro) {
+      setResultadoEfeitoPoli(null);
+      setCurvaEfeitoPoli(null);
+  
+      setMensagemEfeitoPoli(
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível calcular o efeito das novas concentrações."
+      );
+    }
+  }
+
   function limparResultadoParcial() {
     setResultadoPoli(null);
     setCurvaPoli(null);
     setPontoConsulta(null);
     setMensagemPoli("");
+  
     setPeIndicadorAtivo(1);
     setIndicadorSelecionado(null);
+  
     setVolumeAtualTempoReal(0);
-setVolumeManualTempoReal("");
-setPontosTempoReal([]);
+    setVolumeManualTempoReal("");
+    setPontosTempoReal([]);
+  
+    setConcTituladoEfeitoPoli("");
+    setConcTitulanteEfeitoPoli("");
+  
+    setResultadoEfeitoPoli(null);
+    setCurvaEfeitoPoli(null);
+  
+    setMensagemEfeitoPoli("");
   }
 
   function avaliarPoliprotico() {
@@ -4274,6 +4871,712 @@ const tabelaSegundaDerivada =
       </>
     )}
   </div>
+)}
+
+{abaAtiva === "efeitoConcentracao" && (
+  <section className="precipitacaoSimulationSection">
+    <header className="precipitacaoSimulationIntro">
+      <span className="precipitacaoSectionLabel">
+        Comparação de cenários
+      </span>
+
+      <h5>
+        Efeito da concentração
+      </h5>
+
+      <p>
+        Altere as concentrações do titulado e do
+        titulante e compare o novo cenário com as
+        condições originais. O sistema recalcula
+        todos os pontos de equivalência da
+        titulação poliprótica.
+      </p>
+    </header>
+
+    {!resultadoPoli || !curvaPoli ? (
+      <section className="precipitacaoSimulationOriginal">
+        <header>
+          <span className="precipitacaoSectionLabel">
+            Análise necessária
+          </span>
+
+          <h6>
+            Avalie primeiro o sistema
+          </h6>
+        </header>
+
+        <p>
+          Realize primeiro a avaliação do sistema
+          poliprótico na aba Visão geral para
+          utilizar o efeito da concentração.
+        </p>
+      </section>
+    ) : (
+      <>
+        <section className="precipitacaoSimulationOriginal">
+          <header>
+            <span className="precipitacaoSectionLabel">
+              Condição original
+            </span>
+
+            <h6>
+              Dados usados como referência
+            </h6>
+          </header>
+
+          <div className="precipitacaoSimulationOriginalGrid">
+            <article>
+              <span>
+                Concentração do titulado
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoPoli.entradas
+                    .concTitulado,
+                  4
+                )}{" "}
+                mol L⁻¹
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Volume do titulado
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoPoli.entradas
+                    .volTitulado,
+                  2
+                )}{" "}
+                mL
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Concentração do titulante
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoPoli.entradas
+                    .concTitulante,
+                  4
+                )}{" "}
+                mol L⁻¹
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Capacidade da bureta
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  resultadoPoli.entradas
+                    .volBureta,
+                  2
+                )}{" "}
+                mL
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Sistema
+              </span>
+
+              <strong>
+                {resultadoPoli.tipoSistema ===
+                "acido-com-base-forte"
+                  ? "Ácido poliprótico × base forte"
+                  : "Base polibásica × ácido forte"}
+              </strong>
+            </article>
+
+            <article>
+              <span>
+                Nº de equivalências
+              </span>
+
+              <strong>
+                {resultadoPoli.numeroEquivalencias}
+              </strong>
+            </article>
+          </div>
+        </section>
+
+        <section className="precipitacaoSimulationPresets">
+          <header>
+            <span className="precipitacaoSectionLabel">
+              Cenários rápidos
+            </span>
+
+            <h6>
+              Observe o efeito da concentração
+            </h6>
+          </header>
+
+          <div className="precipitacaoSimulationPresetButtons">
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulado * 2,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulante,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulado 2× mais concentrado
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulado * 0.5,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulante,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulado 50% mais diluído
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulado,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulante * 2,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulante 2× mais concentrado
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setConcTituladoEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulado,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulante * 0.5,
+                    4
+                  )
+                );
+              }}
+            >
+              Titulante 50% mais diluído
+            </button>
+          </div>
+        </section>
+
+        <div className="precipitacaoSimulationWorkspace">
+          <aside className="precipitacaoSimulationControls">
+            <span className="precipitacaoSectionLabel">
+              Parâmetros simulados
+            </span>
+
+            <h6>
+              Configure o novo cenário
+            </h6>
+
+            <div className="precipitacaoSimulationForm">
+              <label>
+                Concentração do titulado
+
+                <div className="precipitacaoSimulationInputGroup">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={
+                      concTituladoEfeitoPoli
+                    }
+                    onChange={(event) =>
+                      setConcTituladoEfeitoPoli(
+                        event.target.value
+                      )
+                    }
+                    placeholder={formatarNumeroBR(
+                      resultadoPoli.entradas
+                        .concTitulado,
+                      4
+                    )}
+                  />
+
+                  <span>
+                    mol L⁻¹
+                  </span>
+                </div>
+              </label>
+
+              <label>
+                Concentração do titulante
+
+                <div className="precipitacaoSimulationInputGroup">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={
+                      concTitulanteEfeitoPoli
+                    }
+                    onChange={(event) =>
+                      setConcTitulanteEfeitoPoli(
+                        event.target.value
+                      )
+                    }
+                    placeholder={formatarNumeroBR(
+                      resultadoPoli.entradas
+                        .concTitulante,
+                      4
+                    )}
+                  />
+
+                  <span>
+                    mol L⁻¹
+                  </span>
+                </div>
+              </label>
+
+              {mensagemEfeitoPoli && (
+                <p className="precipitacaoSimulationError">
+                  {mensagemEfeitoPoli}
+                </p>
+              )}
+
+              <button
+                type="button"
+                className="precipitacaoSimulationApplyButton"
+                onClick={
+                  aplicarEfeitoConcentracaoPoli
+                }
+              >
+                Aplicar simulação
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="precipitacaoSimulationResetButton"
+              onClick={() => {
+                setConcTituladoEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulado,
+                    4
+                  )
+                );
+
+                setConcTitulanteEfeitoPoli(
+                  formatarNumeroBR(
+                    resultadoPoli.entradas
+                      .concTitulante,
+                    4
+                  )
+                );
+
+                setResultadoEfeitoPoli(
+                  null
+                );
+
+                setCurvaEfeitoPoli(
+                  null
+                );
+
+                setMensagemEfeitoPoli(
+                  ""
+                );
+              }}
+            >
+              Restaurar valores originais
+            </button>
+          </aside>
+
+          <section className="precipitacaoSimulationGraphCard">
+            <header>
+              <div>
+                <span className="precipitacaoSectionLabel">
+                  Comparação experimental
+                </span>
+
+                <h6>
+                  Condição original × condição simulada
+                </h6>
+              </div>
+            </header>
+
+            {resultadoEfeitoPoli &&
+              curvaEfeitoPoli && (
+                <div className="efeitoConcentracaoChartWrapper">
+                  <GraficoEfeitoConcentracaoPoli
+                    curvaOriginal={
+                      curvaPoli
+                    }
+                    curvaSimulada={
+                      curvaEfeitoPoli
+                    }
+                    volumesPEOriginais={
+                      resultadoPoli.volumesPE
+                    }
+                    volumesPESimulados={
+                      resultadoEfeitoPoli.volumesPE
+                    }
+                  />
+                </div>
+              )}
+
+            {!resultadoEfeitoPoli ? (
+              <div className="precipitacaoSimulationDiagnosis">
+                <span className="precipitacaoSectionLabel">
+                  Aguardando simulação
+                </span>
+
+                <h6>
+                  Configure uma nova concentração
+                </h6>
+
+                <p>
+                  Altere uma ou ambas as
+                  concentrações e aplique a
+                  simulação para comparar todos
+                  os pontos de equivalência.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="efeitoConcentracaoResumo">
+                  <div className="efeitoConcentracaoResumoGrid">
+                    {resultadoPoli.volumesPE.map(
+                      (
+                        volumeOriginal,
+                        index
+                      ) => {
+                        const volumeSimulado =
+                          resultadoEfeitoPoli
+                            .volumesPE[index];
+
+                        const delta =
+                          volumeSimulado -
+                          volumeOriginal;
+
+                        const variacao =
+                          volumeOriginal > 0
+                            ? (delta /
+                                volumeOriginal) *
+                              100
+                            : 0;
+
+                        return (
+                          <div
+                            key={`efeito-poli-pe-${
+                              index + 1
+                            }`}
+                            style={{
+                              display:
+                                "contents",
+                            }}
+                          >
+                            <article className="efeitoConcentracaoResumoCard">
+                              <span>
+                                PE
+                                {index + 1}{" "}
+                                original
+                              </span>
+
+                              <strong>
+                                {formatarNumeroBR(
+                                  volumeOriginal,
+                                  2
+                                )}{" "}
+                                mL
+                              </strong>
+                            </article>
+
+                            <article className="efeitoConcentracaoResumoCard">
+                              <span>
+                                PE
+                                {index + 1}{" "}
+                                simulado
+                              </span>
+
+                              <strong>
+                                {formatarNumeroBR(
+                                  volumeSimulado,
+                                  2
+                                )}{" "}
+                                mL
+                              </strong>
+                            </article>
+
+                            <article className="efeitoConcentracaoResumoCard">
+                              <span>
+                                ΔPE
+                                {index + 1}
+                              </span>
+
+                              <strong>
+                                {formatarNumeroBR(
+                                  delta,
+                                  2
+                                )}{" "}
+                                mL
+                              </strong>
+                            </article>
+
+                            <article className="efeitoConcentracaoResumoCard">
+                              <span>
+                                Variação do
+                                PE
+                                {index + 1}
+                              </span>
+
+                              <strong>
+                                {formatarNumeroBR(
+                                  variacao,
+                                  2
+                                )}
+                                %
+                              </strong>
+                            </article>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+
+                <div className="efeitoConcentracaoAlteracoes">
+                  <div className="efeitoConcentracaoAlteracoesHeader">
+                    <span>
+                      Alterações aplicadas
+                    </span>
+
+                    <h5>
+                      Comparação das concentrações
+                    </h5>
+
+                    <p>
+                      Valores utilizados na
+                      condição original e na
+                      condição simulada.
+                    </p>
+                  </div>
+
+                  <div className="efeitoConcentracaoAlteracoesGrid">
+                    <article className="efeitoConcentracaoAlteracaoCard">
+                      <div className="efeitoConcentracaoAlteracaoTitulo">
+                        Titulado
+                      </div>
+
+                      <div className="efeitoConcentracaoComparacao">
+                        <div className="efeitoConcentracaoValor">
+                          <small>
+                            Original
+                          </small>
+
+                          <strong>
+                            {formatarNumeroBR(
+                              resultadoPoli
+                                .entradas
+                                .concTitulado,
+                              4
+                            )}
+                          </strong>
+
+                          <span>
+                            mol L⁻¹
+                          </span>
+                        </div>
+
+                        <div className="efeitoConcentracaoSeta">
+                          →
+                        </div>
+
+                        <div className="efeitoConcentracaoValor">
+                          <small>
+                            Simulado
+                          </small>
+
+                          <strong>
+                            {formatarNumeroBR(
+                              resultadoEfeitoPoli
+                                .entradas
+                                .concTitulado,
+                              4
+                            )}
+                          </strong>
+
+                          <span>
+                            mol L⁻¹
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article className="efeitoConcentracaoAlteracaoCard">
+                      <div className="efeitoConcentracaoAlteracaoTitulo">
+                        Titulante
+                      </div>
+
+                      <div className="efeitoConcentracaoComparacao">
+                        <div className="efeitoConcentracaoValor">
+                          <small>
+                            Original
+                          </small>
+
+                          <strong>
+                            {formatarNumeroBR(
+                              resultadoPoli
+                                .entradas
+                                .concTitulante,
+                              4
+                            )}
+                          </strong>
+
+                          <span>
+                            mol L⁻¹
+                          </span>
+                        </div>
+
+                        <div className="efeitoConcentracaoSeta">
+                          →
+                        </div>
+
+                        <div className="efeitoConcentracaoValor">
+                          <small>
+                            Simulado
+                          </small>
+
+                          <strong>
+                            {formatarNumeroBR(
+                              resultadoEfeitoPoli
+                                .entradas
+                                .concTitulante,
+                              4
+                            )}
+                          </strong>
+
+                          <span>
+                            mol L⁻¹
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+
+        {resultadoEfeitoPoli &&
+          curvaEfeitoPoli && (
+            <section className="precipitacaoSimulationDiagnosis">
+              <span className="precipitacaoSectionLabel">
+                Interpretação
+              </span>
+
+              <h6>
+                Efeito observado nos pontos de equivalência
+              </h6>
+
+              {resultadoPoli.volumesPE.map(
+                (
+                  volumeOriginal,
+                  index
+                ) => {
+                  const volumeSimulado =
+                    resultadoEfeitoPoli
+                      .volumesPE[index];
+
+                  return (
+                    <p
+                      key={`interpretacao-efeito-poli-${
+                        index + 1
+                      }`}
+                    >
+                      PE{index + 1}: de{" "}
+                      <strong>
+                        {formatarNumeroBR(
+                          volumeOriginal,
+                          2
+                        )}{" "}
+                        mL
+                      </strong>{" "}
+                      para{" "}
+                      <strong>
+                        {formatarNumeroBR(
+                          volumeSimulado,
+                          2
+                        )}{" "}
+                        mL
+                      </strong>
+                      .
+                    </p>
+                  );
+                }
+              )}
+
+              <p>
+                Como os pontos de equivalência
+                dependem da quantidade de matéria
+                do titulado e da concentração do
+                titulante, a alteração das
+                concentrações desloca
+                proporcionalmente os volumes
+                necessários para atingir cada
+                equivalência.
+              </p>
+            </section>
+          )}
+      </>
+    )}
+  </section>
 )}
 
 {abaAtiva === "tempoReal" && (
