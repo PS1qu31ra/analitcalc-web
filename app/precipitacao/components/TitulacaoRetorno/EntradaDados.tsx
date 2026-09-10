@@ -140,7 +140,9 @@ export default function EntradaDados({
 
                   <small>
   Forma{" "}
-  {opcao.precipitado}
+  <EquacaoQuimica
+    equacao={opcao.precipitado}
+  />
 </small>
                 </button>
               );
@@ -161,15 +163,17 @@ export default function EntradaDados({
   </div>
 </div>
 
-          <div>
-            <span>
-              Precipitado principal
-            </span>
+<div>
+  <span>
+    Precipitado principal
+  </span>
 
-            <strong>
-              {analito.precipitado}
-            </strong>
-          </div>
+  <strong>
+    <EquacaoQuimica
+      equacao={analito.precipitado}
+    />
+  </strong>
+</div>
 
           <div>
             <span>
@@ -263,24 +267,56 @@ export default function EntradaDados({
         </div>
 
         <div className="precipitacaoCompatibilityBox">
-          <strong>
-            Sistema químico fixado
-          </strong>
+  <strong>
+    Sistema químico fixado
+  </strong>
 
-          <p>
-            Reagente adicionado em excesso:
-            {" "}
-            <strong>AgNO₃</strong>.
-            {" "}
-            Titulante de retorno:
-            {" "}
-            <strong>SCN⁻</strong>.
-            {" "}
-            Método:
-            {" "}
-            <strong>Volhard em meio ácido</strong>.
-          </p>
-        </div>
+  <p>
+    Reagente adicionado em excesso:
+    {" "}
+    <strong>AgNO₃</strong>.
+    {" "}
+    Titulante de retorno:
+    {" "}
+    <strong>SCN⁻</strong>.
+    {" "}
+    Método:
+    {" "}
+    <strong>Volhard em meio ácido</strong>.
+  </p>
+</div>
+
+{analito.id === "Cl-" && (
+  <div className="precipitacaoScientificNotice precipitacaoVolhardChlorideWarning">
+    <strong>
+      Atenção especial na determinação de cloreto
+    </strong>
+
+    <p>
+      Após a precipitação do Cl⁻ como{" "}
+      <EquacaoQuimica
+        equacao="AgCl(s)"
+      />
+      , o precipitado deve ser{" "}
+      <strong>
+        filtrado ou protegido com nitrobenzeno
+      </strong>{" "}
+      antes de iniciar a titulação da prata
+      remanescente com SCN⁻. O nitrobenzeno
+      aglutina o AgCl e forma uma película
+      protetora sobre o precipitado. Esse
+      procedimento é necessário porque o{" "}
+      <EquacaoQuimica
+        equacao="AgSCN(s)"
+      />{" "}
+      é menos solúvel que o{" "}
+      <EquacaoQuimica
+        equacao="AgCl(s)"
+      />
+      .
+    </p>
+  </div>
+)}
       </section>
 
       <section className="precipitacaoFormBlock">

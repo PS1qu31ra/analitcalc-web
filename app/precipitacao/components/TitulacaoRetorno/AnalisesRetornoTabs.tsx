@@ -49,50 +49,50 @@ type ConfiguracaoAbaRetorno = {
     descricao: string;
   };
 
-const abas: ConfiguracaoAbaRetorno[] = [
-  {
-    id: "tabela",
-    titulo: "Tabela de pontos",
-    descricao:
-      "Consulte os valores calculados ao longo da curva de retorno.",
-  },
-  {
-    id: "derivadas",
-    titulo: "Derivadas",
-    descricao:
-      "Analise a primeira e a segunda derivadas da curva.",
-  },
-  {
-    id: "erro",
-    titulo: "Erro de titulação",
-    descricao:
-      "Compare o ponto final experimental com o valor teórico.",
-  },
-  {
-    id: "tempo-real",
-    titulo: "Tempo real",
-    descricao:
-      "Registre dados experimentais durante a retrotitulação.",
-  },
-  {
-    id: "metodos",
-    titulo: "Métodos",
-    descricao:
-      "Consulte o princípio, as condições e os cuidados do método de Volhard.",
-  },
-  {
-    id: "simulacao",
-    titulo: "Simulação",
-    descricao:
-      "Avalie a influência das condições experimentais.",
-  },
-  {
-    id: "interferentes",
-    titulo: "Interferentes",
-    descricao:
-      "Avalie espécies que podem consumir Ag⁺ ou SCN⁻.",
-  },
-];
+  const abas: ConfiguracaoAbaRetorno[] = [
+    {
+      id: "tabela",
+      titulo: "Tabela de pontos",
+      descricao:
+        "Consulte os valores calculados ao longo da curva de retorno.",
+    },
+    {
+      id: "derivadas",
+      titulo: "Derivadas",
+      descricao:
+        "Analise a primeira e a segunda derivadas da curva.",
+    },
+    {
+      id: "metodos",
+      titulo: "Métodos",
+      descricao:
+        "Consulte o princípio, as condições e os cuidados do método de Volhard.",
+    },
+    {
+      id: "interferentes",
+      titulo: "Interferentes",
+      descricao:
+        "Avalie espécies que podem consumir Ag⁺ ou SCN⁻.",
+    },
+    {
+      id: "simulacao",
+      titulo: "Efeito da concentração",
+      descricao:
+        "Avalie como alterações nas concentrações afetam a retrotitulação.",
+    },
+    {
+      id: "tempo-real",
+      titulo: "Tempo real",
+      descricao:
+        "Registre dados experimentais durante a retrotitulação.",
+    },
+    {
+      id: "erro",
+      titulo: "Erro experimental",
+      descricao:
+        "Compare o volume experimental com o ponto final teórico da retrotitulação.",
+    },
+  ];
 
 export default function AnalisesRetornoTabs({
   resultado,

@@ -530,24 +530,25 @@ export default function ErroTitulacao({
   return (
     <section className="precipitacaoErrorExpanded">
       <header className="precipitacaoErrorExpandedIntro">
-        <div>
-          <span className="precipitacaoSectionLabel">
-            Avaliação do ponto final
-          </span>
+  <div>
+    <span className="precipitacaoSectionLabel">
+      Avaliação experimental
+    </span>
 
-          <h5>
-            Erro de titulação e impacto analítico
-          </h5>
+    <h5>
+      Erro experimental e impacto analítico
+    </h5>
 
-          <p>
-            Compare o ponto final observado com o
-            ponto de equivalência, verifique o
-            estado químico da solução nesse volume
-            e avalie como a diferença pode afetar
-            o resultado analítico.
-          </p>
-        </div>
-      </header>
+    <p>
+      Compare o volume observado
+      experimentalmente com o ponto de
+      equivalência teórico, verifique o estado
+      químico da solução nesse volume e avalie
+      como essa diferença pode afetar o
+      resultado analítico.
+    </p>
+  </div>
+</header>
 
       <section className="precipitacaoErrorContext">
         <div className="precipitacaoErrorContextHeading">

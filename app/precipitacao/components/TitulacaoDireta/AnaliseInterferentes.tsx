@@ -1190,25 +1190,45 @@ export default function AnaliseInterferentes({
         diagnostico && (
           <>
             <section className="precipitacaoInterferenceMetrics">
-              <article>
-                <span>
-                  Início do principal
-                </span>
+  <article className="precipitacaoInterferenceMetricCompact">
+    <span>
+      Início do principal
+    </span>
 
-                <strong>
-                  {formatarCientificoBR(
-                    itemPrincipal
-                      .concentracaoTitulanteInicioPrecipitacao,
-                    3
-                  )}{" "}
-                  mol L⁻¹
-                </strong>
+    <strong>
+      {formatarCientificoBR(
+        itemPrincipal
+          .concentracaoTitulanteInicioPrecipitacao,
+        3
+      )}{" "}
+      mol L⁻¹
+    </strong>
 
-                <small>
-                  Concentração crítica de{" "}
-                  {formulaTitulante}
-                </small>
-              </article>
+    <small>
+      Concentração crítica de{" "}
+      {formulaTitulante}
+    </small>
+  </article>
+
+  <article className="precipitacaoInterferenceMetricCompact">
+    <span>
+      Início do interferente
+    </span>
+
+    <strong>
+      {formatarCientificoBR(
+        itemInterferente
+          .concentracaoTitulanteInicioPrecipitacao,
+        3
+      )}{" "}
+      mol L⁻¹
+    </strong>
+
+    <small>
+      Concentração crítica de{" "}
+      {formulaTitulante}
+    </small>
+  </article>
 
               <article>
                 <span>

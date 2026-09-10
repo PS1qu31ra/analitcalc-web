@@ -479,11 +479,17 @@
     color: #52525b;
   }
   
-  .precipitacaoCompatibilityBox strong,
-  .precipitacaoScientificNotice strong {
-    display: block;
-    margin-bottom: 6px;
-  }
+  .precipitacaoCompatibilityBox > strong,
+.precipitacaoScientificNotice > strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.precipitacaoCompatibilityBox p strong,
+.precipitacaoScientificNotice p strong {
+  display: inline;
+  margin: 0;
+}
   
   .precipitacaoCompatibilityBox p,
   .precipitacaoScientificNotice p {
@@ -5058,6 +5064,15 @@
   font-size: 0.9rem;
 }
 
+.precipitacaoInterferenceMetrics
+  .precipitacaoInterferenceMetricCompact
+  strong {
+  font-size: clamp(0.7rem, 0.78vw, 0.8rem);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
 .precipitacaoInterferenceMetrics small {
   color: #71717a;
   font-size: 0.68rem;
@@ -7805,3 +7820,38 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
+
+/* =========================================================
+   VOLHARD — CUIDADO ESPECÍFICO PARA CLORETO
+   ========================================================= */
+
+   .precipitacaoVolhardChlorideWarning {
+    border: 1px solid #f59e0b;
+    background: #fffbeb;
+    color: #78350f;
+  }
+  
+  .precipitacaoVolhardChlorideWarning > strong {
+    color: #92400e;
+  }
+  
+  .precipitacaoVolhardChlorideWarning p {
+    color: #78350f;
+  }
+  
+  .precipitacaoVolhardChlorideWarning
+    .precipitacaoChemicalEquation {
+    display: inline;
+    color: inherit;
+    font-weight: 800;
+  }
+  
+  .precipitacaoVolhardChlorideWarning
+    .precipitacaoChemicalEquation > span {
+    display: inline;
+  }
+  
+  .precipitacaoVolhardChlorideWarning
+    .precipitacaoChemicalPhysicalState {
+    display: inline;
+  }

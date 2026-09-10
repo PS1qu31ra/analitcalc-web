@@ -782,22 +782,22 @@ export default function SimulacaoCondicoes({
   return (
     <section className="precipitacaoSimulationSection">
       <header className="precipitacaoSimulationIntro">
-        <span className="precipitacaoSectionLabel">
-          Comparação de cenários
-        </span>
+  <span className="precipitacaoSectionLabel">
+    Comparação de cenários
+  </span>
 
-        <h5>
-          Simulação das condições experimentais
-        </h5>
+  <h5>
+    Efeito da concentração
+  </h5>
 
-        <p>
-          Altere as condições da titulação e compare
-          o novo cenário com os dados originais. O
-          sistema recalcula a quantidade de analito,
-          o ponto de equivalência e toda a curva de
-          precipitação.
-        </p>
-      </header>
+  <p>
+    Altere as concentrações e demais condições
+    da titulação e compare o novo cenário com os
+    dados originais. O sistema recalcula a
+    quantidade de analito, o ponto de equivalência
+    e toda a curva de precipitação.
+  </p>
+</header>
 
       <section className="precipitacaoSimulationOriginal">
         <header>

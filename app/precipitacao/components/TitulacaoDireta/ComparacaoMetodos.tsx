@@ -157,17 +157,19 @@ export default function ComparacaoMetodos({
   </small>
 </article>
 
-          <article>
-            <span>Precipitado</span>
+<article>
+  <span>Precipitado</span>
 
-            <strong>
-              {analito.precipitado}
-            </strong>
+  <strong>
+    <EquacaoQuimica
+      equacao={analito.precipitado}
+    />
+  </strong>
 
-            <small>
-              Produto principal
-            </small>
-          </article>
+  <small>
+    Produto principal
+  </small>
+</article>
 
           <article className="precipitacaoMethodsSystemReaction">
   <span>
@@ -369,20 +371,22 @@ export default function ComparacaoMetodos({
   </article>
 
   <article>
-    <span>
-      Precipitado principal
-    </span>
+  <span>
+    Precipitado principal
+  </span>
 
-    <strong>
-      {analito.precipitado}
-    </strong>
+  <strong>
+    <EquacaoQuimica
+      equacao={analito.precipitado}
+    />
+  </strong>
 
-    <small>
-      Formado entre{" "}
-      {analito.especieAtivaTitulante} e{" "}
-      {analito.formulaExibicao}
-    </small>
-  </article>
+  <small>
+    Formado entre{" "}
+    {analito.especieAtivaTitulante} e{" "}
+    {analito.formulaExibicao}
+  </small>
+</article>
 </div>
 
 <div className="precipitacaoMethodsExplanationGrid">

@@ -896,21 +896,22 @@ export default function SimulacaoCondicoesRetorno({
   return (
     <section className="precipitacaoSimulationSection">
       <header className="precipitacaoSimulationIntro">
-        <span className="precipitacaoSectionLabel">
-          Comparação de cenários
-        </span>
+  <span className="precipitacaoSectionLabel">
+    Comparação de cenários
+  </span>
 
-        <h5>
-          Simulação das condições da retrotitulação
-        </h5>
+  <h5>
+    Efeito da concentração
+  </h5>
 
-        <p>
-          Altere os dados da amostra, a quantidade
-          de AgNO₃ adicionada e a concentração de
-          SCN⁻. O sistema recalcula o excesso de
-          prata, o ponto final e a curva de Volhard.
-        </p>
-      </header>
+  <p>
+    Altere as concentrações da amostra, do
+    AgNO₃ e do SCN⁻ e compare o novo cenário
+    com a condição original. O sistema recalcula
+    o excesso de prata, o ponto final e a curva
+    de Volhard.
+  </p>
+</header>
 
       <section className="precipitacaoSimulationOriginal">
         <header>

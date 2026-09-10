@@ -68,10 +68,22 @@ const abas: ConfiguracaoAba[] = [
       "Analise a primeira e a segunda derivadas da curva.",
   },
   {
-    id: "erro",
-    titulo: "Erro de titulação",
+    id: "metodos",
+    titulo: "Métodos",
     descricao:
-      "Compare o ponto final com o ponto de equivalência.",
+      "Compare os métodos de Mohr e Fajans.",
+  },
+  {
+    id: "interferentes",
+    titulo: "Interferentes",
+    descricao:
+      "Avalie precipitados concorrentes e seletividade.",
+  },
+  {
+    id: "simulacao",
+    titulo: "Efeito da concentração",
+    descricao:
+      "Avalie como alterações nas concentrações afetam a titulação.",
   },
   {
     id: "tempo-real",
@@ -80,22 +92,10 @@ const abas: ConfiguracaoAba[] = [
       "Registre dados experimentais durante a titulação.",
   },
   {
-    id: "metodos",
-    titulo: "Métodos",
+    id: "erro",
+    titulo: "Erro experimental",
     descricao:
-      "Compare os métodos de Mohr e Fajans.",
-  },
-  {
-    id: "simulacao",
-    titulo: "Simulação",
-    descricao:
-      "Avalie a influência das condições experimentais.",
-  },
-  {
-    id: "interferentes",
-    titulo: "Interferentes",
-    descricao:
-      "Avalie precipitados concorrentes e seletividade.",
+      "Compare o volume experimental com o ponto de equivalência teórico.",
   },
 ];
 

@@ -646,24 +646,25 @@ export default function ErroTitulacaoRetorno({
   return (
     <section className="precipitacaoErrorExpanded">
       <header className="precipitacaoErrorExpandedIntro">
-        <div>
-          <span className="precipitacaoSectionLabel">
-            Avaliação do ponto final
-          </span>
+  <div>
+    <span className="precipitacaoSectionLabel">
+      Avaliação experimental
+    </span>
 
-          <h5>
-            Erro da retrotitulação e impacto analítico
-          </h5>
+    <h5>
+      Erro experimental e impacto analítico
+    </h5>
 
-          <p>
-            Compare o ponto final observado com o
-            ponto final teórico do retorno, consulte
-            o estado químico da solução e avalie como
-            a diferença altera a determinação do
-            analito.
-          </p>
-        </div>
-      </header>
+    <p>
+      Compare o volume observado
+      experimentalmente com o ponto final
+      teórico da retrotitulação, consulte o
+      estado químico da solução e avalie como
+      essa diferença altera a determinação do
+      analito.
+    </p>
+  </div>
+</header>
 
       <section className="precipitacaoErrorContext">
         <div className="precipitacaoErrorContextHeading">

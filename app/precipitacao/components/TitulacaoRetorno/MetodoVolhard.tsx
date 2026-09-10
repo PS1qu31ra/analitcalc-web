@@ -1,11 +1,13 @@
 import {
-    formatarCientificoBR,
-    formatarNumeroBR,
-  } from "@/lib/precipitacao/formatadores";
-  
-  import type {
-    ResultadoTitulacaoRetornoPrecipitacao,
-  } from "@/lib/precipitacao/tipos";
+  formatarCientificoBR,
+  formatarNumeroBR,
+} from "@/lib/precipitacao/formatadores";
+
+import type {
+  ResultadoTitulacaoRetornoPrecipitacao,
+} from "@/lib/precipitacao/tipos";
+
+import EquacaoQuimica from "../TitulacaoDireta/EquacaoQuimica";
   
   type MetodoVolhardProps = {
     resultado: ResultadoTitulacaoRetornoPrecipitacao;
@@ -97,8 +99,10 @@ import {
             <strong>{formulaAnalito}</strong> reage com
             a prata e forma o precipitado{" "}
             <strong>
-              {resultado.salPrincipal.formulaExibicao}
-            </strong>
+  <EquacaoQuimica
+    equacao={`${resultado.salPrincipal.formulaExibicao}(s)`}
+  />
+</strong>
             . A relação usada no cálculo é{" "}
             <strong>
               {resultado.relacaoPrincipal}
@@ -106,6 +110,38 @@ import {
             .
           </p>
         </div>
+
+        {resultado.salPrincipal.id === "AgCl" && (
+  <div className="precipitacaoScientificNotice precipitacaoVolhardChlorideWarning">
+    <strong>
+      Cuidado com o AgCl antes da retrotitulação
+    </strong>
+
+    <p>
+      Na determinação indireta de cloreto pelo
+      método de Volhard, o{" "}
+      <EquacaoQuimica
+        equacao="AgCl(s)"
+      />{" "}
+      formado inicialmente deve ser{" "}
+      <strong>
+        filtrado ou protegido com nitrobenzeno
+      </strong>{" "}
+      antes da adição de SCN⁻. O nitrobenzeno
+      aglutina o AgCl, formando uma película
+      protetora sobre o precipitado. Esse cuidado
+      é necessário porque o{" "}
+      <EquacaoQuimica
+        equacao="AgSCN(s)"
+      />{" "}
+      é menos solúvel que o{" "}
+      <EquacaoQuimica
+        equacao="AgCl(s)"
+      />
+      .
+    </p>
+  </div>
+)}
   
         <div className="precipitacaoResultInterpretation">
           <div className="precipitacaoResultInterpretationHeader">
@@ -122,8 +158,10 @@ import {
             O Ag⁺ que permanece em excesso é titulado
             com SCN⁻ segundo a reação{" "}
             <strong>
-              Ag⁺ + SCN⁻ → AgSCN(s)
-            </strong>
+  <EquacaoQuimica
+    equacao="Ag⁺ + SCN⁻ → AgSCN(s)"
+  />
+</strong>
             . A relação estequiométrica dessa etapa é{" "}
             <strong>
               {resultado.relacaoRetorno}
@@ -232,13 +270,19 @@ import {
           </strong>
   
           <p>
-            Enquanto existir Ag⁺ em excesso, o SCN⁻
-            adicionado forma AgSCN(s). Depois que a
-            prata remanescente é consumida, a primeira
-            quantidade excedente de SCN⁻ reage com
-            Fe³⁺ e produz a coloração característica
-            usada para reconhecer o ponto final.
-          </p>
+  Enquanto existir Ag⁺ em excesso, o SCN⁻
+  adicionado forma{" "}
+  <strong>
+    <EquacaoQuimica
+      equacao="AgSCN(s)"
+    />
+  </strong>
+  . Depois que a prata remanescente é
+  consumida, a primeira quantidade excedente
+  de SCN⁻ reage com Fe³⁺ e produz a coloração
+  característica usada para reconhecer o
+  ponto final.
+</p>
         </div>
   
         <section className="precipitacaoErrorFinalDiagnosis">

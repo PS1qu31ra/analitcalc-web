@@ -16,6 +16,7 @@ import type {
 } from "@/lib/precipitacao/calculosCurvaSeletividade";
 
 import {
+  formatarCientificoBR,
   formatarNumeroBR,
 } from "@/lib/precipitacao/formatadores";
 
@@ -778,13 +779,13 @@ const larguraIntervalo =
     ) {
       return "—";
     }
-
+  
     if (
       valor === 0
     ) {
       return "0";
     }
-
+  
     if (
       Math.abs(valor) >=
         0.001 &&
@@ -796,10 +797,11 @@ const larguraIntervalo =
         6
       );
     }
-
-    return valor
-      .toExponential(4)
-      .replace(".", ",");
+  
+    return formatarCientificoBR(
+      valor,
+      4
+    );
   }
 
   function baixarGrafico() {
