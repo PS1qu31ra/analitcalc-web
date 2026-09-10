@@ -6097,3 +6097,115 @@ section.container.calculatorSection + section.container.calculatorSection {
     font-size: 1.35rem;
   }
 }
+
+/* =========================================================
+   INDICADORES — FENOLFTALEÍNA COMO REFERÊNCIA
+   ========================================================= */
+
+   .indicatorReferenceSection {
+    margin-bottom: 36px;
+  }
+  
+  .indicatorReferenceHeader {
+    margin-bottom: 18px;
+  }
+  
+  .indicatorReferenceEyebrow,
+  .indicatorRankingEyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  
+    margin-bottom: 10px;
+  
+    padding: 6px 11px;
+  
+    border-radius: 999px;
+  
+    background: rgba(153, 27, 27, 0.08);
+  
+    color: #991b1b;
+  
+    font-size: 0.74rem;
+    font-weight: 800;
+  
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  
+  .indicatorReferenceHeader h2,
+  .indicatorRankingIntro h2 {
+    margin: 0 0 8px;
+  }
+  
+  .indicatorReferenceHeader p,
+  .indicatorRankingIntro p {
+    max-width: 820px;
+  
+    margin: 0;
+  
+    color: #6b7280;
+  
+    line-height: 1.55;
+  }
+  
+  .indicatorReferenceItem {
+    width: 100%;
+  
+    border-color: rgba(153, 27, 27, 0.28);
+  
+    background:
+      linear-gradient(
+        135deg,
+        rgba(153, 27, 27, 0.045),
+        rgba(255, 255, 255, 1)
+      );
+  }
+  
+  .indicatorReferenceBadge {
+    box-sizing: border-box;
+  
+    min-width: 56px;
+    height: 38px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    border-radius: 999px;
+  
+    background: #991b1b;
+  
+    color: #ffffff;
+  
+    font-size: 0.72rem;
+    font-weight: 900;
+  
+    letter-spacing: 0.07em;
+  }
+  
+  .indicatorReferenceNotice {
+    margin: 12px 0 0;
+  
+    color: #991b1b;
+  
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  
+  .indicatorRankingIntro {
+    margin-bottom: 18px;
+  
+    padding-top: 26px;
+  
+    border-top: 1px solid rgba(17, 24, 39, 0.1);
+  }
+  
+  @media (max-width: 700px) {
+    .indicatorReferenceBadge {
+      min-width: 48px;
+      height: 34px;
+  
+      font-size: 0.68rem;
+    }
+  }

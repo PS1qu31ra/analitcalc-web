@@ -1703,19 +1703,37 @@ setMensagemMono("Sistema monoprótico avaliado com sucesso.");
   
     imagem.src = url;
   }
-  
-  const rankingIndicadoresMono = resultadoMono
-  ? montarRankingIndicadoresMono(resultadoMono)
-  : [];
+
+  const rankingIndicadoresMono =
+  resultadoMono
+    ? montarRankingIndicadoresMono(
+        resultadoMono
+      )
+    : [];
+
+const fenolftaleinaReferenciaMono =
+  rankingIndicadoresMono.find(
+    (item) =>
+      item.nome === "Fenolftaleína"
+  ) ?? null;
+
+const rankingCalculadoMono =
+  rankingIndicadoresMono.filter(
+    (item) =>
+      item.nome !== "Fenolftaleína"
+  );
 
 const indicadorMonoAtivo =
   indicadorMonoSelecionado &&
   rankingIndicadoresMono.some(
     (item) =>
-      item.nome === indicadorMonoSelecionado.nome
+      item.nome ===
+      indicadorMonoSelecionado.nome
   )
     ? indicadorMonoSelecionado
-    : rankingIndicadoresMono[0] ?? null;
+    : fenolftaleinaReferenciaMono ??
+      rankingCalculadoMono[0] ??
+      null;
 
       const derivadasMono =
   curvaMono && resultadoMono ? calcularDerivadasCurvaMonoprotica(curvaMono) : [];
@@ -2333,62 +2351,242 @@ const tabelaSegundaDerivadaMono =
             </div>
 
             <div className="resultsPanel">
-              <h2>Ranking de indicadores</h2>
+  {fenolftaleinaReferenciaMono && (
+    <div className="indicatorReferenceSection">
+      <div className="indicatorReferenceHeader">
+        <span className="indicatorReferenceEyebrow">
+          Indicador de referência
+        </span>
 
-              <div className="indicatorRankingList">
-                {rankingIndicadoresMono.map((item, index) => (
-                  <button
-                    key={`mono-indicador-${item.nome}`}
-                    type="button"
-                    className={
-                      indicadorMonoAtivo.nome === item.nome
-                        ? "indicatorRankingItem active"
-                        : "indicatorRankingItem"
-                    }
-                    onClick={() => setIndicadorMonoSelecionado(item)}
-                  >
-                    <div className="indicatorRankNumber">{index + 1}</div>
+        <h2>
+          Fenolftaleína
+        </h2>
 
-                    <div className="indicatorRankMain">
-                      <strong>{item.nome}</strong>
+        <p>
+          A Fenolftaleína é exibida como
+          referência didática. Sua
+          compatibilidade é calculada
+          normalmente, mas ela não ocupa uma
+          posição no ranking abaixo.
+        </p>
+      </div>
 
-                      <div className="indicatorMetaGrid">
-                        <div className="indicatorMetaItem">
-                          <span>Faixa</span>
-                          <strong>
-                            {formatarNumeroBR(item.phMin, 2)} a{" "}
-                            {formatarNumeroBR(item.phMax, 2)}
-                          </strong>
-                        </div>
+      <button
+        type="button"
+        className={
+          indicadorMonoAtivo.nome ===
+          fenolftaleinaReferenciaMono.nome
+            ? "indicatorRankingItem indicatorReferenceItem active"
+            : "indicatorRankingItem indicatorReferenceItem"
+        }
+        onClick={() =>
+          setIndicadorMonoSelecionado(
+            fenolftaleinaReferenciaMono
+          )
+        }
+      >
+        <div className="indicatorReferenceBadge">
+          REF
+        </div>
 
-                        <div className="indicatorMetaItem">
-                          <span>pH central</span>
-                          <strong>{formatarNumeroBR(item.phCentral, 2)}</strong>
-                        </div>
+        <div className="indicatorRankMain">
+          <strong>
+            {fenolftaleinaReferenciaMono.nome}
+          </strong>
 
-                        <div className="indicatorMetaItem">
-                          <span>Erro</span>
-                          <strong>{formatarNumeroBR(item.erro, 2)}</strong>
-                        </div>
+          <div className="indicatorMetaGrid">
+            <div className="indicatorMetaItem">
+              <span>
+                Faixa
+              </span>
 
-                        <div className="indicatorMetaItem">
-                          <span>Status</span>
-                          <strong>
-                            {item.cobrePE ? "Cobre o PE" : "Próximo ao PE"}
-                          </strong>
-                        </div>
-                      </div>
+              <strong>
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaMono.phMin,
+                  2
+                )}{" "}
+                a{" "}
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaMono.phMax,
+                  2
+                )}
+              </strong>
+            </div>
 
-                      <p className="indicatorJustification">
-                        {item.justificativa}
-                      </p>
-                    </div>
+            <div className="indicatorMetaItem">
+              <span>
+                pH central
+              </span>
 
-                    <div className="indicatorRankScore">{item.score}%</div>
-                  </button>
-                ))}
+              <strong>
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaMono.phCentral,
+                  2
+                )}
+              </strong>
+            </div>
+
+            <div className="indicatorMetaItem">
+              <span>
+                Erro
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaMono.erro,
+                  2
+                )}
+              </strong>
+            </div>
+
+            <div className="indicatorMetaItem">
+              <span>
+                Status
+              </span>
+
+              <strong>
+                {fenolftaleinaReferenciaMono.cobrePE
+                  ? "Cobre o PE"
+                  : "Próximo ao PE"}
+              </strong>
+            </div>
+          </div>
+
+          <p className="indicatorJustification">
+            {
+              fenolftaleinaReferenciaMono.justificativa
+            }
+          </p>
+
+          <p className="indicatorReferenceNotice">
+            A indicação como referência não
+            significa 1º lugar no ranking.
+          </p>
+        </div>
+
+        <div className="indicatorRankScore">
+          {fenolftaleinaReferenciaMono.score}%
+        </div>
+      </button>
+    </div>
+  )}
+
+  <div className="indicatorRankingIntro">
+    <span className="indicatorRankingEyebrow">
+      Classificação matemática
+    </span>
+
+    <h2>
+      Ranking calculado de indicadores
+    </h2>
+
+    <p>
+      As posições abaixo seguem exclusivamente
+      a compatibilidade calculada com o ponto
+      de equivalência. A Fenolftaleína é
+      apresentada separadamente como
+      referência.
+    </p>
+  </div>
+
+  <div className="indicatorRankingList">
+    {rankingCalculadoMono.map(
+      (item, index) => (
+        <button
+          key={`mono-indicador-${item.nome}`}
+          type="button"
+          className={
+            indicadorMonoAtivo.nome ===
+            item.nome
+              ? "indicatorRankingItem active"
+              : "indicatorRankingItem"
+          }
+          onClick={() =>
+            setIndicadorMonoSelecionado(
+              item
+            )
+          }
+        >
+          <div className="indicatorRankNumber">
+            {index + 1}
+          </div>
+
+          <div className="indicatorRankMain">
+            <strong>
+              {item.nome}
+            </strong>
+
+            <div className="indicatorMetaGrid">
+              <div className="indicatorMetaItem">
+                <span>
+                  Faixa
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    item.phMin,
+                    2
+                  )}{" "}
+                  a{" "}
+                  {formatarNumeroBR(
+                    item.phMax,
+                    2
+                  )}
+                </strong>
+              </div>
+
+              <div className="indicatorMetaItem">
+                <span>
+                  pH central
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    item.phCentral,
+                    2
+                  )}
+                </strong>
+              </div>
+
+              <div className="indicatorMetaItem">
+                <span>
+                  Erro
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    item.erro,
+                    2
+                  )}
+                </strong>
+              </div>
+
+              <div className="indicatorMetaItem">
+                <span>
+                  Status
+                </span>
+
+                <strong>
+                  {item.cobrePE
+                    ? "Cobre o PE"
+                    : "Próximo ao PE"}
+                </strong>
               </div>
             </div>
+
+            <p className="indicatorJustification">
+              {item.justificativa}
+            </p>
+          </div>
+
+          <div className="indicatorRankScore">
+            {item.score}%
+          </div>
+        </button>
+      )
+    )}
+  </div>
+</div>
           </>
         )}
       </div>
@@ -3951,15 +4149,30 @@ setMensagemPoli("Sistema avaliado com sucesso.");
 
   const rankingsIndicadoresPoli =
   resultadoPoli && curvaPoli
-    ? montarRankingIndicadoresPoli(resultadoPoli)
+    ? montarRankingIndicadoresPoli(
+        resultadoPoli
+      )
     : [];
 
 const blocoIndicadorAtivo =
   rankingsIndicadoresPoli.find(
-    (item) => item.pe === peIndicadorAtivo
+    (item) =>
+      item.pe === peIndicadorAtivo
   ) ??
   rankingsIndicadoresPoli[0] ??
   null;
+
+const fenolftaleinaReferenciaPoli =
+  blocoIndicadorAtivo?.ranking.find(
+    (item) =>
+      item.nome === "Fenolftaleína"
+  ) ?? null;
+
+const rankingCalculadoPoli =
+  blocoIndicadorAtivo?.ranking.filter(
+    (item) =>
+      item.nome !== "Fenolftaleína"
+  ) ?? [];
 
 const indicadorAtivo =
   indicadorSelecionado &&
@@ -3967,7 +4180,9 @@ const indicadorAtivo =
   indicadorSelecionado.pe ===
     blocoIndicadorAtivo.pe
     ? indicadorSelecionado
-    : blocoIndicadorAtivo?.ranking[0] ?? null;
+    : fenolftaleinaReferenciaPoli ??
+      rankingCalculadoPoli[0] ??
+      null;
 
     const derivadasPoli =
   curvaPoli && resultadoPoli
@@ -4609,64 +4824,246 @@ const tabelaSegundaDerivada =
             </div>
 
             <div className="resultsPanel">
-              <h2>Ranking de indicadores</h2>
+  {fenolftaleinaReferenciaPoli && (
+    <div className="indicatorReferenceSection">
+      <div className="indicatorReferenceHeader">
+        <span className="indicatorReferenceEyebrow">
+          Indicador de referência
+        </span>
 
-              <div className="indicatorRankingList">
-                {blocoIndicadorAtivo.ranking.map((item, index) => (
-                  <button
-                    key={`${item.pe}-${item.nome}`}
-                    type="button"
-                    className={
-                      indicadorAtivo.nome === item.nome
-                        ? "indicatorRankingItem active"
-                        : "indicatorRankingItem"
-                    }
-                    onClick={() => setIndicadorSelecionado(item)}
-                  >
-                    <div className="indicatorRankNumber">{index + 1}</div>
+        <h2>
+          Fenolftaleína — PE
+          {blocoIndicadorAtivo.pe}
+        </h2>
 
-                    <div className="indicatorRankMain">
-                      <strong>{item.nome}</strong>
+        <p>
+          A Fenolftaleína é mantida como
+          referência para o PE
+          {blocoIndicadorAtivo.pe}. Sua
+          compatibilidade continua sendo
+          calculada normalmente, mas ela não
+          ocupa posição no ranking.
+        </p>
+      </div>
 
-                      <div className="indicatorMetaGrid">
-                        <div className="indicatorMetaItem">
-                          <span>Faixa</span>
-                          <strong>
-                            {formatarNumeroBR(item.phMin, 2)} a{" "}
-                            {formatarNumeroBR(item.phMax, 2)}
-                          </strong>
-                        </div>
+      <button
+        type="button"
+        className={
+          indicadorAtivo.nome ===
+          fenolftaleinaReferenciaPoli.nome
+            ? "indicatorRankingItem indicatorReferenceItem active"
+            : "indicatorRankingItem indicatorReferenceItem"
+        }
+        onClick={() =>
+          setIndicadorSelecionado(
+            fenolftaleinaReferenciaPoli
+          )
+        }
+      >
+        <div className="indicatorReferenceBadge">
+          REF
+        </div>
 
-                        <div className="indicatorMetaItem">
-                          <span>pH central</span>
-                          <strong>{formatarNumeroBR(item.phCentral, 2)}</strong>
-                        </div>
+        <div className="indicatorRankMain">
+          <strong>
+            {fenolftaleinaReferenciaPoli.nome}
+          </strong>
 
-                        <div className="indicatorMetaItem">
-                          <span>Erro</span>
-                          <strong>{formatarNumeroBR(item.erro, 2)}</strong>
-                        </div>
+          <div className="indicatorMetaGrid">
+            <div className="indicatorMetaItem">
+              <span>
+                Faixa
+              </span>
 
-                        <div className="indicatorMetaItem">
-                          <span>Status</span>
-                          <strong>
-                            {item.cobrePE ? "Cobre o PE" : "Próximo ao PE"}
-                          </strong>
-                        </div>
-                      </div>
+              <strong>
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaPoli.phMin,
+                  2
+                )}{" "}
+                a{" "}
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaPoli.phMax,
+                  2
+                )}
+              </strong>
+            </div>
 
-                      <p className="indicatorJustification">
-                        {item.justificativa}
-                      </p>
-                    </div>
+            <div className="indicatorMetaItem">
+              <span>
+                pH central
+              </span>
 
-                    <div className="indicatorRankScore">
-                      {item.score}%
-                    </div>
-                  </button>
-                ))}
+              <strong>
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaPoli.phCentral,
+                  2
+                )}
+              </strong>
+            </div>
+
+            <div className="indicatorMetaItem">
+              <span>
+                Erro
+              </span>
+
+              <strong>
+                {formatarNumeroBR(
+                  fenolftaleinaReferenciaPoli.erro,
+                  2
+                )}
+              </strong>
+            </div>
+
+            <div className="indicatorMetaItem">
+              <span>
+                Status
+              </span>
+
+              <strong>
+                {fenolftaleinaReferenciaPoli.cobrePE
+                  ? "Cobre o PE"
+                  : "Próximo ao PE"}
+              </strong>
+            </div>
+          </div>
+
+          <p className="indicatorJustification">
+            {
+              fenolftaleinaReferenciaPoli.justificativa
+            }
+          </p>
+
+          <p className="indicatorReferenceNotice">
+            A indicação como referência não
+            significa 1º lugar no ranking.
+          </p>
+        </div>
+
+        <div className="indicatorRankScore">
+          {fenolftaleinaReferenciaPoli.score}%
+        </div>
+      </button>
+    </div>
+  )}
+
+  <div className="indicatorRankingIntro">
+    <span className="indicatorRankingEyebrow">
+      Classificação matemática
+    </span>
+
+    <h2>
+      Ranking calculado — PE
+      {blocoIndicadorAtivo.pe}
+    </h2>
+
+    <p>
+      As posições abaixo são determinadas
+      exclusivamente pela compatibilidade
+      calculada para o PE
+      {blocoIndicadorAtivo.pe}. A
+      Fenolftaleína é exibida separadamente
+      como referência.
+    </p>
+  </div>
+
+  <div className="indicatorRankingList">
+    {rankingCalculadoPoli.map(
+      (item, index) => (
+        <button
+          key={`${item.pe}-${item.nome}`}
+          type="button"
+          className={
+            indicadorAtivo.nome ===
+            item.nome
+              ? "indicatorRankingItem active"
+              : "indicatorRankingItem"
+          }
+          onClick={() =>
+            setIndicadorSelecionado(
+              item
+            )
+          }
+        >
+          <div className="indicatorRankNumber">
+            {index + 1}
+          </div>
+
+          <div className="indicatorRankMain">
+            <strong>
+              {item.nome}
+            </strong>
+
+            <div className="indicatorMetaGrid">
+              <div className="indicatorMetaItem">
+                <span>
+                  Faixa
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    item.phMin,
+                    2
+                  )}{" "}
+                  a{" "}
+                  {formatarNumeroBR(
+                    item.phMax,
+                    2
+                  )}
+                </strong>
+              </div>
+
+              <div className="indicatorMetaItem">
+                <span>
+                  pH central
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    item.phCentral,
+                    2
+                  )}
+                </strong>
+              </div>
+
+              <div className="indicatorMetaItem">
+                <span>
+                  Erro
+                </span>
+
+                <strong>
+                  {formatarNumeroBR(
+                    item.erro,
+                    2
+                  )}
+                </strong>
+              </div>
+
+              <div className="indicatorMetaItem">
+                <span>
+                  Status
+                </span>
+
+                <strong>
+                  {item.cobrePE
+                    ? "Cobre o PE"
+                    : "Próximo ao PE"}
+                </strong>
               </div>
             </div>
+
+            <p className="indicatorJustification">
+              {item.justificativa}
+            </p>
+          </div>
+
+          <div className="indicatorRankScore">
+            {item.score}%
+          </div>
+        </button>
+      )
+    )}
+  </div>
+</div>
           </>
         )}
       </div>
