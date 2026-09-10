@@ -5822,10 +5822,15 @@ section.container.calculatorSection + section.container.calculatorSection {
 .efeitoConcentracaoResumoCard strong {
   color: #111827;
 
-  font-size: 1.55rem;
+  font-size: clamp(1.05rem, 1.3vw, 1.35rem);
   font-weight: 800;
 
   line-height: 1.15;
+  letter-spacing: -0.015em;
+
+  white-space: nowrap;
+
+  font-variant-numeric: tabular-nums;
 }
 
 

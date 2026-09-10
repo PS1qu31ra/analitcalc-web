@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 
+import ErroExperimentalMono from "./components/ErroExperimentalMono";
+
+import ErroExperimentalPoli from "./components/ErroExperimentalPoli";
+
 import "../precipitacao/styles/precipitacao.css";
 
 import {
@@ -53,6 +57,7 @@ type AbaAcidoBase =
   | "indicadores"
   | "derivadas"
   | "efeitoConcentracao"
+  | "erroExperimental"
   | "tempoReal";
 
 type RankingIndicadorAcidoBase = {
@@ -1132,8 +1137,28 @@ export default function AcidoBasePage() {
 
 <button
   type="button"
-  className={abaMono === "tempoReal" ? "active" : ""}
-  onClick={() => setAbaMono("tempoReal")}
+  className={
+    abaMono === "erroExperimental"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaMono("erroExperimental")
+  }
+>
+  Erro experimental
+</button>
+
+<button
+  type="button"
+  className={
+    abaMono === "tempoReal"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaMono("tempoReal")
+  }
 >
   Tempo real
 </button>
@@ -1204,8 +1229,28 @@ export default function AcidoBasePage() {
 
 <button
   type="button"
-  className={abaPoli === "tempoReal" ? "active" : ""}
-  onClick={() => setAbaPoli("tempoReal")}
+  className={
+    abaPoli === "erroExperimental"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaPoli("erroExperimental")
+  }
+>
+  Erro experimental
+</button>
+
+<button
+  type="button"
+  className={
+    abaPoli === "tempoReal"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaPoli("tempoReal")
+  }
 >
   Tempo real
 </button>
@@ -3186,6 +3231,13 @@ const tabelaSegundaDerivadaMono =
       </>
     )}
   </section>
+)}
+
+{abaAtiva === "erroExperimental" && (
+  <ErroExperimentalMono
+    resultado={resultadoMono}
+    curva={curvaMono}
+  />
 )}
 
 {abaAtiva === "tempoReal" && (
@@ -5577,6 +5629,13 @@ const tabelaSegundaDerivada =
       </>
     )}
   </section>
+)}
+
+{abaAtiva === "erroExperimental" && (
+  <ErroExperimentalPoli
+    resultado={resultadoPoli}
+    curva={curvaPoli}
+  />
 )}
 
 {abaAtiva === "tempoReal" && (
