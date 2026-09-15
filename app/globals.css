@@ -6209,3 +6209,23 @@ section.container.calculatorSection + section.container.calculatorSection {
       font-size: 0.68rem;
     }
   }
+
+  /* =========================================================
+   COMPLEXOMETRIA — VALORES CIENTÍFICOS COMPACTOS
+   ========================================================= */
+
+.complexometriaValorCompacto {
+  font-size: clamp(
+    0.82rem,
+    1vw,
+    1rem
+  ) !important;
+
+  line-height: 1.25;
+
+  white-space: nowrap;
+
+  word-break: normal !important;
+
+  letter-spacing: -0.02em;
+}

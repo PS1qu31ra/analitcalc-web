@@ -6,6 +6,10 @@ import type {
   SalPrecipitacao,
 } from "./tipos";
 
+import {
+  formatarCientificoBR,
+} from "./formatadores";
+
 const TOLERANCIA_RELATIVA_EMPATE = 1e-9;
 
 function especieValida(
@@ -406,17 +410,18 @@ export function calcularSeletividadePrecipitacao(
     primeiro
       .concentracaoTitulanteInicioPrecipitacao;
 
-  const mensagem =
-    concentracoesPraticamenteIguais(
-      primeiro
-        .concentracaoTitulanteInicioPrecipitacao,
-      segundo
-        .concentracaoTitulanteInicioPrecipitacao
-    )
-      ? "Os primeiros precipitados apresentam concentrações de início praticamente iguais. A ordem de formação pode não ser distinguível apenas pelo Kps e pelas concentrações informadas."
-      : `A ordem foi determinada pela concentração livre mínima de titulante necessária para iniciar cada precipitação. O segundo sistema começa a precipitar em uma concentração de titulante aproximadamente ${razaoEntrePrimeiros.toExponential(
-          3
-        )} vez(es) maior que o primeiro.`;
+      const mensagem =
+      concentracoesPraticamenteIguais(
+        primeiro
+          .concentracaoTitulanteInicioPrecipitacao,
+        segundo
+          .concentracaoTitulanteInicioPrecipitacao
+      )
+        ? "Os primeiros precipitados apresentam concentrações de início praticamente iguais. A ordem de formação pode não ser distinguível apenas pelo Kps e pelas concentrações informadas."
+        : `A ordem foi determinada pela concentração livre mínima de titulante necessária para iniciar cada precipitação. O segundo sistema começa a precipitar em uma concentração de titulante aproximadamente ${formatarCientificoBR(
+            razaoEntrePrimeiros,
+            3
+          )} vez(es) maior que o primeiro.`;
 
   return {
     especieTitulante,

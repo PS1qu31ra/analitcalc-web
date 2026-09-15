@@ -610,11 +610,72 @@ export function formatarNumeroBR(valor: unknown, casas = 2): string {
   });
 }
 
-export function formatarCientificoBR(valor: unknown): string {
-  const convertido = Number(valor);
+export function formatarCientificoBR(
+  valor: unknown
+): string {
+  const convertido =
+    Number(valor);
 
-  if (!Number.isFinite(convertido) || Number.isNaN(convertido)) return "-";
-  if (convertido === 0) return "0";
+  if (
+    !Number.isFinite(convertido) ||
+    Number.isNaN(convertido)
+  ) {
+    return "-";
+  }
 
-  return convertido.toExponential(2).replace(".", ",");
+  if (convertido === 0) {
+    return "0";
+  }
+
+  const mapaSobrescrito:
+    Record<string, string> = {
+      "0": "⁰",
+      "1": "¹",
+      "2": "²",
+      "3": "³",
+      "4": "⁴",
+      "5": "⁵",
+      "6": "⁶",
+      "7": "⁷",
+      "8": "⁸",
+      "9": "⁹",
+      "-": "⁻",
+      "+": "⁺",
+    };
+
+  const [
+    mantissaTexto,
+    expoenteTexto,
+  ] = convertido
+    .toExponential(2)
+    .split("e");
+
+  const mantissa =
+    Number(
+      mantissaTexto
+    ).toLocaleString(
+      "pt-BR",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }
+    );
+
+  const expoenteNumerico =
+    String(
+      Number(expoenteTexto)
+    );
+
+  const expoenteSobrescrito =
+    expoenteNumerico
+      .split("")
+      .map(
+        (caractere) =>
+          mapaSobrescrito[
+            caractere
+          ] ?? caractere
+      )
+      .join("");
+
+  return `${mantissa} × 10${expoenteSobrescrito}`;
 }

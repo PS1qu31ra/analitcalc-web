@@ -53,8 +53,10 @@ export type InterferenciaEDTA = {
   kfPrincipalCondicional: number;
   kfInterferenteCondicional: number;
   kfMaior: number;
-  kfMenor: number;
-  razaoKf: number;
+kfMenor: number;
+
+razaoKf: number;
+razaoKfCondicional: number;
   interferenteTemMaiorKf: boolean;
   metalMaiorKf: string;
   metalMenorKf: string;
@@ -147,7 +149,8 @@ export function avaliarSistemaEDTA(payload: PayloadEDTA) {
     payload.interferentes || [],
     metalPrincipal,
     alphaY4,
-    pH
+    pH,
+    payload
   );
 
   const indicadorRecomendado = recomendarIndicadorEDTA(
@@ -322,12 +325,12 @@ function avaliarFaixaPHEdta(
     mensagem = `O pH informado está dentro da faixa recomendada para ${metalPrincipal.metal}.`;
   } else {
     status = "pH fora da faixa";
-    mensagem = `O pH informado está fora da faixa recomendada para ${metalPrincipal.metal}. Sugestão: na ausênica de agente complexante auxiliar, usar pH próximo de ${pHIdeal}.`;
+    mensagem = `O pH informado está fora da faixa recomendada para ${metalPrincipal.metal}. Sugestão: na ausência de agente complexante auxiliar, usar pH próximo de ${pHIdeal}.`;
   }
 
   if (kfEfetivo < 1e8) {
     mensagem +=
-      " Além disso, o Kf efetivo está abaixo do ideal para titulação quantitativa.";
+      " Além disso, a constante de formação condicional está abaixo do ideal para titulação quantitativa.";
   }
 
   return {
@@ -357,26 +360,137 @@ function montarListaBetas(linhaBeta: BetaComplexante) {
   }));
 }
 
+function calcularKfCondicionalInterferencia(
+  metal: MetalEdta,
+  alphaY4: number,
+  payload: PayloadEDTA
+) {
+  const kfCorrigidoPH =
+    metal.kf * alphaY4;
+
+  const usaComplexanteAuxiliar =
+    String(
+      payload.metalComplexado ||
+        "nao"
+    ) === "sim";
+
+  if (!usaComplexanteAuxiliar) {
+    return kfCorrigidoPH;
+  }
+
+  const idComplexante =
+    payload.complexanteAuxiliar;
+
+  const concentracaoComplexante =
+    numero(
+      payload.concComplexanteAuxiliar
+    );
+
+  if (
+    !idComplexante ||
+    concentracaoComplexante ===
+      null ||
+    concentracaoComplexante <= 0
+  ) {
+    return kfCorrigidoPH;
+  }
+
+  const linhaBeta =
+    betasComplexantes.find(
+      (item) =>
+        normalizar(
+          item.idMetal
+        ) ===
+          normalizar(
+            metal.idMetal
+          ) &&
+        normalizar(
+          item.idComplexante
+        ) ===
+          normalizar(
+            idComplexante
+          )
+    );
+
+  if (!linhaBeta) {
+    return kfCorrigidoPH;
+  }
+
+  const betas =
+    montarListaBetas(
+      linhaBeta
+    );
+
+  let denominador = 1;
+
+  betas.forEach(
+    (item) => {
+      if (item.beta > 0) {
+        denominador +=
+          item.beta *
+          Math.pow(
+            concentracaoComplexante,
+            item.ordem
+          );
+      }
+    }
+  );
+
+  const alfaMetalLivre =
+    1 / denominador;
+
+  return (
+    kfCorrigidoPH *
+    alfaMetalLivre
+  );
+}
+
 function montarInterferentesEDTA(
   idsInterferentes: string[],
   metalPrincipal: MetalEdta,
   alphaY4: number,
-  pH: number
+  pH: number,
+  payload: PayloadEDTA
 ): InterferenciaEDTA[] {
-  const kfPrincipal = metalPrincipal.kf;
-  const kfPrincipalCondicional = kfPrincipal * alphaY4;
+  const kfPrincipal =
+    metalPrincipal.kf;
+
+  const kfPrincipalCondicional =
+    calcularKfCondicionalInterferencia(
+      metalPrincipal,
+      alphaY4,
+      payload
+    );
 
   return idsInterferentes
     .filter(
       (id) =>
-        id && normalizar(id) !== normalizar(metalPrincipal.idMetal)
+        id &&
+        normalizar(id) !==
+          normalizar(
+            metalPrincipal.idMetal
+          )
     )
     .map((id) => {
-      const interferente = metaisEdta.find(
-        (item) => normalizar(item.idMetal) === normalizar(id)
-      );
+      const interferente =
+        metaisEdta.find(
+          (item) =>
+            normalizar(
+              item.idMetal
+            ) ===
+            normalizar(id)
+        );
 
-      if (!interferente) return null;
+      if (!interferente) {
+        return null;
+      }
+
+      const kfInterferenteCondicional =
+        calcularKfCondicionalInterferencia(
+          interferente,
+          alphaY4,
+          payload
+        );
 
       return avaliarInterferenciaTresFatores(
         metalPrincipal,
@@ -384,10 +498,16 @@ function montarInterferentesEDTA(
         alphaY4,
         pH,
         kfPrincipal,
-        kfPrincipalCondicional
+        kfPrincipalCondicional,
+        kfInterferenteCondicional
       );
     })
-    .filter((item): item is InterferenciaEDTA => item !== null);
+    .filter(
+      (
+        item
+      ): item is InterferenciaEDTA =>
+        item !== null
+    );
 }
 
 function avaliarInterferenciaTresFatores(
@@ -396,53 +516,101 @@ function avaliarInterferenciaTresFatores(
   alphaY4: number,
   pH: number,
   kfPrincipal: number,
-  kfPrincipalCondicional: number
+  kfPrincipalCondicional: number,
+  kfInterferenteCondicional: number
 ): InterferenciaEDTA {
-  const kfInterferente = interferente.kf;
-  const kfInterferenteCondicional = kfInterferente * alphaY4;
+  const kfInterferente =
+    interferente.kf;
 
-  const kfMaior = Math.max(kfPrincipal, kfInterferente);
-  const kfMenor = Math.min(kfPrincipal, kfInterferente);
-  const razaoKf = kfMaior / kfMenor;
+  const kfMaior =
+    Math.max(
+      kfPrincipal,
+      kfInterferente
+    );
 
-  const interferenteTemMaiorKf = kfInterferente > kfPrincipal;
+  const kfMenor =
+    Math.min(
+      kfPrincipal,
+      kfInterferente
+    );
 
-  const metalMaiorKf = interferenteTemMaiorKf
-    ? interferente.metal
-    : metalPrincipal.metal;
+  const razaoKf =
+    kfMaior /
+    kfMenor;
 
-  const metalMenorKf = interferenteTemMaiorKf
-    ? metalPrincipal.metal
-    : interferente.metal;
+  const kfCondicionalMaior =
+    Math.max(
+      kfPrincipalCondicional,
+      kfInterferenteCondicional
+    );
 
-  const fatorOrdemReacao = avaliarOrdemReacaoPorKf(
-    kfPrincipal,
-    kfInterferente
-  );
+  const kfCondicionalMenor =
+    Math.min(
+      kfPrincipalCondicional,
+      kfInterferenteCondicional
+    );
 
-  const fatorSeparacao = avaliarSeparacaoPorRazaoKf(razaoKf);
-  const fatorPH = avaliarFatorPH(kfPrincipalCondicional);
+  const razaoKfCondicional =
+    kfCondicionalMenor > 0
+      ? kfCondicionalMaior /
+        kfCondicionalMenor
+      : Infinity;
 
-  const risco = classificarRiscoTresFatores(
-    fatorOrdemReacao,
-    fatorSeparacao,
-    fatorPH
-  );
+  const interferenteTemMaiorKf =
+    kfInterferente >
+    kfPrincipal;
+
+  const metalMaiorKf =
+    interferenteTemMaiorKf
+      ? interferente.metal
+      : metalPrincipal.metal;
+
+  const metalMenorKf =
+    interferenteTemMaiorKf
+      ? metalPrincipal.metal
+      : interferente.metal;
+
+  const fatorOrdemReacao =
+    avaliarOrdemReacaoPorKf(
+      kfPrincipal,
+      kfInterferente
+    );
+
+  const fatorSeparacao =
+    avaliarSeparacaoPorRazaoKf(
+      razaoKf
+    );
+
+  const fatorPH =
+    avaliarFatorPH(
+      kfPrincipalCondicional
+    );
+
+  const risco =
+    classificarRiscoTresFatores(
+      fatorOrdemReacao,
+      fatorSeparacao,
+      fatorPH
+    );
 
   return {
     id: interferente.idMetal,
     metal: interferente.metal,
     nome: interferente.nome,
-    complexo: interferente.complexoFormado,
+    complexo:
+      interferente.complexoFormado,
 
     kfPrincipal,
     kfInterferente,
+
     kfPrincipalCondicional,
     kfInterferenteCondicional,
 
     kfMaior,
     kfMenor,
+
     razaoKf,
+    razaoKfCondicional,
 
     interferenteTemMaiorKf,
     metalMaiorKf,
@@ -453,21 +621,26 @@ function avaliarInterferenciaTresFatores(
     fatorPH,
     risco,
 
-    problema: montarMensagemTresFatores(
-      metalPrincipal,
-      interferente,
-      fatorOrdemReacao,
-      fatorSeparacao,
-      fatorPH,
-      razaoKf
-    ),
+    problema:
+      montarMensagemTresFatores(
+        metalPrincipal,
+        interferente,
+        razaoKf,
+        kfPrincipalCondicional,
+        kfInterferenteCondicional,
+        metalMaiorKf
+      ),
 
     mascaranteRecomendado:
-  risco === "Alto" || risco === "Significativo"
-    ? "Pode ser necessário usar mascarante."
-    : "Mascarante geralmente não necessário.",
+      razaoKf < 1e8
+        ? "Pode ser necessário usar mascarante."
+        : "Mascarante geralmente não necessário.",
 
-    acaoSistema: montarAcaoTresFatores(risco, fatorPH),
+    acaoSistema:
+      montarAcaoTresFatores(
+        risco,
+        fatorPH
+      ),
   };
 }
 
@@ -490,43 +663,51 @@ function avaliarOrdemReacaoPorKf(
   };
 }
 
-function avaliarSeparacaoPorRazaoKf(razaoKf: number): FatorInterferencia {
-  if (razaoKf > 1e8) {
+function avaliarSeparacaoPorRazaoKf(
+  razaoKf: number
+): FatorInterferencia {
+  if (razaoKf >= 1e8) {
     return {
-      status: "Sem interferência",
-      descricao: "A diferença entre os Kf é maior que 10^8.",
+      status:
+        "Sem interferência",
+      descricao:
+        "A razão entre os Kf é igual ou superior a 10⁸.",
       pontuacao: 0,
     };
   }
 
   if (razaoKf >= 1e7) {
     return {
-      status: "BaixBaixo",
-      descricao: "A diferença entre os Kf está próxima de 10^7.",
+      status: "Baixo",
+      descricao:
+        "A razão entre os Kf é inferior a 10⁸ e próxima de 10⁷.",
       pontuacao: 1,
     };
   }
 
   if (razaoKf >= 1e6) {
     return {
-      status: "ModeradModerado",
-      descricao: "A diferença entre os Kf está próxima de 10^6.",
+      status: "Moderado",
+      descricao:
+        "A razão entre os Kf é inferior a 10⁷ e próxima de 10⁶.",
       pontuacao: 2,
     };
   }
 
   if (razaoKf >= 1e5) {
     return {
-      status: "SignificativSignificativo",
-      descricao: "A diferença entre os Kf está próxima de 10^5.",
+      status:
+        "Significativo",
+      descricao:
+        "A razão entre os Kf é inferior a 10⁶.",
       pontuacao: 3,
     };
   }
 
   return {
-    status: "AltAlto",
+    status: "Alto",
     descricao:
-      "A separação entre os Kf é menor que 10^5 ou o interferente possui Kf maior.",
+      "A razão entre os Kf é inferior a 10⁵.",
     pontuacao: 4,
   };
 }
@@ -579,28 +760,28 @@ function classificarRiscoTresFatores(
 function montarMensagemTresFatores(
   metalPrincipal: MetalEdta,
   interferente: MetalEdta,
-  fatorOrdem: FatorInterferencia,
-  fatorSeparacao: FatorInterferencia,
-  fatorPH: FatorInterferencia,
-  razaoKf: number
+  razaoKf: number,
+  kfPrincipalCondicional: number,
+  kfInterferenteCondicional: number,
+  metalMaiorKf: string
 ) {
-  const kfPrincipal = metalPrincipal.kf;
-  const kfInterferente = interferente.kf;
+  if (razaoKf < 1e8) {
+    return `${interferente.metal}: a razão entre os Kf é ${formatarCientifico(
+      razaoKf
+    )}, portanto é inferior a 1,00 × 10⁸. Não há separação suficiente entre ${metalPrincipal.metal} e ${interferente.metal}; assim, o ponto de equivalência será dado pela soma dos metais se um agente mascarante não for utilizado. Nas condições informadas, Kcondicional do metal analisado = ${formatarCientifico(
+      kfPrincipalCondicional
+    )} e Kcondicional do interferente = ${formatarCientifico(
+      kfInterferenteCondicional
+    )}.`;
+  }
 
-  const metalMaiorKf =
-    kfInterferente > kfPrincipal
-      ? interferente.metal
-      : metalPrincipal.metal;
-
-  const metalMenorKf =
-    kfInterferente > kfPrincipal
-      ? metalPrincipal.metal
-      : interferente.metal;
-
-  return `${interferente.metal}: ${fatorOrdem.prioridade}
-A separação entre os Kf é de ${formatarCientifico(razaoKf)} vezes.
-Isso significa que ${metalMaiorKf} possui Kf maior que ${metalMenorKf}.
-${fatorPH.descricao}`;
+  return `${interferente.metal}: a razão entre os Kf é ${formatarCientifico(
+    razaoKf
+  )}, igual ou superior a 1,00 × 10⁸. Há separação suficiente entre as constantes de formação. O metal com maior Kf é ${metalMaiorKf}. Nas condições informadas, Kcondicional do metal analisado = ${formatarCientifico(
+    kfPrincipalCondicional
+  )} e Kcondicional do interferente = ${formatarCientifico(
+    kfInterferenteCondicional
+  )}.`;
 }
 
 function montarAcaoTresFatores(
@@ -674,16 +855,24 @@ function montarResumoEDTA(
   status: StatusKfEDTA,
   interferentes: InterferenciaEDTA[]
 ) {
-  const totalInterferentes = interferentes.length;
+  const totalInterferentes =
+    interferentes.length;
 
-  const interferenciasAltas = interferentes.filter(
-    (item) => item.risco === "Alto" || item.risco === "Significativo"
-  ).length;
+  const interferenciasAltas =
+    interferentes.filter(
+      (item) =>
+        item.risco === "Alto" ||
+        item.risco ===
+          "Significativo"
+    ).length;
 
   return {
-    texto: `No pH ${pH}, α(Y4-) = ${alpha}. Para ${metal.metal}, a constante efetiva calculada foi ${formatarCientifico(
-      kf
-    )}, classificada como ${status.status}. Foram avaliados ${totalInterferentes} interferente(s), com ${interferenciasAltas} interferência(s) relevante(s).`,
+    texto:
+      `No pH ${pH}, α(Y⁴⁻) = ${formatarCientifico(
+        alpha
+      )}. Para ${metal.metal}, a constante de formação condicional calculada foi ${formatarCientifico(
+        kf
+      )}, classificada como ${status.status}. Foram avaliados ${totalInterferentes} interferente(s), com ${interferenciasAltas} interferência(s) relevante(s).`,
   };
 }
 
@@ -841,13 +1030,74 @@ export function normalizar(texto: unknown): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-export function formatarCientifico(valor: unknown): string {
-  const convertido = Number(valor);
+export function formatarCientifico(
+  valor: unknown
+): string {
+  const convertido =
+    Number(valor);
 
-  if (!Number.isFinite(convertido) || Number.isNaN(convertido)) return "-";
-  if (convertido === 0) return "0";
+  if (
+    !Number.isFinite(convertido) ||
+    Number.isNaN(convertido)
+  ) {
+    return "-";
+  }
 
-  return convertido.toExponential(2).replace(".", ",");
+  if (convertido === 0) {
+    return "0";
+  }
+
+  const mapaSobrescrito:
+    Record<string, string> = {
+      "0": "⁰",
+      "1": "¹",
+      "2": "²",
+      "3": "³",
+      "4": "⁴",
+      "5": "⁵",
+      "6": "⁶",
+      "7": "⁷",
+      "8": "⁸",
+      "9": "⁹",
+      "-": "⁻",
+      "+": "⁺",
+    };
+
+  const [
+    mantissaTexto,
+    expoenteTexto,
+  ] = convertido
+    .toExponential(2)
+    .split("e");
+
+  const mantissa =
+    Number(
+      mantissaTexto
+    ).toLocaleString(
+      "pt-BR",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }
+    );
+
+  const expoenteNumerico =
+    String(
+      Number(expoenteTexto)
+    );
+
+  const expoenteSobrescrito =
+    expoenteNumerico
+      .split("")
+      .map(
+        (caractere) =>
+          mapaSobrescrito[
+            caractere
+          ] ?? caractere
+      )
+      .join("");
+
+  return `${mantissa} × 10${expoenteSobrescrito}`;
 }
 
 export function formatarDecimal(valor: unknown, casas = 4): string {

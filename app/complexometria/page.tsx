@@ -40,14 +40,17 @@ import { DerivadaEdtaChart } from "../../components/DerivadaEdtaChart";
 import { SimulacaoTempoRealEdtaChart } from "../../components/SimulacaoTempoRealEdtaChart";
 import { useAnalitBot } from "../contexts/AnalitBotContext";
 
+import "../precipitacao/styles/precipitacao.css";
+
 type AbaAtiva =
   | "visao"
   | "baseCalculo"
   | "curva"
   | "indicadores"
   | "interferentes"
-  | "tempoReal"
-  | "derivadas";
+  | "derivadas"
+  | "efeitoConcentracao"
+  | "tempoReal";
 
   export default function ComplexometriaPage() {
     const { atualizarDados } = useAnalitBot();
@@ -83,9 +86,51 @@ type AbaAtiva =
 
   const [erro, setErro] = useState("");
 
-  const [volumeAtualTempoReal, setVolumeAtualTempoReal] = useState(0);
-const [volumeManualTempoReal, setVolumeManualTempoReal] = useState("");
-const [pontosTempoReal, setPontosTempoReal] = useState<PontoCurvaEDTA[]>([]);
+  const [
+    volumeAtualTempoReal,
+    setVolumeAtualTempoReal,
+  ] = useState(0);
+  
+  const [
+    volumeManualTempoReal,
+    setVolumeManualTempoReal,
+  ] = useState("");
+  
+  const [
+    pontosTempoReal,
+    setPontosTempoReal,
+  ] = useState<PontoCurvaEDTA[]>([]);
+  
+  const [
+    concMetalEfeito,
+    setConcMetalEfeito,
+  ] = useState("");
+  
+  const [
+    concEDTAEfeito,
+    setConcEDTAEfeito,
+  ] = useState("");
+  
+  const [
+    resultadoEfeitoConcentracao,
+    setResultadoEfeitoConcentracao,
+  ] =
+    useState<ResultadoAvaliacaoEDTA | null>(
+      null
+    );
+  
+  const [
+    curvaEfeitoConcentracao,
+    setCurvaEfeitoConcentracao,
+  ] =
+    useState<CurvaEDTA | null>(
+      null
+    );
+  
+  const [
+    mensagemEfeitoConcentracao,
+    setMensagemEfeitoConcentracao,
+  ] = useState("");
 
   const complexantesPermitidos = useMemo(() => {
     if (!metalPrincipal) return [];
@@ -135,6 +180,21 @@ const [pontosTempoReal, setPontosTempoReal] = useState<PontoCurvaEDTA[]>([]);
     setVolumeAtualTempoReal(0);
 setVolumeManualTempoReal("");
 setPontosTempoReal([]);
+
+setConcMetalEfeito("");
+setConcEDTAEfeito("");
+
+setResultadoEfeitoConcentracao(
+  null
+);
+
+setCurvaEfeitoConcentracao(
+  null
+);
+
+setMensagemEfeitoConcentracao(
+  ""
+);
 atualizarDados({
   moduloAtual: "Complexometria com EDTA",
   tipoSistema: "Titulação complexométrica com EDTA",
@@ -194,12 +254,16 @@ atualizarDados({
             ? `${formatarNumeroBR(curvaGerada.volumePE, 2)} mL`
             : "Não calculado"
         }.
-      α(Y⁴⁻): ${formatarCientificoBR(avaliacao.metalPrincipal.alpha)}.
-      Kf condicional: ${formatarCientificoBR(
-          avaliacao.metalPrincipal.kfCondicional
+        α(Y⁴⁻): ${formatarCientificoBR(
+          avaliacao.metalPrincipal.alpha
         )}.
-      Kf efetivo: ${formatarCientificoBR(avaliacao.metalPrincipal.kfEfetivo)}.
-      Status da titulação: ${avaliacao.metalPrincipal.status}.
+        α do metal livre: ${formatarCientificoBR(
+          avaliacao.metalPrincipal.alfaMetalLivre
+        )}.
+        Kf condicional: ${formatarCientificoBR(
+          avaliacao.metalPrincipal.kfEfetivo
+        )}.
+        Status da titulação: ${avaliacao.metalPrincipal.status}.
       Mensagem do sistema: ${avaliacao.metalPrincipal.mensagem}
       Resumo químico: ${avaliacao.resumo.texto}
       Interferentes avaliados: ${
@@ -218,8 +282,28 @@ atualizarDados({
       });
       
       setResultado(avaliacao);
-      setCurva(curvaGerada);
-      setRankingIndicadores(ranking);
+setCurva(curvaGerada);
+setRankingIndicadores(ranking);
+
+setConcMetalEfeito(
+  concMetal
+);
+
+setConcEDTAEfeito(
+  concEDTA
+);
+
+setResultadoEfeitoConcentracao(
+  null
+);
+
+setCurvaEfeitoConcentracao(
+  null
+);
+
+setMensagemEfeitoConcentracao(
+  ""
+);
 
 setPontoConsulta(null);
 setVolumeConsulta("");
@@ -236,6 +320,107 @@ if (abaDepois) {
         error instanceof Error
           ? error.message
           : "Erro inesperado ao avaliar o sistema."
+      );
+    }
+  }
+
+  function aplicarEfeitoConcentracao() {
+    setMensagemEfeitoConcentracao(
+      ""
+    );
+  
+    if (!resultado || !curva) {
+      setMensagemEfeitoConcentracao(
+        "Avalie primeiro o sistema complexométrico."
+      );
+  
+      return;
+    }
+  
+    const novaConcMetal =
+      Number(
+        concMetalEfeito
+          .replace(",", ".")
+          .trim()
+      );
+  
+    const novaConcEDTA =
+      Number(
+        concEDTAEfeito
+          .replace(",", ".")
+          .trim()
+      );
+  
+    if (
+      !Number.isFinite(
+        novaConcMetal
+      ) ||
+      novaConcMetal <= 0
+    ) {
+      setMensagemEfeitoConcentracao(
+        "Informe uma concentração válida e positiva para o metal."
+      );
+  
+      return;
+    }
+  
+    if (
+      !Number.isFinite(
+        novaConcEDTA
+      ) ||
+      novaConcEDTA <= 0
+    ) {
+      setMensagemEfeitoConcentracao(
+        "Informe uma concentração válida e positiva para o EDTA."
+      );
+  
+      return;
+    }
+  
+    try {
+      const simulacao =
+        avaliarSistemaEDTA({
+          ...resultado.entradas,
+  
+          concMetal:
+            novaConcMetal,
+  
+          concEDTA:
+            novaConcEDTA,
+        });
+  
+      const curvaSimulada =
+        gerarCurvaEDTA(
+          simulacao,
+          {
+            passo: curva.passo,
+          }
+        );
+  
+      setResultadoEfeitoConcentracao(
+        simulacao
+      );
+  
+      setCurvaEfeitoConcentracao(
+        curvaSimulada
+      );
+  
+      setMensagemEfeitoConcentracao(
+        "Novas concentrações aplicadas com sucesso."
+      );
+    } catch (error) {
+      setResultadoEfeitoConcentracao(
+        null
+      );
+  
+      setCurvaEfeitoConcentracao(
+        null
+      );
+  
+      setMensagemEfeitoConcentracao(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível calcular o efeito das novas concentrações."
       );
     }
   }
@@ -386,17 +571,29 @@ const observacaoMascarante =
   mascaranteAny?.Funcao ??
   "";
 
+  const interferentesSemSeparacao =
+  interferentesAvaliados.filter(
+    (item) =>
+      Number.isFinite(item.razaoKf) &&
+      item.razaoKf < 1e8
+  );
+
+const nomesInterferentesSemSeparacao =
+  interferentesSemSeparacao
+    .map((item) =>
+      formatarFormulaQuimica(
+        item.metal
+      )
+    )
+    .join(", ");
+
 const textoConclusaoInterferentes =
   interferentesAvaliados.length === 0
     ? "Nenhum interferente foi selecionado para comparação."
-    : interferentesCriticos.length > 0
-      ? `Os metais ${nomesInterferentesCriticos} apresentam separação insuficiente de Kf em relação ao metal analisado. Isso indica possibilidade real de competição pelo EDTA se estiverem presentes em quantidade significativa.`
-      : interferentesModerados.length > 0
-        ? `Os metais ${nomesInterferentesModerados} apresentam interferência moderada. A separação entre os Kf não é ideal, então a concentração desses interferentes deve ser considerada.`
-        : interferentesBaixos.length > 0
-          ? `Os metais ${nomesInterferentesBaixos} apresentam baixa tendência de interferência. A separação entre os Kf é razoável, mas ainda não deve ser ignorada completamente.`
-          : "Os interferentes selecionados apresentam separação de Kf suficientemente grande em relação ao metal analisado. Assim, a interferência esperada é desprezível nas condições avaliadas.";
-
+    : interferentesSemSeparacao.length > 0
+      ? `Os metais ${nomesInterferentesSemSeparacao} apresentam razão entre os Kf inferior a 10⁸ em relação ao metal analisado. Portanto, não há separação suficiente para uma determinação seletiva apenas pela diferença das constantes de formação. Se esses metais estiverem presentes simultaneamente e nenhum agente mascarante for utilizado, o ponto de equivalência corresponderá à soma dos metais que reagem com o EDTA. A análise também considera os valores de Kcondicional nas condições de pH e complexação auxiliar informadas.`
+      : "Todos os interferentes selecionados apresentam razão entre os Kf igual ou superior a 10⁸ em relação ao metal analisado. Nessas condições, a separação pelas constantes de formação é considerada suficiente. Os valores de Kcondicional também são avaliados para representar as condições reais de pH e eventual complexação auxiliar.";
+      
 const primeiraDerivada = curva
   ? calcularPrimeiraDerivadaEDTA(curva.pontos)
   : [];
@@ -582,19 +779,6 @@ const concentracaoAuxiliarNumero = concComplexanteAuxiliar
 
 const betasUsados = extrairBetasUsados(betaAuxiliar);
 
-const denominadorBeta =
-  metalComplexado === "sim" &&
-  concentracaoAuxiliarNumero &&
-  concentracaoAuxiliarNumero > 0 &&
-  betasUsados.length > 0
-    ? 1 +
-    betasUsados.reduce(
-      (soma: number, beta: BetaUsado) =>
-        soma + beta.valor * concentracaoAuxiliarNumero ** beta.indice,
-      0
-    )
-    : null;
-
     const betaUsadoTexto =
     betasUsados.length > 0
       ? betasUsados.map((beta: BetaUsado) => ({
@@ -607,6 +791,48 @@ const nomeComplexanteAuxiliar =
   complexantesAuxiliares.find(
     (item) => item.idComplexante === complexanteAuxiliar
   )?.complexante ?? complexanteAuxiliar;
+
+  const volumePEOriginalEfeito =
+  curva?.volumePE ?? null;
+
+const volumePESimuladoEfeito =
+  curvaEfeitoConcentracao?.volumePE ??
+  null;
+
+const deltaVolumePEEfeito =
+  volumePEOriginalEfeito !== null &&
+  volumePESimuladoEfeito !== null
+    ? volumePESimuladoEfeito -
+      volumePEOriginalEfeito
+    : null;
+
+const variacaoVolumePEEfeito =
+  deltaVolumePEEfeito !== null &&
+  volumePEOriginalEfeito !== null &&
+  volumePEOriginalEfeito !== 0
+    ? (
+        deltaVolumePEEfeito /
+        volumePEOriginalEfeito
+      ) * 100
+    : null;
+
+const pMPEOriginalEfeito =
+  curva?.pontoPE?.pM ?? null;
+
+const pMPESimuladoEfeito =
+  curvaEfeitoConcentracao
+    ?.pontoPE?.pM ?? null;
+
+const percentualComplexadoOriginalEfeito =
+  curva?.pontoPE
+    ?.percentualComplexado ??
+  null;
+
+const percentualComplexadoSimuladoEfeito =
+  curvaEfeitoConcentracao
+    ?.pontoPE
+    ?.percentualComplexado ??
+  null;
 
     function adicionarVolumeTempoReal(incremento: number) {
       if (!resultado) {
@@ -807,16 +1033,16 @@ const nomeComplexanteAuxiliar =
                 </label>
 
                 <label>
-                  Concentração do complexante auxiliar
-                  <input
-                    value={concComplexanteAuxiliar}
-                    onChange={(event) =>
-                      setConcComplexanteAuxiliar(event.target.value)
-                    }
-                    placeholder="Ex: 0,10"
-                  />
-                  <small>mol L⁻¹L</small>
-                </label>
+  Concentração do complexante auxiliar
+  <input
+    value={concComplexanteAuxiliar}
+    onChange={(event) =>
+      setConcComplexanteAuxiliar(event.target.value)
+    }
+    placeholder="Ex: 0,10"
+  />
+  <small>mol L⁻¹</small>
+</label>
               </>
             )}
           </div>
@@ -862,31 +1088,40 @@ const nomeComplexanteAuxiliar =
                   </div>
 
                   <div className="resultCard">
-  <span className="chemLabel">α(Y⁴⁻)</span>
+  <span className="chemLabel">
+    α(Y⁴⁻)
+  </span>
+
   <strong>
-    {formatarCientifico(resultado.metalPrincipal.alpha)}
+    {formatarCientifico(
+      resultado.metalPrincipal.alpha
+    )}
   </strong>
 </div>
 
-                  <div className="resultCard">
-                  <span>
-  K<sub>f</sub> condicional
-</span>
-                    <strong>
-                      {formatarCientifico(
-                        resultado.metalPrincipal.kfCondicional
-                      )}
-                    </strong>
-                  </div>
+<div className="resultCard">
+  <span className="chemLabel">
+    α do metal
+  </span>
 
-                  <div className="resultCard">
-                  <span>
-  K<sub>f</sub> efetivo
-</span>
-                    <strong>
-                      {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
-                    </strong>
-                  </div>
+  <strong>
+    {formatarCientifico(
+      resultado.metalPrincipal.alfaMetalLivre
+    )}
+  </strong>
+</div>
+
+<div className="resultCard">
+  <span>
+    K<sub>condicional</sub>
+  </span>
+
+  <strong>
+    {formatarCientifico(
+      resultado.metalPrincipal.kfEfetivo
+    )}
+  </strong>
+</div>
 
                   <div className="resultCard">
                     <span>Status</span>
@@ -898,22 +1133,43 @@ const nomeComplexanteAuxiliar =
                 </div>
 
                 <div className="explanationBox">
-  <h3>Legenda dos valores</h3>
+  <h3>
+    Constante de formação condicional
+  </h3>
 
   <p>
     <strong>
-      K<sub>f</sub> condicional:
+      K<sub>condicional</sub>
     </strong>{" "}
-    constante de formação corrigida pelo pH, considerando a fração de EDTA na
-    forma ativa Y⁴⁻.
+    é a constante de formação utilizada nas
+    condições reais da titulação.
+  </p>
+
+  <p>
+    Ela é calculada por:
   </p>
 
   <p>
     <strong>
-      K<sub>f</sub> efetivo:
-    </strong>{" "}
-    constante realmente usada na avaliação, após considerar o pH e, quando
-    informado, a competição com complexantes auxiliares.
+      K<sub>condicional</sub> =
+      K<sub>f</sub> × α(Y⁴⁻) × α
+      <sub>metal</sub>
+    </strong>
+  </p>
+
+  <p>
+    α(Y⁴⁻) representa a fração do EDTA presente
+    na forma totalmente ionizada e disponível
+    para complexação. α
+    <sub>metal</sub> representa a fração do
+    metal que permanece livre para reagir com o
+    EDTA quando houver agente complexante
+    auxiliar.
+  </p>
+
+  <p>
+    Na ausência de complexante auxiliar,
+    α<sub>metal</sub> = 1.
   </p>
 </div>
 
@@ -972,20 +1228,46 @@ const nomeComplexanteAuxiliar =
       </button>
 
       <button
-        type="button"
-        className={abaAtiva === "tempoReal" ? "active" : ""}
-        onClick={() => setAbaAtiva("tempoReal")}
-      >
-        Tempo real
-      </button>
+  type="button"
+  className={
+    abaAtiva === "derivadas"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaAtiva("derivadas")
+  }
+>
+  Derivadas
+</button>
 
-      <button
-        type="button"
-        className={abaAtiva === "derivadas" ? "active" : ""}
-        onClick={() => setAbaAtiva("derivadas")}
-      >
-        Derivadas
-      </button>
+<button
+  type="button"
+  className={
+    abaAtiva === "efeitoConcentracao"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaAtiva("efeitoConcentracao")
+  }
+>
+  Efeito da concentração
+</button>
+
+<button
+  type="button"
+  className={
+    abaAtiva === "tempoReal"
+      ? "active"
+      : ""
+  }
+  onClick={() =>
+    setAbaAtiva("tempoReal")
+  }
+>
+  Tempo real
+</button>
     </div>
   </section>
 )}
@@ -1134,29 +1416,40 @@ const nomeComplexanteAuxiliar =
           </div>
 
           <div className="resultCard">
-  <span className="chemLabel">α(Y⁴⁻)</span>
+  <span className="chemLabel">
+    α(Y⁴⁻)
+  </span>
+
   <strong>
-    {formatarCientifico(resultado.metalPrincipal.alpha)}
+    {formatarCientifico(
+      resultado.metalPrincipal.alpha
+    )}
   </strong>
 </div>
 
-          <div className="resultCard">
-            <span>
-              K<sub>f</sub> condicional
-            </span>
-            <strong>
-              {formatarCientifico(resultado.metalPrincipal.kfCondicional)}
-            </strong>
-          </div>
+<div className="resultCard">
+  <span className="chemLabel">
+    α do metal
+  </span>
 
-          <div className="resultCard">
-            <span>
-              K<sub>f</sub> efetivo
-            </span>
-            <strong>
-              {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
-            </strong>
-          </div>
+  <strong>
+    {formatarCientifico(
+      resultado.metalPrincipal.alfaMetalLivre
+    )}
+  </strong>
+</div>
+
+<div className="resultCard">
+  <span>
+    K<sub>condicional</sub>
+  </span>
+
+  <strong>
+    {formatarCientifico(
+      resultado.metalPrincipal.kfEfetivo
+    )}
+  </strong>
+</div>
 
           <div className="resultCard">
             <span>Status</span>
@@ -1172,93 +1465,128 @@ const nomeComplexanteAuxiliar =
         <h2>Complexante auxiliar</h2>
 
         {metalComplexado === "sim" ? (
-          <div className="resultGrid">
-            <div className="resultCard">
-              <span>Complexante</span>
-              <strong>
-                {formatarFormulaQuimica(nomeComplexanteAuxiliar || "-")}
-              </strong>
-            </div>
+  <div className="resultGrid">
+    <div className="resultCard">
+      <span>
+        Complexante
+      </span>
 
-            <div className="resultCard betaValuesCard">
-  <span className="chemLabel">β usados</span>
-
-  {betaUsadoTexto.length > 0 ? (
-    <div className="betaValuesList">
-      {betaUsadoTexto.map((beta) => (
-        <strong key={beta.indice}>{beta.texto}</strong>
-      ))}
-    </div>
-  ) : (
-    <strong>-</strong>
-  )}
-</div>
-
-            <div className="resultCard">
-              <span>Concentração</span>
-              <strong>
-                {concentracaoAuxiliarNumero !== null
-                  ? `${formatarCientificoBR(
-                      concentracaoAuxiliarNumero
-                    )} mol L⁻¹`
-                  : "-"}
-              </strong>
-            </div>
-
-            <div className="resultCard">
-            <span className="chemLabel">Denominador β</span>
-  <strong>
-    {denominadorBeta !== null
-      ? formatarCientificoBR(denominadorBeta)
-      : "-"}
-  </strong>
-</div>
-
-            <div className="resultCard">
-              <span>
-              K<sub>f</sub> condicional
-              </span>
-              <strong>
-                {formatarCientifico(resultado.metalPrincipal.kfCondicional)}
-              </strong>
-            </div>
-
-            <div className="resultCard">
-              <span>
-              K<sub>f</sub> efetivo
-              </span>
-              <strong>
-                {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
-              </strong>
-            </div>
-          </div>
-        ) : (
-          <div className="resultGrid">
-            <div className="resultCard">
-              <span>Complexante</span>
-              <strong>Não utilizado</strong>
-            </div>
-
-            <div className="resultCard">
-              <span>β usado</span>
-              <strong>-</strong>
-            </div>
-
-            <div className="resultCard">
-              <span>Denominador β</span>
-              <strong>-</strong>
-            </div>
-
-            <div className="resultCard">
-              <span>
-                K<sub>f</sub> efetivo
-              </span>
-              <strong>
-                {formatarCientifico(resultado.metalPrincipal.kfEfetivo)}
-              </strong>
-            </div>
-          </div>
+      <strong>
+        {formatarFormulaQuimica(
+          nomeComplexanteAuxiliar || "-"
         )}
+      </strong>
+    </div>
+
+    <div className="resultCard betaValuesCard">
+      <span className="chemLabel">
+        β usados
+      </span>
+
+      {betaUsadoTexto.length > 0 ? (
+        <div className="betaValuesList">
+          {betaUsadoTexto.map(
+            (beta) => (
+              <strong key={beta.indice}>
+                {beta.texto}
+              </strong>
+            )
+          )}
+        </div>
+      ) : (
+        <strong>-</strong>
+      )}
+    </div>
+
+    <div className="resultCard">
+      <span>
+        Concentração
+      </span>
+
+      <strong className="complexometriaValorCompacto">
+        {concentracaoAuxiliarNumero !== null
+          ? `${formatarCientificoBR(
+              concentracaoAuxiliarNumero
+            )} mol L⁻¹`
+          : "-"}
+      </strong>
+    </div>
+
+    <div className="resultCard">
+      <span className="chemLabel">
+        α do metal
+      </span>
+
+      <strong>
+        {formatarCientifico(
+          resultado.metalPrincipal
+            .alfaMetalLivre
+        )}
+      </strong>
+    </div>
+
+    <div className="resultCard">
+      <span>
+        K<sub>condicional</sub>
+      </span>
+
+      <strong>
+        {formatarCientifico(
+          resultado.metalPrincipal
+            .kfEfetivo
+        )}
+      </strong>
+    </div>
+  </div>
+) : (
+  <div className="resultGrid">
+    <div className="resultCard">
+      <span>
+        Complexante
+      </span>
+
+      <strong>
+        Não utilizado
+      </strong>
+    </div>
+
+    <div className="resultCard">
+      <span>
+        β usados
+      </span>
+
+      <strong>
+        -
+      </strong>
+    </div>
+
+    <div className="resultCard">
+      <span className="chemLabel">
+        α do metal
+      </span>
+
+      <strong>
+        {formatarCientifico(
+          resultado.metalPrincipal
+            .alfaMetalLivre
+        )}
+      </strong>
+    </div>
+
+    <div className="resultCard">
+      <span>
+        K<sub>condicional</sub>
+      </span>
+
+      <strong>
+        {formatarCientifico(
+          resultado.metalPrincipal
+            .kfEfetivo
+        )}
+      </strong>
+    </div>
+  </div>
+)}
       </div>
 
       <div className="resultsPanel">
@@ -1338,11 +1666,6 @@ const nomeComplexanteAuxiliar =
               <span>Passo</span>
               <strong>{formatarNumeroBR(curva.passo, 2)} mL</strong>
             </div>
-
-            <div className="resultCard">
-              <span>Pontos calculados</span>
-              <strong>{curva.pontos.length}</strong>
-            </div>
           </div>
         </div>
       )}
@@ -1380,11 +1703,6 @@ const nomeComplexanteAuxiliar =
                       ? formatarNumeroBR(curva.pontoPE.pM, 2)
                       : "-"}
                   </strong>
-                </div>
-
-                <div className="resultCard">
-                  <span>Pontos calculados</span>
-                  <strong>{curva.pontos.length}</strong>
                 </div>
 
                 <div className="resultCard">
@@ -1705,10 +2023,15 @@ const nomeComplexanteAuxiliar =
           </h2>
 
           <p>
-  O sistema compara os K<sub>f</sub> cadastrados dos metais presentes. A
-  avaliação considera a força relativa de complexação com EDTA, a separação
-  entre os K<sub>f</sub> e o efeito do pH sobre o K<sub>f</sub> condicional do
-  metal analisado.
+  O sistema compara os K<sub>f</sub> dos
+  metais e também considera as respectivas
+  K<sub>condicional</sub> nas condições
+  informadas. Quando a razão entre os K
+  <sub>f</sub> é inferior a 10⁸, não há
+  separação suficiente entre os metais e o
+  ponto de equivalência será dado pela soma
+  dos metais caso um agente mascarante não
+  seja utilizado.
 </p>
         </div>
       </div>
@@ -1834,13 +2157,28 @@ const nomeComplexanteAuxiliar =
           </div>
 
           <div className="interferenceMiniCard">
-            <span>
-              Razão K<sub>f</sub>
-            </span>
-            <strong>
-              {item.razaoKf ? formatarCientificoBR(item.razaoKf) : "-"}
-            </strong>
-          </div>
+  <span>
+    Razão K<sub>f</sub>
+  </span>
+
+  <strong>
+    {item.razaoKf
+      ? formatarCientificoBR(
+          item.razaoKf
+        )
+      : "-"}
+  </strong>
+
+  <small>
+    Razão K
+    <sub>condicional</sub>:{" "}
+    {item.razaoKfCondicional
+      ? formatarCientificoBR(
+          item.razaoKfCondicional
+        )
+      : "-"}
+  </small>
+</div>
 
           <div className="interferenceMiniCard">
             <span>Risco</span>
@@ -1860,6 +2198,713 @@ const nomeComplexanteAuxiliar =
     </div>
   </section>
 )}
+
+{resultado &&
+  curva &&
+  abaAtiva === "efeitoConcentracao" && (
+    <section className="precipitacaoSimulationSection">
+      <header className="precipitacaoSimulationIntro">
+        <span className="precipitacaoSectionLabel">
+          Comparação de cenários
+        </span>
+
+        <h5>
+          Efeito da concentração
+        </h5>
+
+        <p>
+          Altere as concentrações do metal e do EDTA e
+          compare o novo cenário com as condições
+          originais. O sistema recalcula o ponto de
+          equivalência e o perfil da curva
+          complexométrica.
+        </p>
+      </header>
+
+      <section className="precipitacaoSimulationOriginal">
+        <header>
+          <span className="precipitacaoSectionLabel">
+            Condição original
+          </span>
+
+          <h6>
+            Dados usados como referência
+          </h6>
+        </header>
+
+        <div className="precipitacaoSimulationOriginalGrid">
+          <article>
+            <span>
+              Concentração do metal
+            </span>
+
+            <strong>
+              {formatarNumeroBR(
+                Number(
+                  resultado.entradas.concMetal ?? 0
+                ),
+                4
+              )}{" "}
+              mol L⁻¹
+            </strong>
+          </article>
+
+          <article>
+            <span>
+              Volume da amostra
+            </span>
+
+            <strong>
+              {formatarNumeroBR(
+                Number(
+                  resultado.entradas.volAmostra ?? 0
+                ),
+                2
+              )}{" "}
+              mL
+            </strong>
+          </article>
+
+          <article>
+            <span>
+              Concentração do EDTA
+            </span>
+
+            <strong>
+              {formatarNumeroBR(
+                Number(
+                  resultado.entradas.concEDTA ?? 0
+                ),
+                4
+              )}{" "}
+              mol L⁻¹
+            </strong>
+          </article>
+
+          <article>
+            <span>
+              Capacidade da bureta
+            </span>
+
+            <strong>
+              {formatarNumeroBR(
+                Number(
+                  resultado.entradas.volBureta ?? 0
+                ),
+                2
+              )}{" "}
+              mL
+            </strong>
+          </article>
+
+          <article>
+            <span>
+              pH
+            </span>
+
+            <strong>
+              {formatarNumeroBR(
+                resultado.entradas.pH,
+                2
+              )}
+            </strong>
+          </article>
+
+          <article>
+            <span>
+              PE original
+            </span>
+
+            <strong>
+              {curva.volumePE !== null &&
+              curva.volumePE !== undefined
+                ? `${formatarNumeroBR(
+                    curva.volumePE,
+                    2
+                  )} mL`
+                : "-"}
+            </strong>
+          </article>
+        </div>
+      </section>
+
+      <section className="precipitacaoSimulationPresets">
+        <header>
+          <span className="precipitacaoSectionLabel">
+            Cenários rápidos
+          </span>
+
+          <h6>
+            Observe o efeito da concentração
+          </h6>
+        </header>
+
+        <div className="precipitacaoSimulationPresetButtons">
+          <button
+            type="button"
+            onClick={() => {
+              setConcMetalEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concMetal ?? 0
+                  ) * 2,
+                  4
+                )
+              );
+
+              setConcEDTAEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concEDTA ?? 0
+                  ),
+                  4
+                )
+              );
+            }}
+          >
+            Metal 2× mais concentrado
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setConcMetalEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concMetal ?? 0
+                  ) * 0.5,
+                  4
+                )
+              );
+
+              setConcEDTAEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concEDTA ?? 0
+                  ),
+                  4
+                )
+              );
+            }}
+          >
+            Metal 50% mais diluído
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setConcMetalEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concMetal ?? 0
+                  ),
+                  4
+                )
+              );
+
+              setConcEDTAEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concEDTA ?? 0
+                  ) * 2,
+                  4
+                )
+              );
+            }}
+          >
+            EDTA 2× mais concentrado
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setConcMetalEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concMetal ?? 0
+                  ),
+                  4
+                )
+              );
+
+              setConcEDTAEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concEDTA ?? 0
+                  ) * 0.5,
+                  4
+                )
+              );
+            }}
+          >
+            EDTA 50% mais diluído
+          </button>
+        </div>
+      </section>
+
+      <div className="precipitacaoSimulationWorkspace">
+        <aside className="precipitacaoSimulationControls">
+          <span className="precipitacaoSectionLabel">
+            Parâmetros simulados
+          </span>
+
+          <h6>
+            Configure o novo cenário
+          </h6>
+
+          <div className="precipitacaoSimulationForm">
+            <label>
+              Concentração do metal
+
+              <div className="precipitacaoSimulationInputGroup">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={concMetalEfeito}
+                  onChange={(event) =>
+                    setConcMetalEfeito(
+                      event.target.value
+                    )
+                  }
+                  placeholder={formatarNumeroBR(
+                    Number(
+                      resultado.entradas.concMetal ?? 0
+                    ),
+                    4
+                  )}
+                />
+
+                <span>
+                  mol L⁻¹
+                </span>
+              </div>
+            </label>
+
+            <label>
+              Concentração do EDTA
+
+              <div className="precipitacaoSimulationInputGroup">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={concEDTAEfeito}
+                  onChange={(event) =>
+                    setConcEDTAEfeito(
+                      event.target.value
+                    )
+                  }
+                  placeholder={formatarNumeroBR(
+                    Number(
+                      resultado.entradas.concEDTA ?? 0
+                    ),
+                    4
+                  )}
+                />
+
+                <span>
+                  mol L⁻¹
+                </span>
+              </div>
+            </label>
+
+            {mensagemEfeitoConcentracao && (
+              <p className="precipitacaoSimulationError">
+                {mensagemEfeitoConcentracao}
+              </p>
+            )}
+
+            <button
+              type="button"
+              className="precipitacaoSimulationApplyButton"
+              onClick={
+                aplicarEfeitoConcentracao
+              }
+            >
+              Aplicar simulação
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="precipitacaoSimulationResetButton"
+            onClick={() => {
+              setConcMetalEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concMetal ?? 0
+                  ),
+                  4
+                )
+              );
+
+              setConcEDTAEfeito(
+                formatarNumeroBR(
+                  Number(
+                    resultado.entradas.concEDTA ?? 0
+                  ),
+                  4
+                )
+              );
+
+              setResultadoEfeitoConcentracao(
+                null
+              );
+
+              setCurvaEfeitoConcentracao(
+                null
+              );
+
+              setMensagemEfeitoConcentracao(
+                ""
+              );
+            }}
+          >
+            Restaurar valores originais
+          </button>
+        </aside>
+
+        <section className="precipitacaoSimulationGraphCard">
+          <header>
+            <div>
+              <span className="precipitacaoSectionLabel">
+                Comparação experimental
+              </span>
+
+              <h6>
+                Condição original × condição simulada
+              </h6>
+            </div>
+          </header>
+
+          {resultadoEfeitoConcentracao &&
+            curvaEfeitoConcentracao && (
+              <div className="efeitoConcentracaoChartWrapper">
+                <CurvaEdtaChart
+                  curva={curva}
+                  curvasInterferentes={[
+                    {
+                      metal:
+                        "Condição simulada",
+                      pontos:
+                        curvaEfeitoConcentracao.pontos,
+                    },
+                  ]}
+                  metalPrincipalLabel="Condição original"
+                  titulo="Curva original × simulada"
+                  descricao="Comparação do perfil pM × volume de EDTA"
+                />
+              </div>
+            )}
+
+          {!resultadoEfeitoConcentracao ||
+          !curvaEfeitoConcentracao ? (
+            <div className="precipitacaoSimulationDiagnosis">
+              <span className="precipitacaoSectionLabel">
+                Aguardando simulação
+              </span>
+
+              <h6>
+                Configure uma nova concentração
+              </h6>
+
+              <p>
+                Altere uma ou ambas as concentrações e
+                aplique a simulação para comparar o novo
+                ponto de equivalência com a condição
+                original.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="efeitoConcentracaoResumo">
+                <div className="efeitoConcentracaoResumoGrid">
+                  <article className="efeitoConcentracaoResumoCard">
+                    <span>
+                      PE original
+                    </span>
+
+                    <strong>
+                      {volumePEOriginalEfeito !== null
+                        ? `${formatarNumeroBR(
+                            volumePEOriginalEfeito,
+                            2
+                          )} mL`
+                        : "-"}
+                    </strong>
+                  </article>
+
+                  <article className="efeitoConcentracaoResumoCard">
+                    <span>
+                      PE simulado
+                    </span>
+
+                    <strong>
+                      {volumePESimuladoEfeito !== null
+                        ? `${formatarNumeroBR(
+                            volumePESimuladoEfeito,
+                            2
+                          )} mL`
+                        : "-"}
+                    </strong>
+                  </article>
+
+                  <article className="efeitoConcentracaoResumoCard">
+                    <span>
+                      ΔPE
+                    </span>
+
+                    <strong>
+                      {deltaVolumePEEfeito !== null
+                        ? `${formatarNumeroBR(
+                            deltaVolumePEEfeito,
+                            2
+                          )} mL`
+                        : "-"}
+                    </strong>
+                  </article>
+
+                  <article className="efeitoConcentracaoResumoCard">
+                    <span>
+                      Variação do PE
+                    </span>
+
+                    <strong>
+                      {variacaoVolumePEEfeito !== null
+                        ? `${formatarNumeroBR(
+                            variacaoVolumePEEfeito,
+                            2
+                          )}%`
+                        : "-"}
+                    </strong>
+                  </article>
+                </div>
+              </div>
+
+              <div className="efeitoConcentracaoAlteracoes">
+                <div className="efeitoConcentracaoAlteracoesHeader">
+                  <span>
+                    Alterações aplicadas
+                  </span>
+
+                  <h5>
+                    Comparação das concentrações
+                  </h5>
+
+                  <p>
+                    Valores utilizados na condição original
+                    e na condição simulada.
+                  </p>
+                </div>
+
+                <div className="efeitoConcentracaoAlteracoesGrid">
+                  <article className="efeitoConcentracaoAlteracaoCard">
+                    <div className="efeitoConcentracaoAlteracaoTitulo">
+                      Metal
+                    </div>
+
+                    <div className="efeitoConcentracaoComparacao">
+                      <div className="efeitoConcentracaoValor">
+                        <small>
+                          Original
+                        </small>
+
+                        <strong>
+                          {formatarNumeroBR(
+                            Number(
+                              resultado.entradas
+                                .concMetal ?? 0
+                            ),
+                            4
+                          )}
+                        </strong>
+
+                        <span>
+                          mol L⁻¹
+                        </span>
+                      </div>
+
+                      <div className="efeitoConcentracaoSeta">
+                        →
+                      </div>
+
+                      <div className="efeitoConcentracaoValor">
+                        <small>
+                          Simulado
+                        </small>
+
+                        <strong>
+                          {formatarNumeroBR(
+                            Number(
+                              resultadoEfeitoConcentracao
+                                .entradas.concMetal ?? 0
+                            ),
+                            4
+                          )}
+                        </strong>
+
+                        <span>
+                          mol L⁻¹
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article className="efeitoConcentracaoAlteracaoCard">
+                    <div className="efeitoConcentracaoAlteracaoTitulo">
+                      EDTA
+                    </div>
+
+                    <div className="efeitoConcentracaoComparacao">
+                      <div className="efeitoConcentracaoValor">
+                        <small>
+                          Original
+                        </small>
+
+                        <strong>
+                          {formatarNumeroBR(
+                            Number(
+                              resultado.entradas
+                                .concEDTA ?? 0
+                            ),
+                            4
+                          )}
+                        </strong>
+
+                        <span>
+                          mol L⁻¹
+                        </span>
+                      </div>
+
+                      <div className="efeitoConcentracaoSeta">
+                        →
+                      </div>
+
+                      <div className="efeitoConcentracaoValor">
+                        <small>
+                          Simulado
+                        </small>
+
+                        <strong>
+                          {formatarNumeroBR(
+                            Number(
+                              resultadoEfeitoConcentracao
+                                .entradas.concEDTA ?? 0
+                            ),
+                            4
+                          )}
+                        </strong>
+
+                        <span>
+                          mol L⁻¹
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
+
+      {resultadoEfeitoConcentracao &&
+        curvaEfeitoConcentracao && (
+          <section className="precipitacaoSimulationDiagnosis">
+            <span className="precipitacaoSectionLabel">
+              Interpretação
+            </span>
+
+            <h6>
+              Efeito observado
+            </h6>
+
+            <p>
+              O ponto de equivalência passou de{" "}
+              <strong>
+                {volumePEOriginalEfeito !== null
+                  ? `${formatarNumeroBR(
+                      volumePEOriginalEfeito,
+                      2
+                    )} mL`
+                  : "-"}
+              </strong>{" "}
+              para{" "}
+              <strong>
+                {volumePESimuladoEfeito !== null
+                  ? `${formatarNumeroBR(
+                      volumePESimuladoEfeito,
+                      2
+                    )} mL`
+                  : "-"}
+              </strong>
+              .
+            </p>
+
+            <p>
+              O pM no ponto de equivalência passou de{" "}
+              <strong>
+                {pMPEOriginalEfeito !== null
+                  ? formatarNumeroBR(
+                      pMPEOriginalEfeito,
+                      3
+                    )
+                  : "-"}
+              </strong>{" "}
+              para{" "}
+              <strong>
+                {pMPESimuladoEfeito !== null
+                  ? formatarNumeroBR(
+                      pMPESimuladoEfeito,
+                      3
+                    )
+                  : "-"}
+              </strong>
+              .
+            </p>
+
+            <p>
+              O percentual complexado no PE passou de{" "}
+              <strong>
+                {percentualComplexadoOriginalEfeito !==
+                null
+                  ? `${formatarNumeroBR(
+                      percentualComplexadoOriginalEfeito,
+                      2
+                    )}%`
+                  : "-"}
+              </strong>{" "}
+              para{" "}
+              <strong>
+                {percentualComplexadoSimuladoEfeito !==
+                null
+                  ? `${formatarNumeroBR(
+                      percentualComplexadoSimuladoEfeito,
+                      2
+                    )}%`
+                  : "-"}
+              </strong>
+              .
+            </p>
+
+            <p>
+              Como o pH e a condição do complexante
+              auxiliar permanecem fixos, a{" "}
+              <strong>
+                K
+                <sub>
+                  condicional
+                </sub>
+              </strong>{" "}
+              permanece definida pelas mesmas condições
+              químicas. A alteração das concentrações
+              modifica principalmente a quantidade de
+              matéria presente e o volume de EDTA
+              necessário para atingir a equivalência.
+            </p>
+          </section>
+        )}
+    </section>
+  )}
 
 {resultado && curva && abaAtiva === "tempoReal" && (
   <section className="container calculatorSection">
