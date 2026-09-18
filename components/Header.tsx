@@ -18,9 +18,8 @@ export function Header() {
       </Link>
 
       <nav className="nav">
-        <Link href="/">Início</Link>
-        <Link href="/complexometria">Complexometria</Link>
-      </nav>
+  <Link href="/">Início</Link>
+</nav>
     </header>
   );
 }

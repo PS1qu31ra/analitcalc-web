@@ -1232,26 +1232,6 @@ export default function AnaliseInterferentes({
 
               <article>
                 <span>
-                  Início do interferente
-                </span>
-
-                <strong>
-                  {formatarCientificoBR(
-                    itemInterferente
-                      .concentracaoTitulanteInicioPrecipitacao,
-                    3
-                  )}{" "}
-                  mol L⁻¹
-                </strong>
-
-                <small>
-                  Concentração crítica de{" "}
-                  {formulaTitulante}
-                </small>
-              </article>
-
-              <article>
-                <span>
                   p{formulaTitulante} principal
                 </span>
 

@@ -26,9 +26,9 @@ export const modules: AnalitCalcModule[] = [
   {
     title: "Volumetria de precipitação",
     description:
-      "Módulo em desenvolvimento para equilíbrio de solubilidade, Kps, produto iônico, efeito do íon comum, curvas de titulação por precipitação, métodos e interferências.",
+      "Cálculos de equilíbrio de solubilidade, Kps, produto iônico, efeito do íon comum, curvas de titulação por precipitação, métodos, seletividade e interferências.",
     href: "/precipitacao",
-    status: "Em desenvolvimento",
+    status: "Disponível",
     area: "Equilíbrio e titulação",
   },
 ];

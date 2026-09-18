@@ -27,14 +27,10 @@ export default function Home() {
             </p>
 
             <div className="heroActions">
-              <a href="#modulos" className="primaryButton">
-                Acessar módulos
-              </a>
-
-              <a href="/complexometria" className="secondaryButton">
-                Começar por complexometria
-              </a>
-            </div>
+  <a href="#modulos" className="primaryButton">
+    Acessar módulos
+  </a>
+</div>
 
             <div className="analitoHomeHint">
   <div className="analitoHomeGlow" />
