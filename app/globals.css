@@ -6229,3 +6229,77 @@ section.container.calculatorSection + section.container.calculatorSection {
 
   letter-spacing: -0.02em;
 }
+
+/* =========================================================
+   COMPLEXOMETRIA — CARD DE RAZÃO DOS INTERFERENTES
+   ========================================================= */
+
+   .interferenceRatioCard {
+    min-width: 220px;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+  
+    gap: 14px;
+  }
+  
+  .interferenceRatioMain,
+  .interferenceConditionalRatio {
+    width: 100%;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  
+    gap: 5px;
+  
+    text-align: center;
+  }
+  
+  .interferenceRatioMain > span,
+  .interferenceConditionalRatio > span {
+    font-size: 0.78rem;
+    font-weight: 800;
+  
+    line-height: 1.2;
+  
+    text-transform: uppercase;
+  
+    white-space: nowrap;
+  }
+  
+  .interferenceRatioMain > strong {
+    font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+    line-height: 1.15;
+  
+    white-space: nowrap;
+  }
+  
+  .interferenceConditionalRatio {
+    padding-top: 12px;
+  
+    border-top: 1px solid rgba(17, 24, 39, 0.12);
+  }
+  
+  .interferenceConditionalRatio > span {
+    color: #6b7280;
+  }
+  
+  .interferenceConditionalRatio > strong {
+    font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  
+    line-height: 1.15;
+  
+    white-space: nowrap;
+  }
+  
+  .interferenceRatioCard sub {
+    font-size: 0.72em;
+    line-height: 0;
+  
+    vertical-align: sub;
+  
+    text-transform: none;
+  }

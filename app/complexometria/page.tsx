@@ -2156,28 +2156,34 @@ const percentualComplexadoSimuladoEfeito =
             </p>
           </div>
 
-          <div className="interferenceMiniCard">
-  <span>
-    Razão K<sub>f</sub>
-  </span>
+          <div className="interferenceMiniCard interferenceRatioCard">
+  <div className="interferenceRatioMain">
+    <span>
+      Razão K<sub>f</sub>
+    </span>
 
-  <strong>
-    {item.razaoKf
-      ? formatarCientificoBR(
-          item.razaoKf
-        )
-      : "-"}
-  </strong>
+    <strong>
+      {item.razaoKf
+        ? formatarCientificoBR(
+            item.razaoKf
+          )
+        : "-"}
+    </strong>
+  </div>
 
-  <small>
-    Razão K
-    <sub>condicional</sub>:{" "}
-    {item.razaoKfCondicional
-      ? formatarCientificoBR(
-          item.razaoKfCondicional
-        )
-      : "-"}
-  </small>
+  <div className="interferenceConditionalRatio">
+    <span>
+      Razão K<sub>condicional</sub>
+    </span>
+
+    <strong>
+      {item.razaoKfCondicional
+        ? formatarCientificoBR(
+            item.razaoKfCondicional
+          )
+        : "-"}
+    </strong>
+  </div>
 </div>
 
           <div className="interferenceMiniCard">
