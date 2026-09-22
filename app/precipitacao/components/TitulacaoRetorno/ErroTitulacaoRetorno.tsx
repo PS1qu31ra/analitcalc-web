@@ -1098,7 +1098,7 @@ export default function ErroTitulacaoRetorno({
 
               <article>
                 <span>
-                  pAg⁺
+                  pAg
                 </span>
 
                 <strong>
@@ -1854,7 +1854,7 @@ function GraficoComparacaoErroRetorno({
         transform={`rotate(-90 20 ${altura / 2})`}
         className="erroGraficoRotulo"
       >
-        pAg⁺
+        pAg
       </text>
     </svg>
   );

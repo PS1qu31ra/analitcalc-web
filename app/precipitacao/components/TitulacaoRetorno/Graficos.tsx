@@ -540,7 +540,7 @@ export default function Graficos({
           `Ponto marcado: ${formatarNumeroBR(
             volumeConsulta,
             2
-          )} mL  •  pAg⁺: ${formatarNumeroBR(
+          )} mL  •  pAg: ${formatarNumeroBR(
             pontoConsulta.pPrecipitante,
             3
           )}`,
@@ -866,7 +866,7 @@ export default function Graficos({
           </span>
 
           <h3>
-            Variação de pAg⁺
+            Variação de pAg
           </h3>
 
           <p>
@@ -1105,7 +1105,7 @@ export default function Graficos({
                       y={83}
                       className="precipitacaoChartLegendValue"
                     >
-                      pAg⁺:{" "}
+                      pAg:{" "}
                       {formatarNumeroBR(
                         pontoConsulta.pPrecipitante,
                         3
@@ -1140,7 +1140,7 @@ export default function Graficos({
                 transform={`rotate(-90 18 ${alturaGrafico / 2})`}
                 className="precipitacaoChartAxisLabel"
               >
-                pAg⁺
+                pAg
               </text>
 
               <text
@@ -1315,7 +1315,7 @@ export default function Graficos({
 
       <div className="precipitacaoCurveDataGrid">
         <article className="precipitacaoResultCard">
-          <span>pAg⁺</span>
+          <span>pAg</span>
 
           <strong>
             {formatarNumeroBR(
@@ -1408,7 +1408,7 @@ export default function Graficos({
           ácido. O SCN⁻ reage em proporção 1:1 com
           o Ag⁺ que permaneceu em excesso após a
           precipitação do analito, formando
-          AgSCN(s). A mudança acentuada de pAg⁺
+          AgSCN(s). A mudança acentuada de pAg
           ocorre nas proximidades do ponto final
           da retrotitulação.
         </p>

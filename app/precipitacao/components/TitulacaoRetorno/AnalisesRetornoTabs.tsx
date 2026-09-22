@@ -330,7 +330,7 @@ export default function AnalisesRetornoTabs({
                     </th>
 
                     <th>
-                      pAg⁺
+                      pAg
                     </th>
 
                     <th>

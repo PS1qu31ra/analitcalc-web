@@ -2184,7 +2184,7 @@ function GraficoComparacaoCondicoesRetorno({
         transform={`rotate(-90 20 ${altura / 2})`}
         className="simulacaoCondicoesLabel"
       >
-        pAg⁺
+        pAg
       </text>
     </svg>
   );

@@ -595,7 +595,7 @@ export default function SimulacaoTempoRealRetorno({
 
         <p>
           Adicione SCN⁻ gradualmente e acompanhe
-          a variação de pAg⁺. A linha clara
+          a variação de pAg. A linha clara
           representa a curva teórica, enquanto os
           pontos destacados correspondem aos
           volumes adicionados nesta simulação.
@@ -854,7 +854,7 @@ export default function SimulacaoTempoRealRetorno({
 
           <article>
             <span>
-              pAg⁺
+              pAg
             </span>
 
             <strong>
@@ -983,7 +983,7 @@ export default function SimulacaoTempoRealRetorno({
                   </th>
 
                   <th>
-                    pAg⁺
+                    pAg
                   </th>
 
                   <th>
@@ -1595,7 +1595,7 @@ function GraficoTempoRealRetorno({
         transform={`rotate(-90 20 ${altura / 2})`}
         className="precipitacaoRealtimeLabel"
       >
-        pAg⁺
+        pAg
       </text>
     </svg>
   );

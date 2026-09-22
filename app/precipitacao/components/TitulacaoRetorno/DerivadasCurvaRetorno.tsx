@@ -359,7 +359,7 @@ export default function DerivadasCurvaRetorno({
           <p>
             As derivadas numéricas evidenciam a
             região de maior variação da curva de
-            pAg⁺. A primeira derivada apresenta um
+            pAg. A primeira derivada apresenta um
             extremo próximo ao ponto final,
             enquanto a segunda derivada tende a
             cruzar o zero nessa mesma região.
@@ -402,7 +402,7 @@ export default function DerivadasCurvaRetorno({
           </strong>
 
           <small>
-            Maior valor absoluto de ΔpAg⁺/ΔV
+            Maior valor absoluto de ΔpAg/ΔV
           </small>
         </article>
 
@@ -421,7 +421,7 @@ export default function DerivadasCurvaRetorno({
           </strong>
 
           <small>
-            Cruzamento de Δ²pAg⁺/ΔV² com zero
+            Cruzamento de Δ²pAg/ΔV² com zero
           </small>
         </article>
 
@@ -439,7 +439,7 @@ export default function DerivadasCurvaRetorno({
           </strong>
 
           <small>
-            Unidade de pAg⁺/mL
+            Unidade de pAg/mL
           </small>
         </article>
       </div>
@@ -494,7 +494,7 @@ export default function DerivadasCurvaRetorno({
       <div className="precipitacaoDerivativeCharts">
         <GraficoDerivadaRetorno
           titulo="Primeira derivada"
-          descricao="Variação de pAg⁺ por volume de SCN⁻ adicionado."
+          descricao="Variação de pAg por volume de SCN⁻ adicionado."
           pontos={dadosDerivadas.pontos.map(
             (ponto) => ({
               volume:
@@ -508,13 +508,13 @@ export default function DerivadasCurvaRetorno({
             dadosDerivadas
               .volumePontoFinalTeorico
           }
-          rotuloEixoY="ΔpAg⁺/ΔV"
+          rotuloEixoY="ΔpAg/ΔV"
           nomeArquivo="primeira-derivada-retorno"
         />
 
         <GraficoDerivadaRetorno
           titulo="Segunda derivada"
-          descricao="Variação da primeira derivada de pAg⁺."
+          descricao="Variação da primeira derivada de pAg."
           pontos={dadosDerivadas.pontos.map(
             (ponto) => ({
               volume:
@@ -528,7 +528,7 @@ export default function DerivadasCurvaRetorno({
             dadosDerivadas
               .volumePontoFinalTeorico
           }
-          rotuloEixoY="Δ²pAg⁺/ΔV²"
+          rotuloEixoY="Δ²pAg/ΔV²"
           mostrarLinhaZero
           nomeArquivo="segunda-derivada-retorno"
         />
@@ -560,15 +560,15 @@ export default function DerivadasCurvaRetorno({
                 </th>
 
                 <th>
-                  pAg⁺
+                  pAg
                 </th>
 
                 <th>
-                  ΔpAg⁺/ΔV
+                  ΔpAg/ΔV
                 </th>
 
                 <th>
-                  Δ²pAg⁺/ΔV²
+                  Δ²pAg/ΔV²
                 </th>
               </tr>
             </thead>
