@@ -166,42 +166,62 @@ export type ReacaoAcidoBaseMono = {
     { nome: "Ácido cianídrico", formula: "HCN", sal: { K: "KCN", Na: "NaCN" }, obs: "Ácido fraco" },
     { nome: "Ácido tiociânico", formula: "HSCN", sal: { K: "KSCN", Na: "NaSCN" }, obs: "Ácido fraco" },
     { nome: "Ácido azotídrico (hidrazóico)", formula: "HN3", sal: { K: "KN3", Na: "NaN3" }, obs: "Ácido fraco" },
-    { nome: "Ácido fórmico", formula: "HCO2H", sal: { K: "KHCO2", Na: "NaHCO2" }, obs: "Ácido fraco" },
-    { nome: "Ácido acético", formula: "CH3COOH", sal: { K: "KCH3COO", Na: "NaCH3COO" }, obs: "Ácido fraco" },
-    { nome: "Ácido propanoico", formula: "C2H5COOH", sal: { K: "KC2H5COO", Na: "NaC2H5COO" }, obs: "Ácido fraco" },
-    { nome: "Ácido butanoico", formula: "C3H7COOH", sal: { K: "KC3H7COO", Na: "NaC3H7COO" }, obs: "Ácido fraco" },
-    { nome: "Ácido benzoico", formula: "C6H5COOH", sal: { K: "KC6H5COO", Na: "NaC6H5COO" }, obs: "Ácido fraco" },
-    { nome: "Ácido monocloroacético", formula: "CH2ClCOOH", sal: { K: "KCH2ClCOO", Na: "NaCH2ClCOO" }, obs: "Ácido fraco" },
-    { nome: "Ácido dicloroacético", formula: "CHCl2COOH", sal: { K: "KCHCl2COO", Na: "NaCHCl2COO" }, obs: "Ácido fraco" },
-    { nome: "Ácido tricloroacético", formula: "CCl3COOH", sal: { K: "KCCl3COO", Na: "NaCCl3COO" }, obs: "Ácido forte" },
-    { nome: "Ácido láctico", formula: "C3H6O3", sal: { K: "KC3H5O3", Na: "NaC3H5O3" }, obs: "Ácido fraco" },
-    { nome: "Fenol", formula: "C6H5OH", sal: { K: "KC6H5O", Na: "NaC6H5O" }, obs: "Ácido muito fraco" },
-    { nome: "p-Nitrofenol", formula: "O2NC6H4OH", sal: { K: "KO2NC6H4O", Na: "NaO2NC6H4O" }, obs: "Ácido fraco" },
-    { nome: "2,4-Dinitrofenol", formula: "(O2N)2C6H3OH", sal: { K: "K(O2N)2C6H3O", Na: "Na(O2N)2C6H3O" }, obs: "Ácido fraco" },
-    { nome: "Perclórico", formula: "HClO4", sal: { K: "KClO4", Na: "NaClO4" }, obs: "Ácido forte" },
-    { nome: "Hidroiodídrico", formula: "HI", sal: { K: "KI", Na: "NaI" }, obs: "Ácido forte" },
-    { nome: "Hidrobromídrico", formula: "HBr", sal: { K: "KBr", Na: "NaBr" }, obs: "Ácido forte" },
-    { nome: "Clorídrico", formula: "HCl", sal: { K: "KCl", Na: "NaCl" }, obs: "Ácido forte" },
-    { nome: "Nítrico", formula: "HNO3", sal: { K: "KNO3", Na: "NaNO3" }, obs: "Ácido forte" },
-    { nome: "Clórico", formula: "HClO3", sal: { K: "KClO3", Na: "NaClO3" }, obs: "Ácido forte" },
-    {
-      nome: "Trifluorometanossulfônico (trifílico)",
-      formula: "CF3SO3H",
-      sal: { K: "KCF3SO3", Na: "NaCF3SO3" },
-      obs: "Ácido superforte",
-    },
-    {
-      nome: "Metanossulfônico",
-      formula: "CH3SO3H",
-      sal: { K: "KCH3SO3", Na: "NaCH3SO3" },
-      obs: "Ácido forte",
-    },
-    {
-      nome: "p-Toluenossulfônico (p-TsOH)",
-      formula: "CH3C6H4SO3H",
-      sal: { K: "KCH3C6H4SO3", Na: "NaCH3C6H4SO3" },
-      obs: "Ácido forte orgânico",
-    },
+    { nome: "Ácido fórmico", formula: "HCO2H", sal: { K: "KHCO2", Na: "HCO2Na" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido acético", formula: "CH3COOH", sal: { K: "KCH3COO", Na: "CH3COONa" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido propanoico", formula: "C2H5COOH", sal: { K: "KC2H5COO", Na: "C2H5COONa" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido butanoico", formula: "C3H7COOH", sal: { K: "KC3H7COO", Na: "C3H7COONa" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido benzoico", formula: "C6H5COOH", sal: { K: "KC6H5COO", Na: "C6H5COONa" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido monocloroacético", formula: "CH2ClCOOH", sal: { K: "KCH2ClCOO", Na: "CH2ClCOONa" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido dicloroacético", formula: "CHCl2COOH", sal: { K: "KCHCl2COO", Na: "CHCl2COONa" }, obs: "Ácido fraco" },
+
+{ nome: "Ácido tricloroacético", formula: "CCl3COOH", sal: { K: "KCCl3COO", Na: "CCl3COONa" }, obs: "Ácido forte" },
+
+{ nome: "Ácido láctico", formula: "C3H6O3", sal: { K: "KC3H5O3", Na: "C3H5O3Na" }, obs: "Ácido fraco" },
+
+{ nome: "Fenol", formula: "C6H5OH", sal: { K: "KC6H5O", Na: "C6H5ONa" }, obs: "Ácido muito fraco" },
+
+{ nome: "p-Nitrofenol", formula: "O2NC6H4OH", sal: { K: "KO2NC6H4O", Na: "O2NC6H4ONa" }, obs: "Ácido fraco" },
+
+{ nome: "2,4-Dinitrofenol", formula: "(O2N)2C6H3OH", sal: { K: "K(O2N)2C6H3O", Na: "(O2N)2C6H3ONa" }, obs: "Ácido fraco" },
+
+{ nome: "Perclórico", formula: "HClO4", sal: { K: "KClO4", Na: "NaClO4" }, obs: "Ácido forte" },
+
+{ nome: "Hidroiodídrico", formula: "HI", sal: { K: "KI", Na: "NaI" }, obs: "Ácido forte" },
+
+{ nome: "Hidrobromídrico", formula: "HBr", sal: { K: "KBr", Na: "NaBr" }, obs: "Ácido forte" },
+
+{ nome: "Clorídrico", formula: "HCl", sal: { K: "KCl", Na: "NaCl" }, obs: "Ácido forte" },
+
+{ nome: "Nítrico", formula: "HNO3", sal: { K: "KNO3", Na: "NaNO3" }, obs: "Ácido forte" },
+
+{ nome: "Clórico", formula: "HClO3", sal: { K: "KClO3", Na: "NaClO3" }, obs: "Ácido forte" },
+
+{
+  nome: "Trifluorometanossulfônico (trifílico)",
+  formula: "CF3SO3H",
+  sal: { K: "KCF3SO3", Na: "CF3SO3Na" },
+  obs: "Ácido superforte",
+},
+
+{
+  nome: "Metanossulfônico",
+  formula: "CH3SO3H",
+  sal: { K: "KCH3SO3", Na: "CH3SO3Na" },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "p-Toluenossulfônico (p-TsOH)",
+  formula: "CH3C6H4SO3H",
+  sal: { K: "KCH3C6H4SO3", Na: "CH3C6H4SO3Na" },
+  obs: "Ácido forte orgânico",
+},
   ];
   
   function montarReacaoAcidoComBase(

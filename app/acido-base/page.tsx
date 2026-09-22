@@ -48,6 +48,37 @@ import { formatarCientificoBR } from "../../lib/precipitacao/formatadores";
 
 import { useAnalitBot } from "../contexts/AnalitBotContext";
 
+function formatarNomeAcidoSelecao(nome: string) {
+  const nomeLimpo = nome.trim();
+
+  if (
+    nomeLimpo
+      .toLocaleLowerCase("pt-BR")
+      .startsWith("ácido ")
+  ) {
+    return nomeLimpo;
+  }
+
+  const nomesEspeciais: Record<string, string> = {
+    Fenol: "Ácido (fenol)",
+    "p-Nitrofenol": "Ácido (p-nitrofenol)",
+    "2,4-Dinitrofenol":
+      "Ácido (2,4-dinitrofenol)",
+    "Íon etilenodiamônio":
+      "Ácido conjugado (íon etilenodiamônio)",
+    "Sulfeto de hidrogênio":
+      "Ácido sulfídrico",
+  };
+
+  if (nomesEspeciais[nomeLimpo]) {
+    return nomesEspeciais[nomeLimpo];
+  }
+
+  return `Ácido ${nomeLimpo
+    .charAt(0)
+    .toLocaleLowerCase("pt-BR")}${nomeLimpo.slice(1)}`;
+}
+
 type TipoSistemaAcidoBase = "mono" | "poli";
 
 type AbaAcidoBase =
@@ -1815,11 +1846,25 @@ const tabelaSegundaDerivadaMono =
                       : "Selecione primeiro o titulante..."}
                   </option>
 
-                  {tituladosDisponiveisMono.map((item) => (
-                    <option key={item.chaveReacao} value={item.formula}>
-                      {item.nome} — {item.formulaExibicao}
-                    </option>
-                  ))}
+                  {tituladosDisponiveisMono.map((item) => {
+  const tituladoEhAcido =
+    titulanteMono === "NaOH" ||
+    titulanteMono === "KOH";
+
+  return (
+    <option
+      key={item.chaveReacao}
+      value={item.formula}
+    >
+      {tituladoEhAcido
+        ? formatarNomeAcidoSelecao(
+            item.nome
+          )
+        : item.nome}{" "}
+      — {item.formulaExibicao}
+    </option>
+  );
+})}
                 </select>
               </label>
 
@@ -4258,11 +4303,24 @@ const tabelaSegundaDerivada =
                       : "Selecione primeiro o titulante..."}
                   </option>
 
-                  {tituladosDisponiveis.map((item) => (
-                    <option key={item.id} value={item.nome}>
-                      {item.nome} — {item.formula}
-                    </option>
-                  ))}
+                  {tituladosDisponiveis.map((item) => {
+  const tituladoEhAcido =
+    titulante === "NaOH";
+
+  return (
+    <option
+      key={item.id}
+      value={item.nome}
+    >
+      {tituladoEhAcido
+        ? formatarNomeAcidoSelecao(
+            item.nome
+          )
+        : item.nome}{" "}
+      — {item.formula}
+    </option>
+  );
+})}
                 </select>
               </label>
 
