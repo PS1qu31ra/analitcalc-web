@@ -6984,7 +6984,7 @@ const passoEstimado =
 
     const interpretacao = detectavelGeral
       ? "Este ponto apresenta pico/vale relevante na 1ª derivada e inflexão compatível na 2ª derivada, podendo ser localizado graficamente."
-      : "Este ponto não apresenta pico/vale claro na 1ª derivada associado a uma inflexão confiável na 2ª derivada. Portanto, ele existe pelo cálculo estequiométrico, mas não deve ser considerado detectável pela análise derivativa.";
+      : "Este ponto não apresenta pico/vale claro na 1ª derivada associado a uma inflexão confiável na 2ª derivada.";
 
     return {
       pe: index + 1,
