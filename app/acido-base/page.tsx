@@ -4093,7 +4093,7 @@ setMensagemPoli("Sistema avaliado com sucesso.");
       classe: "veryLow",
       deltaPH,
       texto:
-        "Este PE é calculado estequiometricamente, porém praticamente não aparece como salto claro na curva. A identificação deve ser feita por cálculo ou derivadas.",
+        "Este PE é calculado estequiometricamente, porém praticamente não aparece como salto claro na curva.",
     };
   }
 
