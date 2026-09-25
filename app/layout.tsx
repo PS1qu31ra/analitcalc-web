@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+
 import "./globals.css";
+
 import { Header } from "../components/Header";
 import { AnalitBotProvider } from "./contexts/AnalitBotContext";
 import AnalitBotFloating from "../components/AnalitBotFloating";
@@ -23,6 +26,8 @@ export default function RootLayout({
           {children}
           <AnalitBotFloating />
         </AnalitBotProvider>
+
+        <Analytics />
       </body>
     </html>
   );
