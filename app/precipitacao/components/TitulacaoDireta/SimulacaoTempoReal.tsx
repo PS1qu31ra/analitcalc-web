@@ -14,6 +14,7 @@ import {
 
 import {
   formatarCientificoBR,
+  formatarFormulaParaP,
   formatarNumeroBR,
 } from "@/lib/precipitacao/formatadores";
 
@@ -47,6 +48,11 @@ export default function SimulacaoTempoReal({
   formulaAnalito,
   formulaTitulante,
 }: SimulacaoTempoRealProps) {
+
+  const formulaPTitulante =
+  formatarFormulaParaP(
+    formulaTitulante
+  );
   const graficoRef =
   useRef<SVGSVGElement>(null);
 
@@ -809,18 +815,18 @@ export default function SimulacaoTempoReal({
           </article>
 
           <article>
-            <span>
-              p{formulaTitulante}
-            </span>
+  <span>
+    p{formulaPTitulante}
+  </span>
 
-            <strong>
-              {formatarNumeroBR(
-                pontoAtual
-                  .pEspecieMonitorada,
-                4
-              )}
-            </strong>
-          </article>
+  <strong>
+    {formatarNumeroBR(
+      pontoAtual
+        .pEspecieMonitorada,
+      4
+    )}
+  </strong>
+</article>
 
           <article>
             <span>
@@ -920,28 +926,41 @@ export default function SimulacaoTempoReal({
         ) : (
           <div className="precipitacaoRealtimeTableWrapper">
             <table>
-              <thead>
-                <tr>
-                  <th>Etapa</th>
-                  <th>Incremento</th>
-                  <th>
-                    Volume acumulado
-                  </th>
-                  <th>Região</th>
-                  <th>
-                    p{formulaTitulante}
-                  </th>
-                  <th>
-                    [{formulaTitulante}] livre
-                  </th>
-                  <th>
-                    [{formulaAnalito}] livre
-                  </th>
-                  <th>
-                    Precipitado
-                  </th>
-                </tr>
-              </thead>
+            <thead>
+  <tr>
+    <th>
+      Etapa
+    </th>
+
+    <th>
+      Incremento
+    </th>
+
+    <th>
+      Volume acumulado
+    </th>
+
+    <th>
+      Região
+    </th>
+
+    <th>
+      p{formulaPTitulante}
+    </th>
+
+    <th>
+      [{formulaTitulante}] livre
+    </th>
+
+    <th>
+      [{formulaAnalito}] livre
+    </th>
+
+    <th>
+      Precipitado
+    </th>
+  </tr>
+</thead>
 
               <tbody>
                 {pontosAdicionados.map(
@@ -1049,6 +1068,11 @@ function GraficoTempoReal({
   volumePE,
   formulaTitulante,
 }: GraficoTempoRealProps) {
+  const formulaPTitulante =
+    formatarFormulaParaP(
+      formulaTitulante
+    );
+
   const largura = 920;
   const altura = 650;
 
@@ -1484,14 +1508,14 @@ function GraficoTempoReal({
       </text>
 
       <text
-        x="20"
-        y={altura / 2}
-        textAnchor="middle"
-        transform={`rotate(-90 20 ${altura / 2})`}
-        className="precipitacaoRealtimeLabel"
-      >
-        p{formulaTitulante}
-      </text>
+  x="20"
+  y={altura / 2}
+  textAnchor="middle"
+  transform={`rotate(-90 20 ${altura / 2})`}
+  className="precipitacaoRealtimeLabel"
+>
+  p{formulaPTitulante}
+</text>
     </svg>
   );
 }

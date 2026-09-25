@@ -11,6 +11,7 @@ import {
 
 import {
   formatarCientificoBR,
+  formatarFormulaParaP,
   formatarNumeroBR,
 } from "@/lib/precipitacao/formatadores";
 
@@ -140,6 +141,11 @@ export default function AnalisesDiretasTabs({
     resultado.especieTitulante === "cation"
       ? resultado.sal.cation.formulaExibicao
       : resultado.sal.anion.formulaExibicao;
+
+      const formulaPTitulante =
+  formatarFormulaParaP(
+    formulaTitulante
+  );
 
   const configuracaoAbaAtiva =
     abas.find(
@@ -307,12 +313,12 @@ export default function AnalisesDiretasTabs({
                     </th>
 
                     <th>
-                      p{formulaTitulante}
-                    </th>
+  p{formulaPTitulante}
+</th>
 
-                    <th>
-                      [{formulaTitulante}] livre
-                    </th>
+<th>
+  [{formulaTitulante}] livre
+</th>
 
                     <th>
                       [{formulaAnalito}] livre

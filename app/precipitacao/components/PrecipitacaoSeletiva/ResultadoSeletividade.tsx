@@ -4,9 +4,10 @@ import {
 } from "react";
 
 import {
-    formatarCientificoBR,
-    formatarNumeroBR,
-  } from "@/lib/precipitacao/formatadores";
+  formatarCientificoBR,
+  formatarFormulaParaP,
+  formatarNumeroBR,
+} from "@/lib/precipitacao/formatadores";
 
   import {
     gerarCurvaSeletividadePrecipitacao,
@@ -130,6 +131,11 @@ import GraficoSeletividade from "./GraficoSeletividade";
       obterFormulaTitulante(
         resultado
       );
+
+      const formulaPTitulante =
+  formatarFormulaParaP(
+    formulaTitulante
+  );
 
       const curvaSeletividade =
   useMemo(
@@ -405,18 +411,18 @@ const avaliacaoPrincipal =
                           </div>
   
                           <div>
-                            <span>
-                              p{formulaTitulante}
-                            </span>
-  
-                            <strong>
-                              {formatarNumeroBR(
-                                item
-                                  .pTitulanteInicioPrecipitacao,
-                                4
-                              )}
-                            </strong>
-                          </div>
+  <span>
+    p{formulaPTitulante}
+  </span>
+
+  <strong>
+    {formatarNumeroBR(
+      item
+        .pTitulanteInicioPrecipitacao,
+      4
+    )}
+  </strong>
+</div>
                         </div>
                       </article>
                     );
@@ -489,10 +495,10 @@ const avaliacaoPrincipal =
                 </strong>
   
                 <p>
-                  Diferença entre os valores de
-                  p{formulaTitulante} críticos
-                  dos dois primeiros precipitados.
-                </p>
+  Diferença entre os valores de
+  p{formulaPTitulante} críticos
+  dos dois primeiros precipitados.
+</p>
               </article>
   
               <article className="precipitacaoResultCard">
@@ -1005,12 +1011,12 @@ const avaliacaoPrincipal =
                       </th>
   
                       <th>
-                        [{formulaTitulante}] crítica
-                      </th>
-  
-                      <th>
-                        p{formulaTitulante}
-                      </th>
+  [{formulaTitulante}] crítica
+</th>
+
+<th>
+  p{formulaPTitulante}
+</th>
   
                       <th>
                         Interpretação

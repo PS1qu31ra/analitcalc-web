@@ -14,6 +14,7 @@ import {
 } from "@/lib/precipitacao/calculosCurvaSeletividade";
 
 import {
+  formatarFormulaParaP,
   formatarNumeroBR,
 } from "@/lib/precipitacao/formatadores";
 
@@ -905,6 +906,11 @@ export default function GraficoDerivadas({
       ]
     );
 
+    const formulaPTitulante =
+  formatarFormulaParaP(
+    curva.formulaTitulante
+  );
+
   const derivadas =
     useMemo(
       () =>
@@ -1076,16 +1082,16 @@ export default function GraficoDerivadas({
         </h5>
 
         <p>
-          As derivadas numéricas evidenciam as
-          regiões de maior variação da curva de p
-          {curva.formulaTitulante}. Extremos da
-          primeira derivada e cruzamentos da segunda
-          derivada auxiliam na localização dos
-          eventos de precipitação. Em sistemas com
-          sobreposição, mais de um processo químico
-          pode aparecer como um único evento
-          numérico.
-        </p>
+  As derivadas numéricas evidenciam as
+  regiões de maior variação da curva de p
+  {formulaPTitulante}. Extremos da
+  primeira derivada e cruzamentos da segunda
+  derivada auxiliam na localização dos
+  eventos de precipitação. Em sistemas com
+  sobreposição, mais de um processo químico
+  pode aparecer como um único evento
+  numérico.
+</p>
       </header>
 
       <div className="precipitacaoDerivativeSummary">
@@ -1144,9 +1150,9 @@ export default function GraficoDerivadas({
           </strong>
 
           <small>
-            Unidade de p
-            {curva.formulaTitulante}/mL
-          </small>
+  Unidade de p
+  {formulaPTitulante}/mL
+</small>
         </article>
       </div>
 
@@ -1185,8 +1191,8 @@ export default function GraficoDerivadas({
       <div className="precipitacaoDerivativeCharts">
   <GraficoDerivada
     titulo="Primeira derivada"
-    descricao={`Taxa de variação de p${curva.formulaTitulante} em relação ao volume de titulante adicionado.`}
-    rotuloEixoY={`dp${curva.formulaTitulante}/dV`}
+    descricao={`Taxa de variação de p${formulaPTitulante} em relação ao volume de titulante adicionado.`}
+    rotuloEixoY={`dp${formulaPTitulante}/dV`}
     pontos={
       pontosPrimeira
     }
@@ -1200,14 +1206,13 @@ export default function GraficoDerivadas({
 
   <GraficoDerivada
     titulo="Segunda derivada"
-    descricao={`Taxa de variação de dp${curva.formulaTitulante}/dV em relação ao volume de titulante adicionado.`}
-    rotuloEixoY={`d²p${curva.formulaTitulante}/dV²`}
+    descricao={`Taxa de variação de dp${formulaPTitulante}/dV em relação ao volume de titulante adicionado.`}
+    rotuloEixoY={`d²p${formulaPTitulante}/dV²`}
     pontos={
       pontosSegunda
     }
     volumesEventos={
-      derivadas
-        .cruzamentosZero
+      derivadas.cruzamentosZero
     }
     prefixoEvento="Z"
     nomeArquivo="segunda-derivada-seletividade.png"
@@ -1240,24 +1245,25 @@ export default function GraficoDerivadas({
 
         <div className="precipitacaoDerivativeTableWrapper">
           <table>
-            <thead>
-              <tr>
-                <th>
-                  Volume de titulante
-                </th>
+          <thead>
+  <tr>
+    <th>
+      Volume de titulante
+    </th>
 
-                <th>
-                  p{curva.formulaTitulante}
-                </th>
+    <th>
+      p{formulaPTitulante}
+    </th>
 
-                <th>
-  dp{curva.formulaTitulante}/dV
-</th>
-<th>
-  d²p{curva.formulaTitulante}/dV²
-</th>
-              </tr>
-            </thead>
+    <th>
+      dp{formulaPTitulante}/dV
+    </th>
+
+    <th>
+      d²p{formulaPTitulante}/dV²
+    </th>
+  </tr>
+</thead>
 
             <tbody>
               {curva

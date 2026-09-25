@@ -10,6 +10,7 @@ import {
 } from "@/lib/precipitacao/calculosCurvaTitulacaoDireta";
 
 import {
+  formatarFormulaParaP,
   formatarNumeroBR,
 } from "@/lib/precipitacao/formatadores";
 
@@ -33,6 +34,11 @@ export default function DerivadasCurva({
   resultado,
   formulaTitulante,
 }: DerivadasCurvaProps) {
+  const formulaPTitulante =
+    formatarFormulaParaP(
+      formulaTitulante
+    );
+
   const dadosDerivadas = useMemo(() => {
     const curva = gerarCurvaTitulacaoDireta({
       resultado,
@@ -325,8 +331,8 @@ export default function DerivadasCurva({
           </strong>
 
           <small>
-            Unidade de p{formulaTitulante}/mL
-          </small>
+  Unidade de p{formulaPTitulante}/mL
+</small>
         </article>
       </div>
 
@@ -374,37 +380,47 @@ export default function DerivadasCurva({
       </div>
 
       <div className="precipitacaoDerivativeCharts">
-      <GraficoDerivada
-  titulo="Primeira derivada"
-  descricao={`Variação de p${formulaTitulante} por volume adicionado.`}
-  pontos={dadosDerivadas.pontos.map(
-    (ponto) => ({
-      volume: ponto.volume,
-      valor:
-        ponto.primeiraDerivada,
-    })
-  )}
-  volumePE={resultado.volumePE}
-  rotuloEixoY={`Δp${formulaTitulante}/ΔV`}
-  nomeArquivo="primeira-derivada"
-/>
+  <GraficoDerivada
+    titulo="Primeira derivada"
+    descricao={`Variação de p${formulaPTitulante} por volume adicionado.`}
+    pontos={
+      dadosDerivadas.pontos.map(
+        (ponto) => ({
+          volume:
+            ponto.volume,
+          valor:
+            ponto.primeiraDerivada,
+        })
+      )
+    }
+    volumePE={
+      resultado.volumePE
+    }
+    rotuloEixoY={`Δp${formulaPTitulante}/ΔV`}
+    nomeArquivo="primeira-derivada"
+  />
 
-<GraficoDerivada
-  titulo="Segunda derivada"
-  descricao={`Variação da primeira derivada de p${formulaTitulante}.`}
-  pontos={dadosDerivadas.pontos.map(
-    (ponto) => ({
-      volume: ponto.volume,
-      valor:
-        ponto.segundaDerivada,
-    })
-  )}
-  volumePE={resultado.volumePE}
-  rotuloEixoY={`Δ²p${formulaTitulante}/ΔV²`}
-  mostrarLinhaZero
-  nomeArquivo="segunda-derivada"
-/>
-      </div>
+  <GraficoDerivada
+    titulo="Segunda derivada"
+    descricao={`Variação da primeira derivada de p${formulaPTitulante}.`}
+    pontos={
+      dadosDerivadas.pontos.map(
+        (ponto) => ({
+          volume:
+            ponto.volume,
+          valor:
+            ponto.segundaDerivada,
+        })
+      )
+    }
+    volumePE={
+      resultado.volumePE
+    }
+    rotuloEixoY={`Δ²p${formulaPTitulante}/ΔV²`}
+    mostrarLinhaZero
+    nomeArquivo="segunda-derivada"
+  />
+</div>
 
       <section className="precipitacaoDerivativeTableSection">
         <header>
@@ -425,23 +441,23 @@ export default function DerivadasCurva({
 
         <div className="precipitacaoDerivativeTableWrapper">
           <table>
-            <thead>
-              <tr>
-                <th>Volume</th>
+          <thead>
+  <tr>
+    <th>Volume</th>
 
-                <th>
-                  p{formulaTitulante}
-                </th>
+    <th>
+      p{formulaPTitulante}
+    </th>
 
-                <th>
-                  Δp{formulaTitulante}/ΔV
-                </th>
+    <th>
+      Δp{formulaPTitulante}/ΔV
+    </th>
 
-                <th>
-                  Δ²p{formulaTitulante}/ΔV²
-                </th>
-              </tr>
-            </thead>
+    <th>
+      Δ²p{formulaPTitulante}/ΔV²
+    </th>
+  </tr>
+</thead>
 
             <tbody>
               {dadosDerivadas.pontos.map(

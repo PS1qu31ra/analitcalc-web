@@ -14,6 +14,7 @@ import {
 
 import {
   formatarCientificoBR,
+  formatarFormulaParaP,
   formatarNumeroBR,
 } from "@/lib/precipitacao/formatadores";
 
@@ -84,10 +85,15 @@ const [erroConsulta, setErroConsulta] =
       ? resultado.sal.cation.formulaExibicao
       : resultado.sal.anion.formulaExibicao;
 
-  const formulaTitulante =
-    resultado.especieTitulante === "cation"
-      ? resultado.sal.cation.formulaExibicao
-      : resultado.sal.anion.formulaExibicao;
+      const formulaTitulante =
+      resultado.especieTitulante === "cation"
+        ? resultado.sal.cation.formulaExibicao
+        : resultado.sal.anion.formulaExibicao;
+    
+    const formulaPTitulante =
+      formatarFormulaParaP(
+        formulaTitulante
+      );
 
   const pontosValidos = curva.pontos.filter(
     (ponto) =>
@@ -483,7 +489,7 @@ const marcacoesYInternas = Array.from(
                 `Ponto marcado: ${formatarNumeroBR(
                   volumeConsulta,
                   2
-                )} mL  •  p${formulaTitulante}: ${formatarNumeroBR(
+                )} mL  •  p${formulaPTitulante}: ${formatarNumeroBR(
                   pontoConsultaCurva.pEspecieMonitorada,
                   3
                 )}`,
@@ -771,26 +777,26 @@ const marcacoesYInternas = Array.from(
           return (
     <section className="precipitacaoCurveSection">
       <header className="precipitacaoResultsHeader">
-        <div>
-          <span className="precipitacaoSectionLabel">
-            Curva de titulação
-          </span>
+  <div>
+    <span className="precipitacaoSectionLabel">
+      Curva de titulação
+    </span>
 
-          <h3>
-            Variação de p{formulaTitulante}
-          </h3>
+    <h3>
+      Variação de p{formulaPTitulante}
+    </h3>
 
-          <p>
-            A curva representa a variação de{" "}
-            p{formulaTitulante} em função do
-            volume de titulante adicionado.
-          </p>
-        </div>
+    <p>
+      A curva representa a variação de{" "}
+      p{formulaPTitulante} em função do
+      volume de titulante adicionado.
+    </p>
+  </div>
 
-        <span className="precipitacaoWorkspaceBadge">
-        {analito.formulaExibicao}
-        </span>
-      </header>
+  <span className="precipitacaoWorkspaceBadge">
+    {analito.formulaExibicao}
+  </span>
+</header>
 
       <div className="precipitacaoCurveLayout">
       <div className="precipitacaoChartCard">
@@ -943,16 +949,16 @@ const marcacoesYInternas = Array.from(
       </text>
 
       <text
-        x={larguraGrafico - margemDireita - 206}
-        y={margemSuperior + 77}
-        className="precipitacaoChartLegendValue"
-      >
-        p{formulaTitulante}:{" "}
-        {formatarNumeroBR(
-          pontoConsultaCurva.pEspecieMonitorada,
-          3
-        )}
-      </text>
+  x={larguraGrafico - margemDireita - 206}
+  y={margemSuperior + 77}
+  className="precipitacaoChartLegendValue"
+>
+  p{formulaPTitulante}:{" "}
+  {formatarNumeroBR(
+    pontoConsultaCurva.pEspecieMonitorada,
+    3
+  )}
+</text>
     </g>
   </>
 )}
@@ -967,14 +973,14 @@ const marcacoesYInternas = Array.from(
       </text>
 
       <text
-        x="18"
-        y={alturaGrafico / 2}
-        textAnchor="middle"
-        transform={`rotate(-90 18 ${alturaGrafico / 2})`}
-        className="precipitacaoChartAxisLabel"
-      >
-        p{formulaTitulante}
-      </text>
+  x="18"
+  y={alturaGrafico / 2}
+  textAnchor="middle"
+  transform={`rotate(-90 18 ${alturaGrafico / 2})`}
+  className="precipitacaoChartAxisLabel"
+>
+  p{formulaPTitulante}
+</text>
 
       <text
         x={margemEsquerda}
@@ -1114,18 +1120,18 @@ const marcacoesYInternas = Array.from(
       </div>
 
       <div className="precipitacaoCurveDataGrid">
-        <article className="precipitacaoResultCard">
-          <span>
-            p{formulaTitulante}
-          </span>
+      <article className="precipitacaoResultCard">
+  <span>
+    p{formulaPTitulante}
+  </span>
 
-          <strong>
-            {formatarNumeroBR(
-              pontoConsultaCurva.pEspecieMonitorada,
-              3
-            )}
-          </strong>
-        </article>
+  <strong>
+    {formatarNumeroBR(
+      pontoConsultaCurva.pEspecieMonitorada,
+      3
+    )}
+  </strong>
+</article>
 
         <article className="precipitacaoResultCard">
           <span>

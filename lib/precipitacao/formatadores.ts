@@ -223,3 +223,33 @@ export function formatarCientificoBR(
 
   return `${mantissa} × 10${expoente}`;
 }
+
+/**
+ * Formata a espécie química para uso em grandezas
+ * logarítmicas do tipo pX.
+ *
+ * A carga elétrica é removida apenas do rótulo.
+ *
+ * Exemplos:
+ *
+ * Ag⁺    -> Ag
+ * Cl⁻    -> Cl
+ * Ca²⁺   -> Ca
+ * CrO₄²⁻ -> CrO₄
+ *
+ * A fórmula química original não é modificada.
+ */
+export function formatarFormulaParaP(
+  formula: string
+): string {
+  return formula
+    .trim()
+    .replace(
+      /[⁰¹²³⁴⁵⁶⁷⁸⁹]*[⁺⁻]$/,
+      ""
+    )
+    .replace(
+      /\d*[+-]$/,
+      ""
+    );
+}
