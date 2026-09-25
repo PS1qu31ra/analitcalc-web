@@ -6303,3 +6303,160 @@ section.container.calculatorSection + section.container.calculatorSection {
   
     text-transform: none;
   }
+
+  /* =========================================================
+   PRECIPITAÇÃO SELETIVA — PONTOS DE EQUIVALÊNCIA
+   ========================================================= */
+
+.precipitacaoSelectivityPELegend {
+  margin-top: 1.1rem;
+  padding: 1rem 1.1rem;
+
+  border: 1px solid #eadfdf;
+  border-radius: 1rem;
+
+  background: #fffafa;
+}
+
+.precipitacaoSelectivityPELegendHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 0.9rem;
+}
+
+.precipitacaoSelectivityPELegendHeader > div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.25rem;
+}
+
+.precipitacaoSelectivityPELegendHeader strong {
+  color: #7f1d1d;
+
+  font-size: 0.98rem;
+  font-weight: 800;
+
+  line-height: 1.25;
+}
+
+.precipitacaoSelectivityPELegendHeader small {
+  color: #6b7280;
+
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.precipitacaoSelectivityPELegendList {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
+
+  gap: 0.75rem;
+}
+
+.precipitacaoSelectivityPELegendItem {
+  display: flex;
+  align-items: center;
+
+  gap: 0.8rem;
+
+  min-width: 0;
+
+  padding: 0.85rem 0.95rem;
+
+  border: 1px solid #eee4e4;
+  border-radius: 0.85rem;
+
+  background: #ffffff;
+}
+
+.precipitacaoSelectivityPELegendItem
+  > div {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  gap: 0.08rem;
+}
+
+.precipitacaoSelectivityPELegendItem
+  > div
+  > span {
+  color: #6b7280;
+
+  font-size: 0.73rem;
+  font-weight: 800;
+
+  line-height: 1.2;
+
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+.precipitacaoSelectivityPELegendItem
+  > div
+  > strong {
+  color: #1f2937;
+
+  font-size: 1rem;
+  font-weight: 850;
+
+  line-height: 1.25;
+}
+
+.precipitacaoSelectivityPELegendItem
+  > div
+  > small {
+  margin-top: 0.15rem;
+
+  color: #6b7280;
+
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+
+.precipitacaoSelectivityPELegendMarker {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+
+  flex: 0 0 18px;
+
+  border: 3px solid;
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+.precipitacaoSelectivityPELegendMarker
+  > i {
+  display: block;
+
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+}
+
+@media (max-width: 720px) {
+  .precipitacaoSelectivityPELegend {
+    padding: 0.85rem;
+  }
+
+  .precipitacaoSelectivityPELegendList {
+    grid-template-columns: 1fr;
+  }
+}

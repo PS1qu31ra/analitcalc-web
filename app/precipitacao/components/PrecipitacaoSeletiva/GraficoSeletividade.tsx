@@ -37,6 +37,16 @@ type PontoGraficoSeletividade = {
   pTitulante: number;
 };
 
+type MarcadorPEMistura = {
+  id: string;
+  indice: number;
+  formula: string;
+  volumePE: number;
+  x: number;
+  y: number;
+  cor: string;
+};
+
 export default function GraficoSeletividade({
   resultado,
   volumeAmostra,
@@ -483,6 +493,213 @@ const larguraIntervalo =
     ? xFimIntervalo -
       xInicioIntervalo
     : null;
+
+    function obterCorPE(
+      indice: number
+    ) {
+      if (indice === 0) {
+        return "#2563eb";
+      }
+    
+      if (indice === 1) {
+        return "#dc2626";
+      }
+    
+      return "#7c3aed";
+    }
+    
+    function obterYNoVolumePE(
+      pontos: PontoGraficoSeletividade[],
+      volumeAlvo: number
+    ) {
+      if (pontos.length === 0) {
+        return null;
+      }
+    
+      const pontosOrdenados = [
+        ...pontos,
+      ].sort(
+        (pontoA, pontoB) =>
+          pontoA.volumeAdicionado -
+          pontoB.volumeAdicionado
+      );
+    
+      for (
+        let indice = 0;
+        indice <
+        pontosOrdenados.length;
+        indice += 1
+      ) {
+        const ponto =
+          pontosOrdenados[indice];
+    
+        if (
+          Math.abs(
+            ponto.volumeAdicionado -
+              volumeAlvo
+          ) < 1e-9
+        ) {
+          return converterY(
+            ponto.pTitulante
+          );
+        }
+      }
+    
+      for (
+        let indice = 0;
+        indice <
+        pontosOrdenados.length - 1;
+        indice += 1
+      ) {
+        const atual =
+          pontosOrdenados[indice];
+    
+        const proximo =
+          pontosOrdenados[
+            indice + 1
+          ];
+    
+        if (
+          volumeAlvo >=
+            atual.volumeAdicionado &&
+          volumeAlvo <=
+            proximo.volumeAdicionado
+        ) {
+          const deltaVolume =
+            proximo.volumeAdicionado -
+            atual.volumeAdicionado;
+    
+          const fracao =
+            deltaVolume === 0
+              ? 0
+              : (
+                  volumeAlvo -
+                  atual.volumeAdicionado
+                ) /
+                deltaVolume;
+    
+          const pTitulanteInterpolado =
+            atual.pTitulante +
+            (
+              proximo.pTitulante -
+              atual.pTitulante
+            ) *
+              fracao;
+    
+          return converterY(
+            pTitulanteInterpolado
+          );
+        }
+      }
+    
+      return null;
+    }
+
+    const pontosEquivalenciaMistura: MarcadorPEMistura[] =
+  seriesValidas
+    .map(
+      (
+        serie,
+        indice
+      ) => {
+        /*
+         * Cada série isolada possui seu próprio
+         * volume de equivalência.
+         *
+         * Na mistura, os volumes de equivalência
+         * são acumulados segundo a ordem real de
+         * precipitação:
+         *
+         * PE1 = V1
+         * PE2 = V1 + V2
+         * PE3 = V1 + V2 + V3
+         */
+        const volumePEMistura =
+          seriesValidas
+            .slice(
+              0,
+              indice + 1
+            )
+            .reduce(
+              (
+                soma,
+                serieAtual
+              ) => {
+                const volumeEquivalencia =
+                  Number.isFinite(
+                    serieAtual
+                      .volumeEquivalencia
+                  )
+                    ? serieAtual
+                        .volumeEquivalencia
+                    : 0;
+
+                return (
+                  soma +
+                  volumeEquivalencia
+                );
+              },
+              0
+            );
+
+        /*
+         * O marcador só aparece quando o PE
+         * estiver dentro da faixa atualmente
+         * exibida pelo gráfico/bureta.
+         */
+        const peValido =
+          Number.isFinite(
+            volumePEMistura
+          ) &&
+          volumePEMistura >=
+            volumeMinimo &&
+          volumePEMistura <=
+            volumeMaximo;
+
+        if (!peValido) {
+          return null;
+        }
+
+        /*
+         * O PE deve ser marcado sobre a curva
+         * cinza da mistura, pois ela representa
+         * o comportamento conjunto real das
+         * espécies.
+         */
+        const yPE =
+          obterYNoVolumePE(
+            pontosMistura,
+            volumePEMistura
+          );
+
+        if (yPE === null) {
+          return null;
+        }
+
+        return {
+          id: serie.sal.id,
+          indice,
+          formula:
+            serie.sal
+              .formulaExibicao,
+          volumePE:
+            volumePEMistura,
+          x: converterX(
+            volumePEMistura
+          ),
+          y: yPE,
+          cor: obterCorPE(
+            indice
+          ),
+        };
+      }
+    )
+    .filter(
+      (
+        item
+      ): item is MarcadorPEMistura =>
+        item !== null
+    );
 
     const marcadorConsultaValido =
     avaliacaoPonto !== null &&
@@ -1451,100 +1668,119 @@ const larguraIntervalo =
           className="selectivityGraphAxis"
         />
 
-        {seriesValidas.map(
-          (
-            serie,
-            indice
-          ) => {
-            const volumeInicio =
-              obterVolumeInicioSerie(
-                serie.sal.id
-              );
+{seriesValidas.map(
+  (
+    serie,
+    indice
+  ) => {
+    const volumeInicio =
+      obterVolumeInicioSerie(
+        serie.sal.id
+      );
 
-            const volumeInicioValido =
-              volumeInicio !==
-                null &&
-              Number.isFinite(
-                volumeInicio
-              ) &&
-              volumeInicio >=
-                volumeMinimo &&
-              volumeInicio <=
-                volumeMaximo;
+    const volumeInicioValido =
+      volumeInicio !== null &&
+      Number.isFinite(
+        volumeInicio
+      ) &&
+      volumeInicio >=
+        volumeMinimo &&
+      volumeInicio <=
+        volumeMaximo;
 
-            if (
-              !volumeInicioValido
-            ) {
-              return null;
-            }
+    if (
+      !volumeInicioValido
+    ) {
+      return null;
+    }
 
-            const xInicio =
-              converterX(
-                volumeInicio
-              );
+    const xInicio =
+      converterX(
+        volumeInicio
+      );
 
-            const larguraRotulo =
-              150;
+    const larguraRotulo =
+      150;
 
-            const xRotulo =
-              Math.min(
-                xInicio + 7,
-                largura -
-                  margemDireita -
-                  larguraRotulo
-              );
+    const xRotulo =
+      Math.min(
+        xInicio + 7,
+        largura -
+          margemDireita -
+          larguraRotulo
+      );
 
-            return (
-              <g
-                key={`inicio-${serie.sal.id}`}
-              >
-                <line
-                  x1={
-                    xInicio
-                  }
-                  y1={
-                    margemSuperior
-                  }
-                  x2={
-                    xInicio
-                  }
-                  y2={
-                    altura -
-                    margemInferior
-                  }
-                  vectorEffect="non-scaling-stroke"
-                  className={
-                    obterClasseInicio(
-                      indice
-                    )
-                  }
-                />
+    /*
+     * Os rótulos de início ficam abaixo da
+     * indicação verde da região seletiva.
+     *
+     * Isso evita a sobreposição que ocorria
+     * quando o volume máximo da bureta
+     * alterava a escala horizontal.
+     */
+    const yRotulo =
+      margemSuperior +
+      58 +
+      indice * 22;
 
-                <text
-                  x={
-                    xRotulo
-                  }
-                  y={
-                    margemSuperior +
-                    18 +
-                    indice * 20
-                  }
-                  className={
-                    obterClasseRotulo(
-                      indice
-                    )
-                  }
-                >
-                  Início{" "}
-                  {
-                    serie.sal
-                      .formulaExibicao
-                  }
-                </text>
-              </g>
-            );
+    return (
+      <g
+        key={`inicio-${serie.sal.id}`}
+      >
+        <line
+          x1={
+            xInicio
           }
-        )}
+          y1={
+            margemSuperior
+          }
+          x2={
+            xInicio
+          }
+          y2={
+            altura -
+            margemInferior
+          }
+          vectorEffect="non-scaling-stroke"
+          className={
+            obterClasseInicio(
+              indice
+            )
+          }
+        />
+
+        <text
+          x={
+            xRotulo
+          }
+          y={
+            yRotulo
+          }
+          className={
+            obterClasseRotulo(
+              indice
+            )
+          }
+          style={{
+            paintOrder:
+              "stroke",
+            stroke:
+              "#ffffff",
+            strokeWidth: 4,
+            strokeLinejoin:
+              "round",
+          }}
+        >
+          Início{" "}
+          {
+            serie.sal
+              .formulaExibicao
+          }
+        </text>
+      </g>
+    );
+  }
+)}
 
         <path
           d={
@@ -1579,6 +1815,42 @@ const larguraIntervalo =
             />
           )
         )}
+
+{pontosEquivalenciaMistura.map(
+  (ponto) => (
+    <g
+      key={`pe-mistura-${ponto.id}`}
+    >
+      <circle
+        cx={ponto.x}
+        cy={ponto.y}
+        r="6"
+        fill="#ffffff"
+        stroke={ponto.cor}
+        strokeWidth="2.8"
+        vectorEffect="non-scaling-stroke"
+      />
+
+      <circle
+        cx={ponto.x}
+        cy={ponto.y}
+        r="2.6"
+        fill={ponto.cor}
+      />
+
+      <title>
+        {`PE ${
+          ponto.indice + 1
+        } — ${
+          ponto.formula
+        } = ${formatarNumeroBR(
+          ponto.volumePE,
+          2
+        )} mL`}
+      </title>
+    </g>
+  )
+)}
 
 {marcadorConsultaValido &&
           avaliacaoPonto &&
@@ -1768,6 +2040,74 @@ const larguraIntervalo =
           }
         )}
       </footer>
+
+      {pontosEquivalenciaMistura.length >
+  0 && (
+  <section className="precipitacaoSelectivityPELegend">
+    <header className="precipitacaoSelectivityPELegendHeader">
+      <div>
+        <strong>
+          Pontos de equivalência da mistura
+        </strong>
+
+        <small>
+          Os marcadores circulares indicam os
+          volumes de equivalência acumulados
+          sobre a curva cinza da mistura.
+        </small>
+      </div>
+    </header>
+
+    <div className="precipitacaoSelectivityPELegendList">
+      {pontosEquivalenciaMistura.map(
+        (ponto) => (
+          <article
+            key={`legenda-pe-${ponto.id}`}
+            className="precipitacaoSelectivityPELegendItem"
+          >
+            <span
+              className="precipitacaoSelectivityPELegendMarker"
+              style={{
+                borderColor:
+                  ponto.cor,
+              }}
+              aria-hidden="true"
+            >
+              <i
+                style={{
+                  backgroundColor:
+                    ponto.cor,
+                }}
+              />
+            </span>
+
+            <div>
+              <span>
+                PE{" "}
+                {ponto.indice + 1}
+              </span>
+
+              <strong>
+                {ponto.formula}
+              </strong>
+
+              <small>
+                {formatarNumeroBR(
+                  ponto.volumePE,
+                  3
+                )}{" "}
+                mL de{" "}
+                {
+                  curva.formulaTitulante
+                }
+              </small>
+            </div>
+          </article>
+        )
+      )}
+    </div>
+  </section>
+)}
 
       {intervaloSeletivoValido &&
         primeiraSerie &&
@@ -2315,25 +2655,49 @@ const larguraIntervalo =
       </section>
 
       <div className="precipitacaoResultScientificNote">
-        <strong>
-          Leitura do gráfico
-        </strong>
+  <strong>
+    Leitura do gráfico
+  </strong>
 
-        <p>
-          As linhas verticais indicam o início
-          calculado da formação de cada precipitado
-          na mistura. A área destacada representa
-          o intervalo entre o início do primeiro e
-          do segundo precipitado, identificado como
-          região de separação seletiva. O valor de
-          ΔV mostra a extensão volumétrica dessa
-          região. Uma faixa maior pode facilitar a
-          operação experimental, mas a classificação
-          quantitativa também depende da fração do
-          primeiro analito já precipitada quando o
-          segundo sistema começa a precipitar.
-        </p>
-      </div>
+  <p>
+    As linhas verticais tracejadas indicam o
+    início calculado da formação de cada
+    precipitado na mistura. A área destacada
+    representa o intervalo entre o início do
+    primeiro e do segundo precipitado,
+    identificado como região de separação
+    seletiva.
+  </p>
+
+  <p>
+    Os marcadores circulares posicionados
+    sobre a curva cinza representam os pontos
+    de equivalência da mistura. Os volumes são
+    acumulados segundo a ordem de precipitação:
+    o PE1 corresponde ao primeiro precipitado,
+    enquanto os PE seguintes incluem também o
+    volume de titulante consumido pelas espécies
+    anteriores.
+  </p>
+
+  <p>
+    Apenas os pontos de equivalência contidos
+    na faixa de volume exibida são apresentados.
+    Portanto, ao aumentar a capacidade da
+    bureta, novos PE podem tornar-se visíveis
+    no gráfico.
+  </p>
+
+  <p>
+    O valor de ΔV mostra a extensão volumétrica
+    da região seletiva. Uma faixa maior pode
+    facilitar a operação experimental, mas a
+    classificação quantitativa também depende
+    da fração do primeiro analito já precipitada
+    quando o segundo sistema começa a
+    precipitar.
+  </p>
+</div>
     </section>
   );
 }
