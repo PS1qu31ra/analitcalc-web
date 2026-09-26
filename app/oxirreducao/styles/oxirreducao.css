@@ -1,0 +1,1684 @@
+.oxirreducaoPage {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #18181b;
+  }
+  
+  
+  /* =========================================================
+     HERO
+  ========================================================= */
+  
+  .oxirreducaoHero {
+    padding: 44px 0 38px;
+    border-bottom: 1px solid #e4e4e7;
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(153, 27, 27, 0.08),
+        transparent 34%
+      ),
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #fffafa 100%
+      );
+  }
+  
+  .oxirreducaoHeroTag,
+  .oxirreducaoSectionLabel {
+    display: inline-flex;
+    color: #991b1b;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  
+  .oxirreducaoHero h1 {
+    max-width: 900px;
+    margin: 18px 0 16px;
+    color: #18181b;
+    font-size: clamp(
+      2.4rem,
+      5vw,
+      4.5rem
+    );
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+  
+  .oxirreducaoHero > .container > p {
+    max-width: 880px;
+    margin: 0;
+    color: #52525b;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+  
+  .oxirreducaoHeroNotice {
+    display: flex;
+    gap: 10px;
+    max-width: 900px;
+    margin-top: 24px;
+    padding: 17px 19px;
+    border: 1px solid rgba(153, 27, 27, 0.15);
+    border-radius: 16px;
+    background: rgba(153, 27, 27, 0.04);
+    color: #52525b;
+    line-height: 1.55;
+  }
+  
+  .oxirreducaoHeroNotice strong {
+    flex: 0 0 auto;
+    color: #7f1d1d;
+  }
+  
+  
+  /* =========================================================
+     SELEÇÃO DO MÉTODO
+  ========================================================= */
+  
+  .oxirreducaoStudySection {
+    padding-top: 38px;
+  }
+  
+  .oxirreducaoStudyHeader {
+    max-width: 800px;
+  }
+  
+  .oxirreducaoStudyHeader h2,
+  .oxirreducaoMethodHeader h2 {
+    margin: 8px 0 8px;
+    color: #18181b;
+    font-size: 1.8rem;
+    letter-spacing: -0.035em;
+  }
+  
+  .oxirreducaoStudyHeader p,
+  .oxirreducaoMethodHeader p {
+    margin: 0;
+    color: #71717a;
+    line-height: 1.6;
+  }
+  
+  .oxirreducaoStudyGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 16px;
+    margin-top: 22px;
+  }
+  
+  .oxirreducaoStudyCard {
+    display: grid;
+    grid-template-columns:
+      auto 1fr;
+    gap: 15px;
+  
+    min-height: 230px;
+  
+    padding: 22px;
+  
+    border: 1px solid #d4d4d8;
+    border-radius: 20px;
+  
+    background: #ffffff;
+    color: #27272a;
+  
+    font: inherit;
+    text-align: left;
+  
+    cursor: pointer;
+  
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+  }
+  
+  .oxirreducaoStudyCard:hover:not(
+    :disabled
+  ) {
+    transform: translateY(-2px);
+    border-color: rgba(
+      153,
+      27,
+      27,
+      0.45
+    );
+  }
+  
+  .oxirreducaoStudyCardActive {
+    border-color: #991b1b;
+    background: rgba(
+      153,
+      27,
+      27,
+      0.035
+    );
+    box-shadow:
+      0 0 0 3px rgba(
+        153,
+        27,
+        27,
+        0.06
+      );
+  }
+  
+  .oxirreducaoStudyCardDisabled {
+    opacity: 0.62;
+    cursor: not-allowed;
+  }
+  
+  .oxirreducaoStudyNumber {
+    display: grid;
+    place-items: center;
+  
+    width: 44px;
+    height: 44px;
+  
+    border-radius: 13px;
+  
+    background: #18181b;
+    color: #ffffff;
+  
+    font-size: 0.77rem;
+    font-weight: 900;
+  }
+  
+  .oxirreducaoStudyContent {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+  
+  .oxirreducaoStudyTitleRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .oxirreducaoStudyTitleRow strong {
+    color: #18181b;
+    font-size: 1.15rem;
+  }
+  
+  .oxirreducaoStudyTitleRow small {
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #f4f4f5;
+    color: #71717a;
+    font-size: 0.67rem;
+    font-weight: 900;
+  }
+  
+  .oxirreducaoStudyDescription {
+    margin-top: 11px;
+    color: #52525b;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+  
+  .oxirreducaoStudyOrientation {
+    margin-top: 11px;
+    color: #71717a;
+    font-size: 0.79rem;
+    line-height: 1.5;
+  }
+  
+  .oxirreducaoStudyAction {
+    grid-column: 2;
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    color: #991b1b;
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+  
+  
+  /* =========================================================
+     CALCULADORA
+  ========================================================= */
+  
+  .oxirreducaoCalculatorSection {
+    padding-top: 42px;
+    padding-bottom: 80px;
+  }
+  
+  .oxirreducaoMethodHeader {
+    max-width: 880px;
+    margin-bottom: 24px;
+  }
+  
+  .oxirreducaoMainGrid {
+    display: grid;
+    grid-template-columns:
+      minmax(300px, 390px)
+      minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  
+  .oxirreducaoForm,
+  .oxirreducaoResults {
+    padding: 25px;
+    border: 1px solid #e4e4e7;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow:
+      0 16px 42px rgba(
+        24,
+        24,
+        27,
+        0.055
+      );
+  }
+  
+  .oxirreducaoFormHeader {
+    margin-bottom: 22px;
+  }
+  
+  .oxirreducaoFormHeader > span {
+    color: #991b1b;
+    font-size: 0.73rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  
+  .oxirreducaoFormHeader h3 {
+    margin: 6px 0 7px;
+    color: #18181b;
+    font-size: 1.35rem;
+  }
+  
+  .oxirreducaoFormHeader p {
+    margin: 0;
+    color: #71717a;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  
+  .oxirreducaoForm label {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 17px;
+    color: #3f3f46;
+    font-size: 0.85rem;
+    font-weight: 800;
+    flex-direction: column;
+  }
+  
+  .oxirreducaoForm label small {
+    color: #71717a;
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  
+  .oxirreducaoInputUnit {
+    display: grid;
+    grid-template-columns:
+      1fr auto;
+  }
+  
+  .oxirreducaoInputUnit input {
+    min-width: 0;
+    min-height: 46px;
+    padding: 10px 13px;
+    border: 1px solid #d4d4d8;
+    border-right: 0;
+    border-radius:
+      13px 0 0 13px;
+    outline: none;
+    background: #ffffff;
+    color: #18181b;
+    font: inherit;
+  }
+  
+  .oxirreducaoInputUnit input:focus {
+    border-color: #991b1b;
+    box-shadow:
+      0 0 0 3px rgba(
+        153,
+        27,
+        27,
+        0.07
+      );
+  }
+  
+  .oxirreducaoInputUnit span {
+    display: grid;
+    min-width: 72px;
+    place-items: center;
+    padding: 0 12px;
+    border: 1px solid #d4d4d8;
+    border-radius:
+      0 13px 13px 0;
+    background: #f4f4f5;
+    color: #52525b;
+    font-size: 0.77rem;
+  }
+  
+  .oxirreducaoCalculateButton {
+    width: 100%;
+    margin-top: 4px;
+    padding: 13px 18px;
+    border: 0;
+    border-radius: 13px;
+    background: #991b1b;
+    color: #ffffff;
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  
+  .oxirreducaoCalculateButton:hover {
+    background: #7f1d1d;
+  }
+  
+  .oxirreducaoError {
+    margin-bottom: 15px;
+    padding: 13px 15px;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  
+  
+  /* =========================================================
+     RESULTADOS
+  ========================================================= */
+  
+  .oxirreducaoResultsHeader {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  
+  .oxirreducaoResultsHeader h3 {
+    margin: 7px 0 0;
+    font-size: 1.45rem;
+  }
+  
+  .oxirreducaoStatus {
+    flex: 0 0 auto;
+    padding: 8px 11px;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 0.72rem;
+    font-weight: 900;
+  }
+  
+  .oxirreducaoResultsGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 13px;
+    margin-top: 21px;
+  }
+  
+  .oxirreducaoResultCard {
+    padding: 19px;
+    border: 1px solid #e4e4e7;
+    border-radius: 17px;
+    background: #ffffff;
+  }
+  
+  .oxirreducaoResultCardMain {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(153, 27, 27, 0.075),
+        #ffffff
+      );
+  }
+  
+  .oxirreducaoResultCard > span {
+    display: block;
+    margin-bottom: 8px;
+    color: #71717a;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+  
+  .oxirreducaoResultCard > strong {
+    color: #18181b;
+    font-size: 1.4rem;
+  }
+  
+  .oxirreducaoResultCard p {
+    margin: 9px 0 0;
+    color: #71717a;
+    font-size: 0.77rem;
+    line-height: 1.45;
+  }
+  
+  .oxirreducaoReactionBox {
+    margin-top: 16px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: #18181b;
+    color: #ffffff;
+  }
+  
+  .oxirreducaoReactionBox span {
+    display: block;
+    margin-bottom: 8px;
+    color: #d4d4d8;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  
+  .oxirreducaoReactionBox strong {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  
+  
+  /* =========================================================
+     SEMIRREAÇÕES
+  ========================================================= */
+  
+  .oxirreducaoHalfReactionSection,
+  .oxirreducaoCurveSection {
+    margin-top: 26px;
+    padding: 27px;
+    border: 1px solid #e4e4e7;
+    border-radius: 22px;
+    background: #ffffff;
+  }
+  
+  .oxirreducaoHalfReactionSection header h3,
+  .oxirreducaoCurveHeader h3 {
+    margin: 7px 0 7px;
+    font-size: 1.45rem;
+  }
+  
+  .oxirreducaoHalfReactionSection header p,
+  .oxirreducaoCurveHeader p {
+    margin: 0;
+    color: #71717a;
+    line-height: 1.55;
+  }
+  
+  .oxirreducaoHalfReactionGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 16px;
+    margin-top: 21px;
+  }
+  
+  .oxirreducaoHalfReactionCard {
+    padding: 21px;
+    border: 1px solid #e4e4e7;
+    border-radius: 18px;
+    background: #fafafa;
+  }
+  
+  .oxirreducaoHalfReactionCard > span {
+    color: #991b1b;
+    font-size: 0.71rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  
+  .oxirreducaoHalfReactionCard h4 {
+    margin: 8px 0 12px;
+    font-size: 1.2rem;
+  }
+  
+  .oxirreducaoHalfReactionCard > strong {
+    display: block;
+    color: #27272a;
+    font-size: 0.93rem;
+    line-height: 1.7;
+  }
+  
+  .oxirreducaoHalfReactionCard > div {
+    display: inline-flex;
+    margin-top: 13px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 0.79rem;
+    font-weight: 900;
+  }
+  
+  .oxirreducaoHalfReactionCard p {
+    margin: 13px 0 0;
+    color: #71717a;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  
+  
+  /* =========================================================
+     CURVA
+  ========================================================= */
+  
+  .oxirreducaoCurveHeader {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  
+  .oxirreducaoPEBadge {
+    flex: 0 0 auto;
+    min-width: 120px;
+    padding: 12px 14px;
+    border-radius: 15px;
+    background: #fff7ed;
+    color: #9a3412;
+    text-align: center;
+  }
+  
+  .oxirreducaoPEBadge span,
+  .oxirreducaoPEBadge strong {
+    display: block;
+  }
+  
+  .oxirreducaoPEBadge span {
+    font-size: 0.7rem;
+    font-weight: 900;
+  }
+  
+  .oxirreducaoPEBadge strong {
+    margin-top: 4px;
+    font-size: 1rem;
+  }
+  
+  .oxirreducaoChartWrapper {
+    margin-top: 22px;
+    overflow-x: auto;
+    padding: 13px;
+    border: 1px solid #e4e4e7;
+    border-radius: 18px;
+    background: #fafafa;
+  }
+  
+  .oxirreducaoChartWrapper svg {
+    display: block;
+    width: 100%;
+    min-width: 720px;
+    height: auto;
+  }
+  
+  .oxirreducaoChartGrid {
+    stroke: #e4e4e7;
+    stroke-width: 1;
+  }
+  
+  .oxirreducaoChartAxis {
+    stroke: #71717a;
+    stroke-width: 1.5;
+  }
+  
+  .oxirreducaoChartCurve {
+    fill: none;
+    stroke: #991b1b;
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  .oxirreducaoChartPELine {
+    stroke: #b45309;
+    stroke-width: 2;
+    stroke-dasharray: 7 6;
+  }
+  
+  .oxirreducaoChartPEPoint {
+    fill: #ffffff;
+    stroke: #b45309;
+    stroke-width: 3;
+  }
+  
+  .oxirreducaoChartPELabel {
+    fill: #92400e;
+    font-size: 13px;
+    font-weight: 900;
+  }
+  
+  .oxirreducaoChartAxisLabel {
+    fill: #3f3f46;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  
+  .oxirreducaoChartTick {
+    fill: #71717a;
+    font-size: 12px;
+  }
+  
+  .oxirreducaoEmptyChart {
+    margin-top: 20px;
+    padding: 30px;
+    border-radius: 16px;
+    background: #fafafa;
+    color: #71717a;
+    text-align: center;
+  }
+  
+  .oxirreducaoRegionGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+    gap: 14px;
+    margin-top: 18px;
+  }
+  
+  .oxirreducaoRegionGrid article {
+    padding: 18px;
+    border: 1px solid #e4e4e7;
+    border-radius: 16px;
+    background: #ffffff;
+  }
+  
+  .oxirreducaoRegionGrid article > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #71717a;
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  
+  .oxirreducaoRegionGrid article > strong {
+    color: #18181b;
+    font-size: 1rem;
+  }
+  
+  .oxirreducaoRegionGrid article > p {
+    margin: 9px 0 0;
+    color: #71717a;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  
+  .oxirreducaoRegionGrid .oxirreducaoRegionPE {
+    border-color: rgba(
+      180,
+      83,
+      9,
+      0.22
+    );
+    background: #fff7ed;
+  }
+  
+  
+  /* =========================================================
+     RESPONSIVO
+  ========================================================= */
+  
+  @media (
+    max-width: 900px
+  ) {
+    .oxirreducaoMainGrid {
+      grid-template-columns:
+        1fr;
+    }
+  
+    .oxirreducaoResultsGrid {
+      grid-template-columns:
+        1fr 1fr;
+    }
+  }
+  
+  
+  @media (
+    max-width: 760px
+  ) {
+    .oxirreducaoStudyGrid,
+    .oxirreducaoHalfReactionGrid,
+    .oxirreducaoRegionGrid,
+    .oxirreducaoResultsGrid {
+      grid-template-columns:
+        1fr;
+    }
+  
+    .oxirreducaoHeroNotice,
+    .oxirreducaoCurveHeader,
+    .oxirreducaoResultsHeader {
+      flex-direction: column;
+    }
+  
+    .oxirreducaoStudyCard {
+      grid-template-columns:
+        auto 1fr;
+    }
+  
+    .oxirreducaoPEBadge {
+      width: 100%;
+    }
+  }
+
+  /* =========================================================
+   ABAS INTERNAS DA PERMANGANOMETRIA
+========================================================= */
+
+.oxirreducaoInternalTabs {
+  margin-top: 30px;
+  overflow-x: auto;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.oxirreducaoInternalTabsTrack {
+  display: flex;
+  min-width: max-content;
+  gap: 4px;
+}
+
+.oxirreducaoInternalTab {
+  position: relative;
+
+  display: flex;
+  gap: 7px;
+  align-items: center;
+
+  padding: 14px 15px;
+
+  border: 0;
+  border-bottom: 3px solid transparent;
+
+  background: transparent;
+
+  color: #71717a;
+
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.oxirreducaoInternalTab:hover:not(
+  :disabled
+) {
+  color: #991b1b;
+  background: rgba(
+    153,
+    27,
+    27,
+    0.035
+  );
+}
+
+.oxirreducaoInternalTabActive {
+  border-bottom-color: #991b1b;
+  color: #991b1b;
+}
+
+.oxirreducaoInternalTab small {
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #a1a1aa;
+  font-size: 0.6rem;
+  font-weight: 900;
+}
+
+.oxirreducaoInternalTabDisabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   PAINEL DAS ABAS
+========================================================= */
+
+.oxirreducaoTabPanel {
+  margin-top: 22px;
+  padding: 28px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 22px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 14px 38px rgba(
+      24,
+      24,
+      27,
+      0.045
+    );
+}
+
+.oxirreducaoTabHeader {
+  max-width: 850px;
+}
+
+.oxirreducaoTabHeader h3 {
+  margin: 7px 0 7px;
+  font-size: 1.45rem;
+}
+
+.oxirreducaoTabHeader p {
+  margin: 0;
+  color: #71717a;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   VISÃO GERAL
+========================================================= */
+
+.oxirreducaoOverviewGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 14px;
+
+  margin-top: 23px;
+}
+
+.oxirreducaoOverviewGrid article {
+  padding: 18px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+
+  background: #fafafa;
+}
+
+.oxirreducaoOverviewGrid span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #71717a;
+
+  font-size: 0.72rem;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.oxirreducaoOverviewGrid strong {
+  font-size: 1.05rem;
+}
+
+.oxirreducaoOverviewGrid p {
+  margin: 8px 0 0;
+
+  color: #71717a;
+
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.oxirreducaoOverviewReaction,
+.oxirreducaoGlobalEquation {
+  margin-top: 18px;
+  padding: 20px;
+
+  border-radius: 17px;
+
+  background: #18181b;
+
+  color: #ffffff;
+}
+
+.oxirreducaoOverviewReaction span,
+.oxirreducaoGlobalEquation span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #a1a1aa;
+
+  font-size: 0.7rem;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.oxirreducaoOverviewReaction strong,
+.oxirreducaoGlobalEquation strong {
+  line-height: 1.65;
+}
+
+.oxirreducaoOverviewMetrics {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
+
+  margin-top: 18px;
+}
+
+.oxirreducaoOverviewMetrics div {
+  padding: 15px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+}
+
+.oxirreducaoOverviewMetrics span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #71717a;
+
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.oxirreducaoOverviewMetrics strong {
+  font-size: 0.95rem;
+}
+
+
+/* =========================================================
+   NOTAS EDUCACIONAIS
+========================================================= */
+
+.oxirreducaoEducationalNote {
+  margin-top: 18px;
+
+  padding: 18px 20px;
+
+  border:
+    1px solid rgba(
+      153,
+      27,
+      27,
+      0.15
+    );
+
+  border-radius: 16px;
+
+  background:
+    rgba(
+      153,
+      27,
+      27,
+      0.035
+    );
+}
+
+.oxirreducaoEducationalNote strong {
+  color: #7f1d1d;
+}
+
+.oxirreducaoEducationalNote p {
+  margin: 7px 0 0;
+
+  color: #52525b;
+
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   COMPARAÇÃO DE POTENCIAIS
+========================================================= */
+
+.oxirreducaoPotentialComparison {
+  display: flex;
+
+  gap: 14px;
+
+  align-items: center;
+
+  margin-top: 20px;
+
+  padding: 18px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 17px;
+
+  background: #fafafa;
+}
+
+.oxirreducaoPotentialComparison > div {
+  flex: 1;
+}
+
+.oxirreducaoPotentialComparison span {
+  display: block;
+
+  color: #71717a;
+
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.oxirreducaoPotentialComparison strong {
+  display: block;
+
+  margin-top: 5px;
+
+  font-size: 1.05rem;
+}
+
+.oxirreducaoPotentialOperator {
+  flex: 0 0 auto;
+
+  color: #a1a1aa !important;
+
+  font-size: 1.2rem !important;
+}
+
+.oxirreducaoPotentialResult {
+  padding: 12px;
+
+  border-radius: 12px;
+
+  background: #fee2e2;
+}
+
+.oxirreducaoPotentialResult strong {
+  color: #991b1b;
+}
+
+
+/* =========================================================
+   ESTEQUIOMETRIA
+========================================================= */
+
+.oxirreducaoEquationFlow {
+  display: flex;
+
+  gap: 14px;
+
+  align-items: center;
+
+  margin-top: 20px;
+}
+
+.oxirreducaoEquationFlow article {
+  flex: 1;
+
+  padding: 18px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 15px;
+
+  background: #fafafa;
+}
+
+.oxirreducaoEquationFlow article span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #71717a;
+
+  font-size: 0.7rem;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.oxirreducaoEquationFlow article strong {
+  line-height: 1.6;
+}
+
+.oxirreducaoEquationArrow {
+  flex: 0 0 auto;
+
+  color: #991b1b;
+
+  font-weight: 900;
+}
+
+.oxirreducaoStoichiometrySteps {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 15px;
+
+  margin-top: 20px;
+}
+
+.oxirreducaoStoichiometrySteps article {
+  display: flex;
+
+  gap: 13px;
+
+  padding: 18px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+
+  background: #ffffff;
+}
+
+.oxirreducaoStepNumber {
+  display: grid;
+
+  flex: 0 0 auto;
+
+  width: 32px;
+  height: 32px;
+
+  place-items: center;
+
+  border-radius: 10px;
+
+  background: #991b1b;
+
+  color: #ffffff;
+
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.oxirreducaoStoichiometrySteps article > div {
+  min-width: 0;
+}
+
+.oxirreducaoStoichiometrySteps article > div > span {
+  display: block;
+
+  color: #71717a;
+
+  font-size: 0.71rem;
+  font-weight: 900;
+}
+
+.oxirreducaoStoichiometrySteps strong {
+  display: block;
+
+  margin-top: 7px;
+}
+
+.oxirreducaoStoichiometrySteps p {
+  margin: 7px 0;
+
+  color: #71717a;
+
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.oxirreducaoStoichiometrySteps b {
+  color: #991b1b;
+
+  font-size: 0.82rem;
+}
+
+
+/* =========================================================
+   INFORMAÇÕES DA CURVA
+========================================================= */
+
+.oxirreducaoCurveInfo {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
+
+  margin-top: 17px;
+}
+
+.oxirreducaoCurveInfo div {
+  padding: 14px;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+
+  background: #fafafa;
+}
+
+.oxirreducaoCurveInfo span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #71717a;
+
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.oxirreducaoCurveInfo strong {
+  font-size: 0.9rem;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE DAS ABAS
+========================================================= */
+
+@media (
+  max-width: 900px
+) {
+  .oxirreducaoOverviewGrid,
+  .oxirreducaoOverviewMetrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .oxirreducaoStoichiometrySteps {
+    grid-template-columns:
+      1fr;
+  }
+}
+
+
+@media (
+  max-width: 650px
+) {
+  .oxirreducaoTabPanel {
+    padding: 20px;
+  }
+
+  .oxirreducaoOverviewGrid,
+  .oxirreducaoOverviewMetrics,
+  .oxirreducaoCurveInfo {
+    grid-template-columns:
+      1fr;
+  }
+
+  .oxirreducaoEquationFlow,
+  .oxirreducaoPotentialComparison {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .oxirreducaoEquationArrow,
+  .oxirreducaoPotentialOperator {
+    text-align: center;
+  }
+}
+
+/* =========================================================
+   SELETOR DE ANALITO — PERMANGANOMETRIA
+========================================================= */
+
+.oxirreducaoAnalitoSelector {
+  margin-top: 24px;
+  margin-bottom: 22px;
+}
+
+.oxirreducaoAnalitoSelectorHeader {
+  max-width: 850px;
+}
+
+.oxirreducaoAnalitoSelectorHeader h3 {
+  margin: 7px 0 7px;
+
+  color: #18181b;
+
+  font-size: 1.4rem;
+
+  letter-spacing: -0.025em;
+}
+
+.oxirreducaoAnalitoSelectorHeader p {
+  margin: 0;
+
+  color: #71717a;
+
+  line-height: 1.55;
+}
+
+
+.oxirreducaoAnalitoGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 14px;
+
+  margin-top: 18px;
+}
+
+
+.oxirreducaoAnalitoCard {
+  display: flex;
+
+  min-height: 220px;
+
+  flex-direction: column;
+
+  align-items: stretch;
+
+  padding: 20px;
+
+  border: 1px solid #e4e4e7;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  color: #27272a;
+
+  font: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease,
+    background 170ms ease;
+}
+
+
+.oxirreducaoAnalitoCard:hover:not(
+  :disabled
+) {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(
+      153,
+      27,
+      27,
+      0.45
+    );
+
+  box-shadow:
+    0 12px 28px
+    rgba(
+      24,
+      24,
+      27,
+      0.07
+    );
+}
+
+
+.oxirreducaoAnalitoCardActive {
+  border-color: #991b1b;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(
+        153,
+        27,
+        27,
+        0.055
+      ),
+      #ffffff
+    );
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      153,
+      27,
+      27,
+      0.055
+    );
+}
+
+
+.oxirreducaoAnalitoCardDisabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+.oxirreducaoAnalitoFormula {
+  display: grid;
+
+  width: 62px;
+  height: 52px;
+
+  place-items: center;
+
+  border-radius: 14px;
+
+  background: #18181b;
+
+  color: #ffffff;
+
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+
+.oxirreducaoAnalitoCardDisabled
+.oxirreducaoAnalitoFormula {
+  background: #71717a;
+}
+
+
+.oxirreducaoAnalitoContent {
+  display: flex;
+
+  flex: 1;
+
+  flex-direction: column;
+
+  margin-top: 15px;
+}
+
+
+.oxirreducaoAnalitoTitleRow {
+  display: flex;
+
+  gap: 10px;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+
+.oxirreducaoAnalitoTitleRow > strong {
+  color: #18181b;
+
+  font-size: 1rem;
+}
+
+
+.oxirreducaoAnalitoTitleRow small {
+  flex: 0 0 auto;
+
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+
+.oxirreducaoAnalitoStatusAvailable {
+  background: #dcfce7;
+
+  color: #166534;
+}
+
+
+.oxirreducaoAnalitoStatusSoon {
+  background: #f4f4f5;
+
+  color: #71717a;
+}
+
+
+.oxirreducaoAnalitoDescription {
+  margin-top: 10px;
+
+  color: #71717a;
+
+  font-size: 0.81rem;
+
+  line-height: 1.5;
+}
+
+
+.oxirreducaoAnalitoTitulante {
+  margin-top: 10px;
+
+  color: #52525b;
+
+  font-size: 0.75rem;
+}
+
+
+.oxirreducaoAnalitoAction {
+  display: flex;
+
+  gap: 7px;
+
+  align-items: center;
+
+  margin-top: 17px;
+
+  color: #991b1b;
+
+  font-size: 0.75rem;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   SISTEMA SELECIONADO
+========================================================= */
+
+.oxirreducaoSelectedSystem {
+  display: flex;
+
+  gap: 32px;
+
+  align-items: center;
+
+  margin-bottom: 18px;
+
+  padding: 13px 17px;
+
+  border:
+    1px solid rgba(
+      153,
+      27,
+      27,
+      0.14
+    );
+
+  border-radius: 14px;
+
+  background:
+    rgba(
+      153,
+      27,
+      27,
+      0.035
+    );
+}
+
+
+.oxirreducaoSelectedSystem div {
+  display: flex;
+
+  gap: 7px;
+
+  align-items: center;
+}
+
+
+.oxirreducaoSelectedSystem span {
+  color: #71717a;
+
+  font-size: 0.72rem;
+
+  font-weight: 800;
+}
+
+
+.oxirreducaoSelectedSystem strong {
+  color: #7f1d1d;
+
+  font-size: 0.82rem;
+}
+
+
+@media (
+  max-width: 900px
+) {
+  .oxirreducaoAnalitoGrid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .oxirreducaoAnalitoCard {
+    min-height: auto;
+  }
+}
+
+
+@media (
+  max-width: 650px
+) {
+  .oxirreducaoSelectedSystem {
+    flex-direction: column;
+
+    gap: 7px;
+
+    align-items: flex-start;
+  }
+}

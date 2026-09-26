@@ -15,6 +15,7 @@ export const modules: AnalitCalcModule[] = [
     status: "Disponível",
     area: "Equilíbrio e titulação",
   },
+
   {
     title: "Titulações ácido-base",
     description:
@@ -23,6 +24,7 @@ export const modules: AnalitCalcModule[] = [
     status: "Disponível",
     area: "Equilíbrio ácido-base",
   },
+
   {
     title: "Volumetria de precipitação",
     description:
@@ -30,5 +32,14 @@ export const modules: AnalitCalcModule[] = [
     href: "/precipitacao",
     status: "Disponível",
     area: "Equilíbrio e titulação",
+  },
+
+  {
+    title: "Volumetria de oxirredução",
+    description:
+      "Titulações redox com balanço eletrônico, potenciais padrão de redução, equação de Nernst, estequiometria e curvas potenciométricas E × V.",
+    href: "/oxirreducao",
+    status: "Em desenvolvimento",
+    area: "Equilíbrio e titulação redox",
   },
 ];
