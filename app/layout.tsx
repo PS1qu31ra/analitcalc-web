@@ -5,7 +5,7 @@ import "./globals.css";
 
 import { Header } from "../components/Header";
 import { AnalitBotProvider } from "./contexts/AnalitBotContext";
-import AnalitBotFloating from "../components/AnalitBotFloating";
+import AnalitoMaintenanceFloating from "../components/AnalitoMaintenanceFloating";
 
 export const metadata: Metadata = {
   title: "AnalitCalc",
@@ -24,8 +24,9 @@ export default function RootLayout({
         <AnalitBotProvider>
           <Header />
           {children}
-          <AnalitBotFloating />
         </AnalitBotProvider>
+
+        <AnalitoMaintenanceFloating />
 
         <Analytics />
       </body>

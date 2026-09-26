@@ -1,0 +1,532 @@
+.floatingButton {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 900;
+  
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  
+    min-height: 58px;
+  
+    padding: 10px 16px 10px 11px;
+  
+    border: 1px solid rgba(153, 27, 27, 0.2);
+    border-radius: 18px;
+  
+    background:
+      rgba(255, 255, 255, 0.96);
+  
+    box-shadow:
+      0 12px 35px rgba(17, 24, 39, 0.16);
+  
+    color: #111827;
+  
+    cursor: pointer;
+  
+    backdrop-filter: blur(14px);
+  
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+  
+  .floatingButton:hover {
+    transform:
+      translateY(-2px);
+  
+    border-color:
+      rgba(153, 27, 27, 0.38);
+  
+    box-shadow:
+      0 16px 42px rgba(17, 24, 39, 0.2);
+  }
+  
+  .floatingIcon {
+    display: grid;
+    place-items: center;
+  
+    width: 40px;
+    height: 40px;
+  
+    border-radius: 13px;
+  
+    background:
+      linear-gradient(
+        145deg,
+        #991b1b,
+        #c53030
+      );
+  
+    font-size: 21px;
+  
+    box-shadow:
+      0 6px 16px rgba(153, 27, 27, 0.24);
+  }
+  
+  .floatingContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  
+    line-height: 1.15;
+  }
+  
+  .floatingContent strong {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  .floatingContent span {
+    margin-top: 3px;
+  
+    color: #6b7280;
+  
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .statusDot {
+    width: 8px;
+    height: 8px;
+  
+    margin-left: 2px;
+  
+    border-radius: 999px;
+  
+    background: #f59e0b;
+  
+    box-shadow:
+      0 0 0 4px rgba(245, 158, 11, 0.13);
+  }
+  
+  
+  /* ============================================================
+     MODAL
+  ============================================================ */
+  
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  
+    display: grid;
+    place-items: center;
+  
+    padding: 24px;
+  
+    background:
+      rgba(17, 24, 39, 0.52);
+  
+    backdrop-filter:
+      blur(7px);
+  
+    animation:
+      aparecer 0.18s ease-out;
+  }
+  
+  .modal {
+    position: relative;
+  
+    width: min(
+      100%,
+      480px
+    );
+  
+    padding:
+      38px 34px 30px;
+  
+    border:
+      1px solid #e5e7eb;
+  
+    border-radius:
+      26px;
+  
+    background:
+      #ffffff;
+  
+    box-shadow:
+      0 28px 80px rgba(17, 24, 39, 0.26);
+  
+    text-align:
+      center;
+  
+    animation:
+      subir 0.22s ease-out;
+  }
+  
+  .closeButton {
+    position: absolute;
+    top: 15px;
+    right: 17px;
+  
+    display: grid;
+    place-items: center;
+  
+    width: 34px;
+    height: 34px;
+  
+    border: 0;
+    border-radius: 50%;
+  
+    background:
+      #f3f4f6;
+  
+    color:
+      #6b7280;
+  
+    font-size:
+      24px;
+  
+    line-height: 1;
+  
+    cursor: pointer;
+  
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+  
+  .closeButton:hover {
+    background:
+      #e5e7eb;
+  
+    color:
+      #111827;
+  }
+  
+  .iconWrapper {
+    display: grid;
+    place-items: center;
+  
+    width: 74px;
+    height: 74px;
+  
+    margin:
+      0 auto 18px;
+  
+    border-radius:
+      22px;
+  
+    background:
+      linear-gradient(
+        145deg,
+        #991b1b,
+        #c53030
+      );
+  
+    box-shadow:
+      0 12px 30px rgba(153, 27, 27, 0.25);
+  
+    font-size:
+      37px;
+  }
+  
+  .badge {
+    display: inline-flex;
+  
+    padding:
+      6px 10px;
+  
+    border-radius:
+      999px;
+  
+    background:
+      rgba(153, 27, 27, 0.08);
+  
+    color:
+      #991b1b;
+  
+    font-size:
+      10px;
+  
+    font-weight:
+      800;
+  
+    letter-spacing:
+      0.09em;
+  }
+  
+  .title {
+    margin:
+      12px 0 10px;
+  
+    color:
+      #111827;
+  
+    font-size:
+      28px;
+  
+    font-weight:
+      800;
+  
+    letter-spacing:
+      -0.035em;
+  }
+  
+  .description {
+    max-width:
+      390px;
+  
+    margin:
+      0 auto;
+  
+    color:
+      #4b5563;
+  
+    font-size:
+      15px;
+  
+    line-height:
+      1.65;
+  }
+  
+  .infoBox {
+    display: flex;
+    align-items:
+      flex-start;
+    gap: 12px;
+  
+    margin-top:
+      22px;
+  
+    padding:
+      15px 17px;
+  
+    border:
+      1px solid #e5e7eb;
+  
+    border-radius:
+      16px;
+  
+    background:
+      #fafafa;
+  
+    text-align:
+      left;
+  }
+  
+  .infoIcon {
+    display:
+      grid;
+    flex:
+      0 0 auto;
+  
+    place-items:
+      center;
+  
+    width:
+      24px;
+    height:
+      24px;
+  
+    border-radius:
+      50%;
+  
+    background:
+      #dcfce7;
+  
+    color:
+      #166534;
+  
+    font-size:
+      13px;
+  
+    font-weight:
+      800;
+  }
+  
+  .infoBox p {
+    margin: 0;
+  
+    color:
+      #4b5563;
+  
+    font-size:
+      13px;
+  
+    line-height:
+      1.55;
+  }
+  
+  .primaryButton {
+    width:
+      100%;
+  
+    margin-top:
+      22px;
+  
+    padding:
+      13px 18px;
+  
+    border:
+      0;
+  
+    border-radius:
+      14px;
+  
+    background:
+      #991b1b;
+  
+    color:
+      #ffffff;
+  
+    font-size:
+      14px;
+  
+    font-weight:
+      700;
+  
+    cursor:
+      pointer;
+  
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+  
+  .primaryButton:hover {
+    background:
+      #7f1d1d;
+  
+    transform:
+      translateY(-1px);
+  }
+  
+  .footerText {
+    margin:
+      13px 0 0;
+  
+    color:
+      #9ca3af;
+  
+    font-size:
+      11px;
+  }
+  
+  
+  /* ============================================================
+     MOBILE
+  ============================================================ */
+  
+  @media (
+    max-width: 640px
+  ) {
+    .floatingButton {
+      right:
+        14px;
+  
+      bottom:
+        14px;
+  
+      min-height:
+        54px;
+    }
+  
+    .floatingContent {
+      display:
+        none;
+    }
+  
+    .statusDot {
+      position:
+        absolute;
+  
+      top:
+        6px;
+  
+      right:
+        6px;
+  
+      width:
+        7px;
+  
+      height:
+        7px;
+    }
+  
+    .floatingButton {
+      width:
+        58px;
+  
+      height:
+        58px;
+  
+      padding:
+        9px;
+  
+      border-radius:
+        18px;
+    }
+  
+    .floatingIcon {
+      width:
+        40px;
+  
+      height:
+        40px;
+    }
+  
+    .overlay {
+      align-items:
+        end;
+  
+      padding:
+        12px;
+    }
+  
+    .modal {
+      width:
+        100%;
+  
+      padding:
+        34px 22px 26px;
+  
+      border-radius:
+        24px;
+    }
+  
+    .title {
+      font-size:
+        24px;
+    }
+  }
+  
+  
+  /* ============================================================
+     ANIMAÇÕES
+  ============================================================ */
+  
+  @keyframes aparecer {
+    from {
+      opacity:
+        0;
+    }
+  
+    to {
+      opacity:
+        1;
+    }
+  }
+  
+  @keyframes subir {
+    from {
+      opacity:
+        0;
+  
+      transform:
+        translateY(10px)
+        scale(0.985);
+    }
+  
+    to {
+      opacity:
+        1;
+  
+      transform:
+        translateY(0)
+        scale(1);
+    }
+  }
