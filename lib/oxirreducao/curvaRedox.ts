@@ -298,6 +298,70 @@ import {
         volume
       );
     }
+
+    /* =======================================================
+ * MALHA ULTRA-DENSA PRÓXIMA AO PE
+ * =======================================================
+ *
+ * Refinamento adicional utilizado principalmente
+ * para o cálculo numérico das derivadas da curva
+ * teórica.
+ *
+ * A região é muito pequena para não aumentar
+ * desnecessariamente o número de pontos da curva
+ * completa.
+ */
+
+const passoUltraDensoMl =
+Math.max(
+  volumeEquivalenciaMl /
+    25000,
+  0.0002
+);
+
+
+const faixaUltraDensaFracao =
+0.005;
+
+
+const inicioFaixaUltraDensa =
+Math.max(
+  0,
+  volumeEquivalenciaMl *
+    (
+      1 -
+      faixaUltraDensaFracao
+    )
+);
+
+
+const fimFaixaUltraDensa =
+Math.min(
+  volumeMaximoMl,
+  volumeEquivalenciaMl *
+    (
+      1 +
+      faixaUltraDensaFracao
+    )
+);
+
+
+for (
+let volume =
+  inicioFaixaUltraDensa;
+
+volume <=
+fimFaixaUltraDensa +
+  passoUltraDensoMl /
+    2;
+
+volume +=
+  passoUltraDensoMl
+) {
+adicionarVolume(
+  volume
+);
+}
   
   
     /* =======================================================

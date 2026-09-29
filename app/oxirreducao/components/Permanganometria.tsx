@@ -10,9 +10,27 @@ import {
   type ResultadoCurvaRedox,
 } from "@/lib/oxirreducao/curvaRedox";
 
+import {
+  gerarCurvaPermanganometriaPeroxido,
+  type ResultadoCurvaRedoxPeroxido,
+} from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
+import {
+  calcularSistemaPermanganometriaOxalato,
+  type ResultadoPermanganometriaOxalato,
+} from "@/lib/oxirreducao/permanganometriaOxalato";
+
 import type {
   EntradaPermanganometriaFerro,
 } from "@/lib/oxirreducao/permanganometria";
+
+import type {
+  EntradaPermanganometriaPeroxido,
+} from "@/lib/oxirreducao/permanganometriaPeroxido";
+
+import type {
+  EntradaPermanganometriaOxalato,
+} from "@/lib/oxirreducao/permanganometriaOxalato";
 
 import {
   buscarSistemaPermanganometria,
@@ -29,6 +47,18 @@ import VisaoGeral from "./VisaoGeral";
 import Semirreacoes from "./Semirreacoes";
 import Estequiometria from "./Estequiometria";
 import CurvaPotenciometrica from "./CurvaPotenciometrica";
+
+import VisaoGeralPeroxido from "./VisaoGeralPeroxido";
+import SemirreacoesPeroxido from "./SemirreacoesPeroxido";
+import EstequiometriaPeroxido from "./EstequiometriaPeroxido";
+import CurvaPotenciometricaPeroxido from "./CurvaPotenciometricaPeroxido";
+
+import VisaoGeralOxalato from "./VisaoGeralOxalato";
+import EstequiometriaOxalato from "./EstequiometriaOxalato";
+
+import DerivadasRedox from "./DerivadasRedox";
+
+import EfeitoConcentracaoRedox from "./EfeitoConcentracaoRedox";
 
 
 function converterNumero(
@@ -64,7 +94,7 @@ function formatarNumero(
 }
 
 
-function gerarResultadoInicial() {
+function gerarResultadoFerroInicial() {
   return gerarCurvaPermanganometriaFerro({
     entrada: {
       concentracaoAnalitoMolL:
@@ -82,6 +112,51 @@ function gerarResultadoInicial() {
       temperaturaC:
         25,
     },
+  });
+}
+
+
+function gerarResultadoPeroxidoInicial() {
+  return gerarCurvaPermanganometriaPeroxido({
+    entrada: {
+      concentracaoAnalitoMolL:
+        0.1,
+
+      volumeAnalitoMl:
+        25,
+
+      concentracaoTitulanteMolL:
+        0.02,
+
+      concentracaoHPlusMolL:
+        1,
+
+      atividadeOxigenio:
+        1,
+
+      temperaturaC:
+        25,
+    },
+  });
+}
+
+
+function gerarResultadoOxalatoInicial() {
+  return calcularSistemaPermanganometriaOxalato({
+    concentracaoAnalitoMolL:
+      0.1,
+
+    volumeAnalitoMl:
+      25,
+
+    concentracaoTitulanteMolL:
+      0.02,
+
+    concentracaoHPlusMolL:
+      1,
+
+    temperaturaC:
+      25,
   });
 }
 
@@ -144,6 +219,14 @@ export default function Permanganometria() {
 
 
   const [
+    atividadeOxigenio,
+    setAtividadeOxigenio,
+  ] = useState(
+    "1,00"
+  );
+
+
+  const [
     temperatura,
     setTemperatura,
   ] = useState(
@@ -152,11 +235,29 @@ export default function Permanganometria() {
 
 
   const [
-    resultado,
-    setResultado,
+    resultadoFerro,
+    setResultadoFerro,
   ] =
     useState<ResultadoCurvaRedox>(
-      gerarResultadoInicial
+      gerarResultadoFerroInicial
+    );
+
+
+  const [
+    resultadoPeroxido,
+    setResultadoPeroxido,
+  ] =
+    useState<ResultadoCurvaRedoxPeroxido>(
+      gerarResultadoPeroxidoInicial
+    );
+
+
+  const [
+    resultadoOxalato,
+    setResultadoOxalato,
+  ] =
+    useState<ResultadoPermanganometriaOxalato>(
+      gerarResultadoOxalatoInicial
     );
 
 
@@ -166,6 +267,42 @@ export default function Permanganometria() {
   ] = useState(
     ""
   );
+
+
+  const ehFerro =
+    sistemaAtivo ===
+    "ferro-ii";
+
+
+  const ehPeroxido =
+    sistemaAtivo ===
+    "peroxido-hidrogenio";
+
+
+  const ehOxalato =
+    sistemaAtivo ===
+    "oxalato";
+
+
+  const volumeEquivalenciaAtivo =
+    ehFerro
+      ? resultadoFerro
+          .volumeEquivalenciaMl
+      : ehPeroxido
+        ? resultadoPeroxido
+            .volumeEquivalenciaMl
+        : resultadoOxalato
+            .volumeEquivalenciaMl;
+
+
+  const potencialEquivalenciaAtivo =
+    ehFerro
+      ? resultadoFerro
+          .potencialEquivalenciaV
+      : ehPeroxido
+        ? resultadoPeroxido
+            .potencialEquivalenciaV
+        : null;
 
 
   function alterarSistema(
@@ -193,66 +330,152 @@ export default function Permanganometria() {
     event.preventDefault();
 
 
-    /*
-     * Nesta etapa, apenas Fe²⁺ possui
-     * motor de cálculo liberado.
-     */
-    if (
-      sistemaAtivo !==
-      "ferro-ii"
-    ) {
-      setErro(
-        "O motor deste sistema ainda está em desenvolvimento."
-      );
-
-      return;
-    }
-
-
     try {
-      const entrada:
-        EntradaPermanganometriaFerro =
-        {
-          concentracaoAnalitoMolL:
-            converterNumero(
-              concentracaoAnalito
-            ),
+      if (
+        ehFerro
+      ) {
+        const entrada:
+          EntradaPermanganometriaFerro =
+          {
+            concentracaoAnalitoMolL:
+              converterNumero(
+                concentracaoAnalito
+              ),
 
-          volumeAnalitoMl:
-            converterNumero(
-              volumeAnalito
-            ),
+            volumeAnalitoMl:
+              converterNumero(
+                volumeAnalito
+              ),
 
-          concentracaoTitulanteMolL:
-            converterNumero(
-              concentracaoTitulante
-            ),
+            concentracaoTitulanteMolL:
+              converterNumero(
+                concentracaoTitulante
+              ),
 
-          concentracaoHPlusMolL:
-            converterNumero(
-              concentracaoHPlus
-            ),
+            concentracaoHPlusMolL:
+              converterNumero(
+                concentracaoHPlus
+              ),
 
-          temperaturaC:
-            converterNumero(
-              temperatura
-            ),
-        };
-
-
-      const novaCurva =
-        gerarCurvaPermanganometriaFerro({
-          entrada,
-        });
+            temperaturaC:
+              converterNumero(
+                temperatura
+              ),
+          };
 
 
-      setResultado(
-        novaCurva
-      );
+        setResultadoFerro(
+          gerarCurvaPermanganometriaFerro({
+            entrada,
+          })
+        );
 
-      setErro(
-        ""
-      );
+
+        setErro(
+          ""
+        );
+
+        return;
+      }
+
+
+      if (
+        ehPeroxido
+      ) {
+        const entrada:
+          EntradaPermanganometriaPeroxido =
+          {
+            concentracaoAnalitoMolL:
+              converterNumero(
+                concentracaoAnalito
+              ),
+
+            volumeAnalitoMl:
+              converterNumero(
+                volumeAnalito
+              ),
+
+            concentracaoTitulanteMolL:
+              converterNumero(
+                concentracaoTitulante
+              ),
+
+            concentracaoHPlusMolL:
+              converterNumero(
+                concentracaoHPlus
+              ),
+
+            atividadeOxigenio:
+              converterNumero(
+                atividadeOxigenio
+              ),
+
+            temperaturaC:
+              converterNumero(
+                temperatura
+              ),
+          };
+
+
+        setResultadoPeroxido(
+          gerarCurvaPermanganometriaPeroxido({
+            entrada,
+          })
+        );
+
+
+        setErro(
+          ""
+        );
+
+        return;
+      }
+
+
+      if (
+        ehOxalato
+      ) {
+        const entrada:
+          EntradaPermanganometriaOxalato =
+          {
+            concentracaoAnalitoMolL:
+              converterNumero(
+                concentracaoAnalito
+              ),
+
+            volumeAnalitoMl:
+              converterNumero(
+                volumeAnalito
+              ),
+
+            concentracaoTitulanteMolL:
+              converterNumero(
+                concentracaoTitulante
+              ),
+
+            concentracaoHPlusMolL:
+              converterNumero(
+                concentracaoHPlus
+              ),
+
+            temperaturaC:
+              converterNumero(
+                temperatura
+              ),
+          };
+
+
+        setResultadoOxalato(
+          calcularSistemaPermanganometriaOxalato(
+            entrada
+          )
+        );
+
+
+        setErro(
+          ""
+        );
+      }
 
     } catch (
       error
@@ -279,8 +502,8 @@ export default function Permanganometria() {
 
         <p>
           Selecione o analito para estudar sua reação com
-          permanganato, a estequiometria, os potenciais redox
-          e a curva potenciométrica da titulação.
+          permanganato, a estequiometria e o comportamento
+          redox do sistema.
         </p>
       </header>
 
@@ -314,9 +537,7 @@ export default function Permanganometria() {
           </span>
 
           <strong>
-            {
-              sistema.titulante
-            }
+            KMnO₄
           </strong>
         </div>
       </div>
@@ -338,10 +559,6 @@ export default function Permanganometria() {
             <h3>
               Dados da titulação
             </h3>
-
-            <p>
-              Informe as condições utilizadas no experimento.
-            </p>
           </div>
 
 
@@ -362,9 +579,7 @@ export default function Permanganometria() {
                   event
                 ) =>
                   setConcentracaoAnalito(
-                    event
-                      .target
-                      .value
+                    event.target.value
                   )
                 }
               />
@@ -390,9 +605,7 @@ export default function Permanganometria() {
                   event
                 ) =>
                   setVolumeAnalito(
-                    event
-                      .target
-                      .value
+                    event.target.value
                   )
                 }
               />
@@ -418,9 +631,7 @@ export default function Permanganometria() {
                   event
                 ) =>
                   setConcentracaoTitulante(
-                    event
-                      .target
-                      .value
+                    event.target.value
                   )
                 }
               />
@@ -446,9 +657,7 @@ export default function Permanganometria() {
                   event
                 ) =>
                   setConcentracaoHPlus(
-                    event
-                      .target
-                      .value
+                    event.target.value
                   )
                 }
               />
@@ -457,12 +666,35 @@ export default function Permanganometria() {
                 mol/L
               </span>
             </div>
-
-            <small>
-              A concentração de H⁺ influencia o comportamento
-              do sistema MnO₄⁻/Mn²⁺.
-            </small>
           </label>
+
+
+          {ehPeroxido && (
+            <label>
+              Atividade de O₂
+
+              <div className="oxirreducaoInputUnit">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={
+                    atividadeOxigenio
+                  }
+                  onChange={(
+                    event
+                  ) =>
+                    setAtividadeOxigenio(
+                      event.target.value
+                    )
+                  }
+                />
+
+                <span>
+                  a(O₂)
+                </span>
+              </div>
+            </label>
+          )}
 
 
           <label>
@@ -479,9 +711,7 @@ export default function Permanganometria() {
                   event
                 ) =>
                   setTemperatura(
-                    event
-                      .target
-                      .value
+                    event.target.value
                   )
                 }
               />
@@ -494,10 +724,7 @@ export default function Permanganometria() {
 
 
           {erro && (
-            <div
-              className="oxirreducaoError"
-              role="alert"
-            >
+            <div className="oxirreducaoError">
               {erro}
             </div>
           )}
@@ -538,8 +765,7 @@ export default function Permanganometria() {
 
               <strong>
                 {formatarNumero(
-                  resultado
-                    .volumeEquivalenciaMl,
+                  volumeEquivalenciaAtivo,
                   2
                 )}{" "}
                 mL
@@ -553,12 +779,13 @@ export default function Permanganometria() {
               </span>
 
               <strong>
-                {formatarNumero(
-                  resultado
-                    .potencialEquivalenciaV,
-                  3
-                )}{" "}
-                V
+                {potencialEquivalenciaAtivo !==
+                null
+                  ? `${formatarNumero(
+                      potencialEquivalenciaAtivo,
+                      3
+                    )} V`
+                  : "Em desenvolvimento"}
               </strong>
             </article>
 
@@ -569,11 +796,16 @@ export default function Permanganometria() {
               </span>
 
               <strong>
-                5 : 1
+                {ehFerro
+                  ? "5 : 1"
+                  : "5 : 2"}
               </strong>
 
               <p>
-                Fe²⁺ : MnO₄⁻
+                {
+                  sistema.formulaAnalito
+                }{" "}
+                : MnO₄⁻
               </p>
             </article>
 
@@ -586,10 +818,6 @@ export default function Permanganometria() {
               <strong>
                 Ácido
               </strong>
-
-              <p>
-                H⁺ participa da redução do permanganato.
-              </p>
             </article>
           </div>
 
@@ -600,7 +828,11 @@ export default function Permanganometria() {
             </span>
 
             <strong>
-              MnO₄⁻ + 5 Fe²⁺ + 8 H⁺ → Mn²⁺ + 5 Fe³⁺ + 4 H₂O
+              {ehFerro
+                ? "MnO₄⁻ + 5 Fe²⁺ + 8 H⁺ → Mn²⁺ + 5 Fe³⁺ + 4 H₂O"
+                : ehPeroxido
+                  ? "2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O"
+                  : "2 MnO₄⁻ + 5 C₂O₄²⁻ + 16 H⁺ → 2 Mn²⁺ + 10 CO₂ + 8 H₂O"}
             </strong>
           </div>
         </aside>
@@ -611,46 +843,142 @@ export default function Permanganometria() {
         abaAtiva={
           abaAtiva
         }
+        sistemaAtivo={
+          sistemaAtivo
+        }
         onChange={
           setAbaAtiva
         }
       />
 
 
-      {abaAtiva ===
-        "visao-geral" && (
-        <VisaoGeral
-          resultado={
-            resultado
-          }
-        />
-      )}
+      {ehFerro &&
+        abaAtiva === "visao-geral" && (
+          <VisaoGeral
+            resultado={
+              resultadoFerro
+            }
+          />
+        )}
 
 
-      {abaAtiva ===
-        "semirreacoes" && (
-        <Semirreacoes />
-      )}
+      {ehFerro &&
+        abaAtiva === "semirreacoes" && (
+          <Semirreacoes />
+        )}
 
 
-      {abaAtiva ===
-        "estequiometria" && (
-        <Estequiometria
-          resultado={
-            resultado
-          }
-        />
-      )}
+      {ehFerro &&
+        abaAtiva === "estequiometria" && (
+          <Estequiometria
+            resultado={
+              resultadoFerro
+            }
+          />
+        )}
 
 
-      {abaAtiva ===
-        "curva" && (
-        <CurvaPotenciometrica
-          resultado={
-            resultado
-          }
-        />
-      )}
+      {ehFerro &&
+        abaAtiva === "curva" && (
+          <CurvaPotenciometrica
+            resultado={
+              resultadoFerro
+            }
+          />
+        )}
+
+{ehFerro &&
+  abaAtiva === "derivadas" && (
+    <DerivadasRedox
+      volumeEquivalenciaMl={
+        resultadoFerro
+          .volumeEquivalenciaMl
+      }
+      pontos={
+        resultadoFerro
+          .pontosValidos
+      }
+    />
+  )}
+
+{ehFerro &&
+  abaAtiva ===
+    "concentracao" && (
+    <EfeitoConcentracaoRedox
+      resultadoBase={
+        resultadoFerro
+      }
+    />
+  )}
+  
+      {ehPeroxido &&
+        abaAtiva === "visao-geral" && (
+          <VisaoGeralPeroxido
+            resultado={
+              resultadoPeroxido
+            }
+          />
+        )}
+
+
+      {ehPeroxido &&
+        abaAtiva === "semirreacoes" && (
+          <SemirreacoesPeroxido />
+        )}
+
+
+      {ehPeroxido &&
+        abaAtiva === "estequiometria" && (
+          <EstequiometriaPeroxido
+            resultado={
+              resultadoPeroxido
+            }
+          />
+        )}
+
+
+      {ehPeroxido &&
+        abaAtiva === "curva" && (
+          <CurvaPotenciometricaPeroxido
+            resultado={
+              resultadoPeroxido
+            }
+          />
+        )}
+
+{ehPeroxido &&
+  abaAtiva === "derivadas" && (
+    <DerivadasRedox
+      volumeEquivalenciaMl={
+        resultadoPeroxido
+          .volumeEquivalenciaMl
+      }
+      pontos={
+        resultadoPeroxido
+          .pontosValidos
+      }
+    />
+  )}
+
+
+      {ehOxalato &&
+        abaAtiva === "visao-geral" && (
+          <VisaoGeralOxalato
+            resultado={
+              resultadoOxalato
+            }
+          />
+        )}
+
+
+      {ehOxalato &&
+        abaAtiva === "estequiometria" && (
+          <EstequiometriaOxalato
+            resultado={
+              resultadoOxalato
+            }
+          />
+        )}
     </section>
   );
 }

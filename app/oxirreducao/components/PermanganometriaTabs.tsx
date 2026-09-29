@@ -1,3 +1,8 @@
+import type {
+  SistemaPermanganometriaId,
+} from "@/lib/oxirreducao/sistemasPermanganometria";
+
+
 export type AbaPermanganometria =
   | "visao-geral"
   | "semirreacoes"
@@ -13,6 +18,9 @@ type PermanganometriaTabsProps = {
   abaAtiva:
     AbaPermanganometria;
 
+  sistemaAtivo:
+    SistemaPermanganometriaId;
+
   onChange: (
     aba: AbaPermanganometria
   ) => void;
@@ -22,7 +30,6 @@ type PermanganometriaTabsProps = {
 const abas: {
   id: AbaPermanganometria;
   titulo: string;
-  disponivel: boolean;
 }[] = [
   {
     id:
@@ -30,9 +37,6 @@ const abas: {
 
     titulo:
       "Visão geral",
-
-    disponivel:
-      true,
   },
 
   {
@@ -41,9 +45,6 @@ const abas: {
 
     titulo:
       "Semirreações + E°",
-
-    disponivel:
-      true,
   },
 
   {
@@ -52,9 +53,6 @@ const abas: {
 
     titulo:
       "Estequiometria",
-
-    disponivel:
-      true,
   },
 
   {
@@ -63,9 +61,6 @@ const abas: {
 
     titulo:
       "Curva E × V",
-
-    disponivel:
-      true,
   },
 
   {
@@ -74,9 +69,6 @@ const abas: {
 
     titulo:
       "Derivadas",
-
-    disponivel:
-      false,
   },
 
   {
@@ -85,9 +77,6 @@ const abas: {
 
     titulo:
       "Efeito da concentração",
-
-    disponivel:
-      false,
   },
 
   {
@@ -96,9 +85,6 @@ const abas: {
 
     titulo:
       "Tempo real",
-
-    disponivel:
-      false,
   },
 
   {
@@ -107,15 +93,86 @@ const abas: {
 
     titulo:
       "Erro experimental",
-
-    disponivel:
-      false,
   },
 ];
 
 
+function abaDisponivel({
+  aba,
+  sistemaAtivo,
+}: {
+  aba:
+    AbaPermanganometria;
+
+  sistemaAtivo:
+    SistemaPermanganometriaId;
+}) {
+  if (
+    aba ===
+      "visao-geral" ||
+    aba ===
+      "estequiometria"
+  ) {
+    return true;
+  }
+
+
+  if (
+    sistemaAtivo ===
+    "oxalato"
+  ) {
+    return false;
+  }
+
+
+  if (
+    aba ===
+      "semirreacoes" ||
+    aba ===
+      "curva"
+  ) {
+    return true;
+  }
+
+
+  /*
+   * Neste momento, apenas o sistema
+   * Fe²⁺ já utiliza o novo motor de
+   * equilíbrio contínuo.
+   *
+   * As derivadas do H₂O₂ serão
+   * reativadas após a mesma correção
+   * ser aplicada à curva desse sistema.
+   */
+  if (
+    aba ===
+      "derivadas"
+  ) {
+    return (
+      sistemaAtivo ===
+      "ferro-ii"
+    );
+  }
+  
+  
+  if (
+    aba ===
+      "concentracao"
+  ) {
+    return (
+      sistemaAtivo ===
+      "ferro-ii"
+    );
+  }
+  
+  
+  return false;
+}
+
+
 export default function PermanganometriaTabs({
   abaAtiva,
+  sistemaAtivo,
   onChange,
 }: PermanganometriaTabsProps) {
   return (
@@ -133,6 +190,16 @@ export default function PermanganometriaTabs({
               aba.id ===
               abaAtiva;
 
+
+            const disponivel =
+              abaDisponivel({
+                aba:
+                  aba.id,
+
+                sistemaAtivo,
+              });
+
+
             return (
               <button
                 key={
@@ -144,7 +211,7 @@ export default function PermanganometriaTabs({
                   ativa
                 }
                 disabled={
-                  !aba.disponivel
+                  !disponivel
                 }
                 className={[
                   "oxirreducaoInternalTab",
@@ -153,7 +220,7 @@ export default function PermanganometriaTabs({
                     ? "oxirreducaoInternalTabActive"
                     : "",
 
-                  !aba.disponivel
+                  !disponivel
                     ? "oxirreducaoInternalTabDisabled"
                     : "",
                 ]
@@ -165,7 +232,7 @@ export default function PermanganometriaTabs({
                   )}
                 onClick={() => {
                   if (
-                    aba.disponivel
+                    disponivel
                   ) {
                     onChange(
                       aba.id
@@ -179,7 +246,7 @@ export default function PermanganometriaTabs({
                   }
                 </span>
 
-                {!aba.disponivel && (
+                {!disponivel && (
                   <small>
                     Em breve
                   </small>

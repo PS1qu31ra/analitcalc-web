@@ -1,20 +1,22 @@
 import {
-    PAR_FERRO_III_FERRO_II,
-    PAR_PERMANGANATO_MANGANES,
-  } from "./dadosRedox";
-  
-  import {
-    calcularFatorNernst,
-    calcularPotencialNernst,
-  } from "./nernst";
-  
-  import {
-    calcularConcentracaoAposMistura,
-    calcularMols,
-    calcularVolumeEquivalencia,
-    determinarRegiaoTitulacao,
-    type RegiaoTitulacaoRedox,
-  } from "./estequiometria";
+  PAR_FERRO_III_FERRO_II,
+  PAR_PERMANGANATO_MANGANES,
+} from "./dadosRedox";
+
+import {
+  calcularFatorNernst,
+} from "./nernst";
+
+import {
+  calcularMols,
+  calcularVolumeEquivalencia,
+  determinarRegiaoTitulacao,
+  type RegiaoTitulacaoRedox,
+} from "./estequiometria";
+
+import {
+  resolverEquilibrioPermanganometriaFerro,
+} from "./equilibrioPermanganometriaFerro";
   
   
   /* =========================================================
@@ -455,29 +457,35 @@ import {
       entrada
     );
   
+  
     if (
       !Number.isFinite(
         volumeAdicionadoMl
       ) ||
-      volumeAdicionadoMl < 0
+      volumeAdicionadoMl <
+        0
     ) {
       throw new Error(
         "O volume de titulante adicionado deve ser maior ou igual a zero."
       );
     }
   
+  
     const sistema =
       calcularSistemaPermanganometriaFerro(
         entrada
       );
   
+  
     const temperaturaC =
       entrada.temperaturaC ??
       25;
   
+  
     const volumeTotalMl =
       entrada.volumeAnalitoMl +
       volumeAdicionadoMl;
+  
   
     const regiao =
       determinarRegiaoTitulacao({
@@ -491,8 +499,6 @@ import {
           1e-9,
       });
   
-    const molFe2Inicial =
-      sistema.molFe2Inicial;
   
     const molMnO4Adicionado =
       calcularMols({
@@ -504,307 +510,91 @@ import {
           volumeAdicionadoMl,
       });
   
+  
     /*
      * =======================================================
-     * ANTES DO PE
+     * NOVO MODELO
      * =======================================================
+     *
+     * Não zeramos mais artificialmente
+     * Fe²⁺, Fe³⁺, MnO₄⁻ ou Mn²⁺.
+     *
+     * O potencial é encontrado impondo
+     * simultaneamente:
+     *
+     * E(Fe³⁺/Fe²⁺)
+     * =
+     * E(MnO₄⁻/Mn²⁺)
+     *
+     * e o balanço:
+     *
+     * n(Fe³⁺)
+     * =
+     * 5 n(Mn²⁺)
      */
+  
+    const equilibrio =
+      resolverEquilibrioPermanganometriaFerro({
+        molFeTotal:
+          sistema
+            .molFe2Inicial,
+  
+        molMnTotal:
+          molMnO4Adicionado,
+  
+        volumeTotalMl,
+  
+        concentracaoHPlusMolL:
+          entrada
+            .concentracaoHPlusMolL,
+  
+        temperaturaC,
+      });
+  
+  
+    let parControlador:
+      ResultadoPontoPermanganometria[
+        "parControlador"
+      ];
+  
+  
+    let descricao:
+      string;
+  
   
     if (
       regiao ===
       "antes_pe"
     ) {
-      /*
-       * Cada 1 mol MnO₄⁻
-       * oxida 5 mol Fe²⁺.
-       */
+      parControlador =
+        "Fe3+/Fe2+";
   
-      const molFe2Consumido =
-        5 *
-        molMnO4Adicionado;
   
-      const molFe3 =
-        molFe2Consumido;
-  
-      const molFe2 =
-        Math.max(
-          molFe2Inicial -
-            molFe2Consumido,
-          0
-        );
-  
-      const molMn2 =
-        molMnO4Adicionado;
-  
-      const concentracaoFe2MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molFe2,
-  
-          volumeTotalMl,
-        });
-  
-      const concentracaoFe3MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molFe3,
-  
-          volumeTotalMl,
-        });
-  
-      const concentracaoMn2MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molMn2,
-  
-          volumeTotalMl,
-        });
-  
-      /*
-       * Em V = 0 ainda não existe
-       * Fe³⁺ suficiente para definir
-       * o quociente Fe³⁺ / Fe²⁺.
-       */
-      if (
-        molFe3 <= 0 ||
-        molFe2 <= 0
-      ) {
-        return {
-          volumeAdicionadoMl,
-          volumeTotalMl,
-  
-          volumeEquivalenciaMl:
-            sistema
-              .volumeEquivalenciaMl,
-  
-          regiao,
-  
-          potencialV:
-            null,
-  
-          parControlador:
-            "Fe3+/Fe2+",
-  
-          molFe2,
-          molFe3,
-  
-          molMnO4:
-            0,
-  
-          molMn2,
-  
-          concentracaoFe2MolL,
-          concentracaoFe3MolL,
-  
-          concentracaoMnO4MolL:
-            0,
-  
-          concentracaoMn2MolL,
-  
-          descricao:
-            "Antes da adição de titulante ainda não há quantidade calculável de Fe³⁺ para aplicar diretamente a equação de Nernst ao par Fe³⁺/Fe²⁺.",
-        };
-      }
-  
-      const resultadoNernst =
-        calcularPotencialNernst({
-          par:
-            PAR_FERRO_III_FERRO_II,
-  
-          temperaturaC,
-  
-          atividades: {
-            "Fe3+":
-              concentracaoFe3MolL,
-  
-            "Fe2+":
-              concentracaoFe2MolL,
-          },
-        });
-  
-      return {
-        volumeAdicionadoMl,
-        volumeTotalMl,
-  
-        volumeEquivalenciaMl:
-          sistema
-            .volumeEquivalenciaMl,
-  
-        regiao,
-  
-        potencialV:
-          resultadoNernst.status ===
-          "ok"
-            ? resultadoNernst
-                .potencial
-            : null,
-  
-        parControlador:
-          "Fe3+/Fe2+",
-  
-        molFe2,
-        molFe3,
-  
-        molMnO4:
-          0,
-  
-        molMn2,
-  
-        concentracaoFe2MolL,
-        concentracaoFe3MolL,
-  
-        concentracaoMnO4MolL:
-          0,
-  
-        concentracaoMn2MolL,
-  
-        descricao:
-          "Antes do ponto de equivalência, o potencial é controlado predominantemente pelo par Fe³⁺/Fe²⁺.",
-      };
-    }
-  
-    /*
-     * =======================================================
-     * PONTO DE EQUIVALÊNCIA
-     * =======================================================
-     */
-  
-    if (
+      descricao =
+        "Antes do ponto de equivalência, o par Fe³⁺/Fe²⁺ é predominante, mas o potencial é obtido pelo equilíbrio simultâneo com MnO₄⁻/Mn²⁺.";
+    } else if (
       regiao ===
       "pe"
     ) {
-      const molMn2 =
-        sistema
-          .molMnO4Equivalencia;
+      parControlador =
+        "equivalencia";
   
-      const molFe3 =
-        molFe2Inicial;
   
-      const concentracaoFe3MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molFe3,
+      descricao =
+        "No ponto de equivalência, o potencial é obtido pelo equilíbrio simultâneo entre os pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺.";
+    } else {
+      parControlador =
+        "MnO4-/Mn2+";
   
-          volumeTotalMl,
-        });
   
-      const concentracaoMn2MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molMn2,
-  
-          volumeTotalMl,
-        });
-  
-      return {
-        volumeAdicionadoMl,
-        volumeTotalMl,
-  
-        volumeEquivalenciaMl:
-          sistema
-            .volumeEquivalenciaMl,
-  
-        regiao,
-  
-        potencialV:
-          sistema
-            .potencialEquivalenciaV,
-  
-        parControlador:
-          "equivalencia",
-  
-        molFe2:
-          0,
-  
-        molFe3,
-  
-        molMnO4:
-          0,
-  
-        molMn2,
-  
-        concentracaoFe2MolL:
-          0,
-  
-        concentracaoFe3MolL,
-  
-        concentracaoMnO4MolL:
-          0,
-  
-        concentracaoMn2MolL,
-  
-        descricao:
-          "No ponto de equivalência, o potencial é estimado pela combinação dos potenciais formais dos pares MnO₄⁻/Mn²⁺ e Fe³⁺/Fe²⁺.",
-      };
+      descricao =
+        "Após o ponto de equivalência, o par MnO₄⁻/Mn²⁺ é predominante, mas o potencial continua sendo obtido pelo equilíbrio simultâneo dos dois pares.";
     }
   
-    /*
-     * =======================================================
-     * APÓS O PE
-     * =======================================================
-     */
-  
-    const molMnO4Excesso =
-      Math.max(
-        molMnO4Adicionado -
-          sistema
-            .molMnO4Equivalencia,
-        0
-      );
-  
-    const molMn2 =
-      sistema
-        .molMnO4Equivalencia;
-  
-    const molFe3 =
-      molFe2Inicial;
-  
-    const concentracaoMnO4MolL =
-      calcularConcentracaoAposMistura({
-        mols:
-          molMnO4Excesso,
-  
-        volumeTotalMl,
-      });
-  
-    const concentracaoMn2MolL =
-      calcularConcentracaoAposMistura({
-        mols:
-          molMn2,
-  
-        volumeTotalMl,
-      });
-  
-    const concentracaoFe3MolL =
-      calcularConcentracaoAposMistura({
-        mols:
-          molFe3,
-  
-        volumeTotalMl,
-      });
-  
-    const resultadoNernst =
-      calcularPotencialNernst({
-        par:
-          PAR_PERMANGANATO_MANGANES,
-  
-        temperaturaC,
-  
-        atividades: {
-          "MnO4-":
-            concentracaoMnO4MolL,
-  
-          "Mn2+":
-            concentracaoMn2MolL,
-  
-          "H+":
-            entrada
-              .concentracaoHPlusMolL,
-        },
-      });
   
     return {
       volumeAdicionadoMl,
+  
       volumeTotalMl,
   
       volumeEquivalenciaMl:
@@ -814,35 +604,43 @@ import {
       regiao,
   
       potencialV:
-        resultadoNernst.status ===
-        "ok"
-          ? resultadoNernst
-              .potencial
-          : null,
+        equilibrio
+          .potencialV,
   
-      parControlador:
-        "MnO4-/Mn2+",
+      parControlador,
   
       molFe2:
-        0,
+        equilibrio
+          .molFe2,
   
-      molFe3,
+      molFe3:
+        equilibrio
+          .molFe3,
   
       molMnO4:
-        molMnO4Excesso,
+        equilibrio
+          .molMnO4,
   
-      molMn2,
+      molMn2:
+        equilibrio
+          .molMn2,
   
       concentracaoFe2MolL:
-        0,
+        equilibrio
+          .concentracaoFe2MolL,
   
-      concentracaoFe3MolL,
+      concentracaoFe3MolL:
+        equilibrio
+          .concentracaoFe3MolL,
   
-      concentracaoMnO4MolL,
+      concentracaoMnO4MolL:
+        equilibrio
+          .concentracaoMnO4MolL,
   
-      concentracaoMn2MolL,
+      concentracaoMn2MolL:
+        equilibrio
+          .concentracaoMn2MolL,
   
-      descricao:
-        "Após o ponto de equivalência, o excesso de permanganato faz com que o potencial seja controlado predominantemente pelo par MnO₄⁻/Mn²⁺.",
+      descricao,
     };
   }

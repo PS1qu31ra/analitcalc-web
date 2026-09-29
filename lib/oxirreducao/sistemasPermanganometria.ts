@@ -89,10 +89,10 @@ export const SISTEMA_PEROXIDO_HIDROGENIO:
     "KMnO₄",
 
   status:
-    "em_desenvolvimento",
+    "disponivel",
 
   observacao:
-    "O motor específico será implementado na próxima etapa.",
+    "Sistema com motor específico de estequiometria, potencial redox e curva potenciométrica.",
 };
 
 
@@ -117,10 +117,10 @@ export const SISTEMA_OXALATO:
     "KMnO₄",
 
   status:
-    "em_desenvolvimento",
+    "disponivel",
 
   observacao:
-    "O sistema requer tratamento próprio das condições experimentais e será implementado separadamente.",
+    "Estequiometria e condições experimentais disponíveis. O modelo potenciométrico específico permanece em desenvolvimento.",
 };
 
 
