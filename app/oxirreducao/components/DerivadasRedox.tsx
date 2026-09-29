@@ -12,6 +12,10 @@ import {
   
   
   type DerivadasRedoxProps = {
+    sistema:
+      | "ferro-ii"
+      | "peroxido-hidrogenio";
+  
     volumeEquivalenciaMl:
       number;
   
@@ -809,6 +813,7 @@ import {
    * ======================================================= */
   
   export default function DerivadasRedox({
+    sistema,
     volumeEquivalenciaMl,
     pontos,
   }: DerivadasRedoxProps) {
@@ -818,19 +823,55 @@ import {
       );
   
   
-    const erroPrimeira =
+    const ehPeroxido =
+      sistema ===
+      "peroxido-hidrogenio";
+  
+  
+    const nomeSistema =
+      ehPeroxido
+        ? "H₂O₂/MnO₄⁻"
+        : "Fe²⁺/MnO₄⁻";
+  
+  
+    const proporcaoEstequiometrica =
+      ehPeroxido
+        ? "5 H₂O₂ : 2 MnO₄⁻"
+        : "5 Fe²⁺ : 1 MnO₄⁻";
+  
+  
+      const erroAbsolutoPrimeira =
       resultado
-        .volumePEPrimeiraDerivadaMl -
+        .volumePFPrimeiraDerivadaMl -
       volumeEquivalenciaMl;
-  
-  
-    const erroSegunda =
+    
+    
+    const erroRelativoPrimeira =
+      (
+        erroAbsolutoPrimeira /
+        volumeEquivalenciaMl
+      ) *
+      100;
+    
+    
+    const erroAbsolutoSegunda =
       resultado
-        .volumePESegundaDerivadaMl !==
+        .volumePFSegundaDerivadaMl !==
         null
         ? resultado
-            .volumePESegundaDerivadaMl -
+            .volumePFSegundaDerivadaMl -
           volumeEquivalenciaMl
+        : null;
+    
+    
+    const erroRelativoSegunda =
+      erroAbsolutoSegunda !==
+      null
+        ? (
+            erroAbsolutoSegunda /
+            volumeEquivalenciaMl
+          ) *
+          100
         : null;
   
   
@@ -869,216 +910,267 @@ import {
     return (
       <section className="oxirreducaoTabPanel">
         <header className="oxirreducaoTabHeader">
-          <span className="oxirreducaoSectionLabel">
-            Derivadas
-          </span>
-  
-          <h3>
-            Determinação matemática do PE
-          </h3>
-  
-          <p>
-  As derivadas são calculadas numericamente a partir
-  da curva potenciométrica teórica, utilizando
-  diferenças centradas e tratamento específico para
-  os diferentes espaçamentos de volume próximos ao
-  ponto de equivalência.
+  <span className="oxirreducaoSectionLabel">
+    Derivadas
+  </span>
+
+  <h3>
+    PE teórico × PF teórico
+  </h3>
+
+  <p>
+  O PE corresponde ao ponto de equivalência
+  determinado pela estequiometria da reação. O PF
+  teórico é determinado matematicamente pela região
+  de inflexão da curva potenciométrica. No sistema{" "}
+  <strong>
+    {nomeSistema}
+  </strong>
+  , a assimetria da titulação faz com que PE e PF
+  não precisem coincidir.
 </p>
-        </header>
+</header>
+
+
+<div className="oxirreducaoDerivativeSummary">
+<article>
+  <span>
+    PE estequiométrico
+  </span>
+
+  <strong>
+    {formatarNumero(
+      volumeEquivalenciaMl,
+      3
+    )}{" "}
+    mL
+  </strong>
+
+  <small>
+    {
+      proporcaoEstequiometrica
+    }
+  </small>
+</article>
+
+
+  <article>
+    <span>
+      PF teórico — 1ª derivada
+    </span>
+
+    <strong>
+      {formatarNumero(
+        resultado
+          .volumePFPrimeiraDerivadaMl,
+        3
+      )}{" "}
+      mL
+    </strong>
+
+    <small>
+      VPF − VPE ={" "}
+      {formatarNumero(
+        erroAbsolutoPrimeira,
+        3
+      )}{" "}
+      mL
+    </small>
+  </article>
+
+
+  <article>
+    <span>
+      Erro relativo — 1ª derivada
+    </span>
+
+    <strong>
+      {formatarNumero(
+        erroRelativoPrimeira,
+        4
+      )}
+      %
+    </strong>
+
+    <small>
+      ((VPF − VPE) / VPE) × 100
+    </small>
+  </article>
+
+
+  <article>
+    <span>
+      PF teórico — 2ª derivada
+    </span>
+
+    <strong>
+      {resultado
+        .volumePFSegundaDerivadaMl !==
+      null
+        ? `${formatarNumero(
+            resultado
+              .volumePFSegundaDerivadaMl,
+            3
+          )} mL`
+        : "Não localizado"}
+    </strong>
+
+    {erroAbsolutoSegunda !==
+      null && (
+      <small>
+        VPF − VPE ={" "}
+        {formatarNumero(
+          erroAbsolutoSegunda,
+          3
+        )}{" "}
+        mL
+      </small>
+    )}
+  </article>
+
+
+  <article>
+    <span>
+      Erro relativo — 2ª derivada
+    </span>
+
+    <strong>
+      {erroRelativoSegunda !==
+      null
+        ? `${formatarNumero(
+            erroRelativoSegunda,
+            4
+          )}%`
+        : "—"}
+    </strong>
+
+    <small>
+      ((VPF − VPE) / VPE) × 100
+    </small>
+  </article>
+
+
+  <article>
+    <span>
+      Máximo de ΔE/ΔV
+    </span>
+
+    <strong>
+      {formatarNumero(
+        resultado
+          .valorMaximoPrimeiraDerivada,
+        4
+      )}
+    </strong>
+
+    <small>
+      V·mL⁻¹
+    </small>
+  </article>
+</div>
   
   
-        <div className="oxirreducaoDerivativeSummary">
-          <article>
-            <span>
-              PE estequiométrico
-            </span>
-  
-            <strong>
-              {formatarNumero(
-                volumeEquivalenciaMl,
-                3
-              )}{" "}
-              mL
-            </strong>
-          </article>
-  
-  
-          <article>
-          <span>
-  Máximo de dE/dV
-</span>
-  
-            <strong>
-              {formatarNumero(
-                resultado
-                  .volumePEPrimeiraDerivadaMl,
-                3
-              )}{" "}
-              mL
-            </strong>
-  
-            <small>
-              Δ ={" "}
-              {formatarNumero(
-                erroPrimeira,
-                3
-              )}{" "}
-              mL
-            </small>
-          </article>
-  
-  
-          <article>
-          <span>
-  d²E/dV² = 0
-</span>
-  
-            <strong>
-              {resultado
-                .volumePESegundaDerivadaMl !==
-              null
-                ? `${formatarNumero(
-                    resultado
-                      .volumePESegundaDerivadaMl,
-                    3
-                  )} mL`
-                : "Não localizado"}
-            </strong>
-  
-            {erroSegunda !==
-              null && (
-              <small>
-                Δ ={" "}
-                {formatarNumero(
-                  erroSegunda,
-                  3
-                )}{" "}
-                mL
-              </small>
-            )}
-          </article>
+<div className="oxirreducaoDerivativeSection">
+  <header>
+    <span>
+      1ª derivada
+    </span>
+
+    <h4>
+      ΔE / ΔV
+    </h4>
+
+    <p>
+      A primeira derivada é calculada entre pontos
+      consecutivos da curva E × V e associada ao
+      volume médio de cada intervalo. O máximo de
+      ΔE/ΔV determina o PF teórico pelo método da
+      primeira derivada.
+    </p>
+  </header>
+
+
+  <GraficoDerivada
+    pontos={
+      pontosPrimeira
+    }
+    tituloEixoY="ΔE/ΔV (V·mL⁻¹)"
+    volumeEquivalenciaMl={
+      volumeEquivalenciaMl
+    }
+    volumeDestaque={
+      resultado
+        .volumePFPrimeiraDerivadaMl
+    }
+    valorDestaque={
+      resultado
+        .valorMaximoPrimeiraDerivada
+    }
+    rotuloDestaque="PF — 1ª derivada"
+  />
+</div>
   
   
-          <article>
-          <span>
-  Máximo de dE/dV
-</span>
-  
-            <strong>
-              {formatarNumero(
-                resultado
-                  .valorMaximoPrimeiraDerivada,
-                4
-              )}
-            </strong>
-  
-            <small>
-              V·mL⁻¹
-            </small>
-          </article>
-        </div>
-  
-  
-        <div className="oxirreducaoDerivativeSection">
-          <header>
-            <span>
-              1ª derivada
-            </span>
-  
-            <h4>
-  dE / dV
-</h4>
-  
-<p>
-  O máximo de dE/dV identifica o ponto de maior
-  inclinação da curva potenciométrica teórica.
-  Como a curva é calculada numericamente em uma
-  malha refinada ao redor do PE, a derivada é
-  avaliada diretamente nos volumes da curva.
-</p>
-          </header>
-  
-  
-          <GraficoDerivada
-            pontos={
-              pontosPrimeira
-            }
-            tituloEixoY="dE/dV (V·mL⁻¹)"
-            volumeEquivalenciaMl={
-              volumeEquivalenciaMl
-            }
-            volumeDestaque={
-              resultado
-                .volumePEPrimeiraDerivadaMl
-            }
-            valorDestaque={
-              resultado
-                .valorMaximoPrimeiraDerivada
-            }
-            rotuloDestaque="Máximo dE/dV"
-          />
-        </div>
+<div className="oxirreducaoDerivativeSection">
+  <header>
+    <span>
+      2ª derivada
+    </span>
+
+    <h4>
+      Δ²E / ΔV²
+    </h4>
+
+    <p>
+      A segunda derivada muda de sinal na região de
+      inflexão da curva E × V. O cruzamento por zero
+      é estimado por interpolação entre os pontos
+      adjacentes e fornece uma segunda estimativa do
+      PF teórico.
+    </p>
+  </header>
+
+
+  <GraficoDerivada
+    pontos={
+      pontosSegunda
+    }
+    tituloEixoY="Δ²E/ΔV² (V·mL⁻²)"
+    volumeEquivalenciaMl={
+      volumeEquivalenciaMl
+    }
+    centralizarEmZero
+    volumeDestaque={
+      resultado
+        .volumePFSegundaDerivadaMl
+    }
+    valorDestaque={
+      resultado
+        .volumePFSegundaDerivadaMl !==
+      null
+        ? 0
+        : null
+    }
+    rotuloDestaque="PF — 2ª derivada"
+  />
+</div>
   
   
-        <div className="oxirreducaoDerivativeSection">
-          <header>
-            <span>
-              2ª derivada
-            </span>
-  
-            <h4>
-  d²E / dV²
-</h4>
-  
-            <p>
-              A segunda derivada apresenta mudança de sinal
-              próximo ao ponto de inflexão da curva E × V.
-              O cruzamento por zero é estimado por interpolação
-              linear entre os pontos adjacentes.
-            </p>
-          </header>
-  
-  
-          <GraficoDerivada
-            pontos={
-              pontosSegunda
-            }
-            tituloEixoY="d²E/dV² (V·mL⁻²)"
-            volumeEquivalenciaMl={
-              volumeEquivalenciaMl
-            }
-            centralizarEmZero
-            volumeDestaque={
-              resultado
-                .volumePESegundaDerivadaMl
-            }
-            valorDestaque={
-              resultado
-                .volumePESegundaDerivadaMl !==
-              null
-                ? 0
-                : null
-            }
-            rotuloDestaque="zero"
-          />
-        </div>
-  
-  
-        <div className="oxirreducaoEducationalNote">
-          <strong>
-            Como interpretar
-          </strong>
-  
-          <p>
-            A linha vertical tracejada representa o PE obtido
-            pela estequiometria. Na primeira derivada, buscamos
-            o máximo de ΔE/ΔV. Na segunda derivada, buscamos a
-            mudança de sinal e estimamos o cruzamento por zero.
-            Os gráficos utilizam uma janela ampliada ao redor do
-            PE apenas para visualização; os cálculos utilizam
-            todos os pontos válidos da curva E × V.
-          </p>
-        </div>
+<div className="oxirreducaoEducationalNote">
+  <strong>
+    Como interpretar
+  </strong>
+
+  <p>
+    A linha vertical tracejada representa o PE
+    estequiométrico. Os marcadores representam o PF
+    teórico determinado pelas derivadas. O erro absoluto
+    é VPF − VPE. O erro relativo é calculado por
+    ((VPF − VPE) / VPE) × 100. O sinal é preservado:
+    valores negativos indicam PF antes do PE e valores
+    positivos indicam PF depois do PE.
+  </p>
+</div>
       </section>
     );
   }

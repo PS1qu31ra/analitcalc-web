@@ -46,10 +46,11 @@ import type {
             </h3>
   
             <p>
-              Antes do PE, o modelo utiliza o equilíbrio O₂/H₂O₂.
-              Após o PE, o potencial passa a ser controlado pelo
-              excesso de MnO₄⁻.
-            </p>
+  O potencial é calculado pelo equilíbrio simultâneo entre
+  os pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺ em todos os volumes da
+  titulação. Antes e depois do PE muda apenas o par
+  predominante no controle do potencial.
+</p>
           </div>
   
   

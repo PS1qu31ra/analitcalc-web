@@ -1,15 +1,24 @@
 import type {
-    ResultadoCurvaRedox,
-  } from "@/lib/oxirreducao/curvaRedox";
-  
-  
-  type GraficoComparacaoConcentracaoRedoxProps = {
-    original:
-      ResultadoCurvaRedox;
-  
-    simulado:
-      ResultadoCurvaRedox;
-  };
+  ResultadoCurvaRedox,
+} from "@/lib/oxirreducao/curvaRedox";
+
+import type {
+  ResultadoCurvaRedoxPeroxido,
+} from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
+
+type CurvaComparavelRedox =
+  | ResultadoCurvaRedox
+  | ResultadoCurvaRedoxPeroxido;
+
+
+type GraficoComparacaoConcentracaoRedoxProps = {
+  original:
+    CurvaComparavelRedox;
+
+  simulado:
+    CurvaComparavelRedox;
+};
   
   
   function formatarNumero(

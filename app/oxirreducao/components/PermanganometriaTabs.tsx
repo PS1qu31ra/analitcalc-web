@@ -136,17 +136,40 @@ function abaDisponivel({
 
 
   /*
-   * Neste momento, apenas o sistema
-   * Fe²⁺ já utiliza o novo motor de
-   * equilíbrio contínuo.
-   *
-   * As derivadas do H₂O₂ serão
-   * reativadas após a mesma correção
-   * ser aplicada à curva desse sistema.
-   */
+ * Fe²⁺ e H₂O₂ já utilizam
+ * o motor de equilíbrio contínuo
+ * e podem ter o PF determinado
+ * pelas derivadas da curva E × V.
+ */
+if (
+  aba ===
+    "derivadas"
+) {
+  return (
+    sistemaAtivo ===
+      "ferro-ii" ||
+    sistemaAtivo ===
+      "peroxido-hidrogenio"
+  );
+}
+  
+  
+if (
+  aba ===
+    "concentracao"
+) {
+  return (
+    sistemaAtivo ===
+      "ferro-ii" ||
+    sistemaAtivo ===
+      "peroxido-hidrogenio"
+  );
+}
+  
+  
   if (
     aba ===
-      "derivadas"
+      "tempo-real"
   ) {
     return (
       sistemaAtivo ===
@@ -157,7 +180,7 @@ function abaDisponivel({
   
   if (
     aba ===
-      "concentracao"
+      "erro-experimental"
   ) {
     return (
       sistemaAtivo ===

@@ -11,16 +11,39 @@ import {
   type ResultadoCurvaRedox,
 } from "@/lib/oxirreducao/curvaRedox";
 
+import {
+  gerarCurvaPermanganometriaPeroxido,
+  type ResultadoCurvaRedoxPeroxido,
+} from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
 import type {
   EntradaPermanganometriaFerro,
 } from "@/lib/oxirreducao/permanganometria";
 
+import type {
+  EntradaPermanganometriaPeroxido,
+} from "@/lib/oxirreducao/permanganometriaPeroxido";
+
 import GraficoComparacaoConcentracaoRedox from "./GraficoComparacaoConcentracaoRedox";
 
 
+type ResultadoCurvaConcentracao =
+  | ResultadoCurvaRedox
+  | ResultadoCurvaRedoxPeroxido;
+
+
+type EntradaConcentracao =
+  | EntradaPermanganometriaFerro
+  | EntradaPermanganometriaPeroxido;
+
+
 type EfeitoConcentracaoRedoxProps = {
+  sistema:
+    | "ferro-ii"
+    | "peroxido-hidrogenio";
+
   resultadoBase:
-    ResultadoCurvaRedox;
+    ResultadoCurvaConcentracao;
 };
 
 
@@ -91,10 +114,34 @@ function formatarValorRapido(
 
 
 export default function EfeitoConcentracaoRedox({
+  sistema,
   resultadoBase,
 }: EfeitoConcentracaoRedoxProps) {
   const entradaBase =
     resultadoBase.entrada;
+
+
+  const ehPeroxido =
+    sistema ===
+    "peroxido-hidrogenio";
+
+
+  const rotuloAnalito =
+    ehPeroxido
+      ? "H₂O₂"
+      : "Fe²⁺";
+
+
+  const fatorEstequiometricoTexto =
+    ehPeroxido
+      ? "2/5 ×"
+      : "1/5 ×";
+
+
+  const explicacaoConstantes =
+    ehPeroxido
+      ? "O volume inicial da amostra, a concentração de H⁺, a atividade de O₂ e a temperatura permanecem iguais ao sistema definido na calculadora principal."
+      : "O volume inicial da amostra, a concentração de H⁺ e a temperatura permanecem iguais ao sistema definido na calculadora principal.";
 
 
   const [
@@ -121,22 +168,22 @@ export default function EfeitoConcentracaoRedox({
     );
 
 
-  const [
-    resultadoSimulado,
-    setResultadoSimulado,
-  ] =
-    useState<ResultadoCurvaRedox>(
-      resultadoBase
-    );
+    const [
+      resultadoSimulado,
+      setResultadoSimulado,
+    ] =
+      useState<ResultadoCurvaConcentracao>(
+        resultadoBase
+      );
 
 
-  const [
-    entradaSimulada,
-    setEntradaSimulada,
-  ] =
-    useState<EntradaPermanganometriaFerro>(
-      entradaBase
-    );
+      const [
+        entradaSimulada,
+        setEntradaSimulada,
+      ] =
+        useState<EntradaConcentracao>(
+          entradaBase
+        );
 
 
   const [
@@ -257,6 +304,73 @@ export default function EfeitoConcentracaoRedox({
     );
   }
 
+  function gerarCurvaSimulada({
+    concentracaoAnalitoMolL,
+    concentracaoTitulanteMolL,
+  }: {
+    concentracaoAnalitoMolL:
+      number;
+
+    concentracaoTitulanteMolL:
+      number;
+  }) {
+    if (
+      sistema ===
+      "peroxido-hidrogenio"
+    ) {
+      const novaEntrada:
+        EntradaPermanganometriaPeroxido =
+        {
+          ...(
+            entradaBase as
+              EntradaPermanganometriaPeroxido
+          ),
+
+          concentracaoAnalitoMolL,
+
+          concentracaoTitulanteMolL,
+        };
+
+
+      return {
+        entrada:
+          novaEntrada,
+
+        curva:
+          gerarCurvaPermanganometriaPeroxido({
+            entrada:
+              novaEntrada,
+          }),
+      };
+    }
+
+
+    const novaEntrada:
+      EntradaPermanganometriaFerro =
+      {
+        ...(
+          entradaBase as
+            EntradaPermanganometriaFerro
+        ),
+
+        concentracaoAnalitoMolL,
+
+        concentracaoTitulanteMolL,
+      };
+
+
+    return {
+      entrada:
+        novaEntrada,
+
+      curva:
+        gerarCurvaPermanganometriaFerro({
+          entrada:
+            novaEntrada,
+      }),
+    };
+  }
+
   function aplicarSimulacao(
     event:
       FormEvent<HTMLFormElement>
@@ -265,7 +379,7 @@ export default function EfeitoConcentracaoRedox({
 
 
     try {
-      const novaConcentracaoFe2 =
+      const novaConcentracaoAnalito =
         converterNumero(
           concentracaoFe2
         );
@@ -279,13 +393,13 @@ export default function EfeitoConcentracaoRedox({
 
       if (
         !Number.isFinite(
-          novaConcentracaoFe2
+          novaConcentracaoAnalito
         ) ||
-        novaConcentracaoFe2 <=
+        novaConcentracaoAnalito <=
           0
       ) {
         throw new Error(
-          "A concentração de Fe²⁺ deve ser positiva."
+          `A concentração de ${rotuloAnalito} deve ser positiva.`
         );
       }
 
@@ -303,33 +417,23 @@ export default function EfeitoConcentracaoRedox({
       }
 
 
-      const novaEntrada:
-        EntradaPermanganometriaFerro =
-        {
-          ...entradaBase,
-
+      const simulacao =
+        gerarCurvaSimulada({
           concentracaoAnalitoMolL:
-            novaConcentracaoFe2,
+            novaConcentracaoAnalito,
 
           concentracaoTitulanteMolL:
             novaConcentracaoKMnO4,
-        };
-
-
-      const novaCurva =
-        gerarCurvaPermanganometriaFerro({
-          entrada:
-            novaEntrada,
         });
 
 
       setEntradaSimulada(
-        novaEntrada
+        simulacao.entrada
       );
 
 
       setResultadoSimulado(
-        novaCurva
+        simulacao.curva
       );
 
 
@@ -443,10 +547,11 @@ export default function EfeitoConcentracaoRedox({
         </h3>
 
         <p>
-          Altere livremente as concentrações de Fe²⁺ e de
-          KMnO₄. Os dois valores podem ser modificados
-          simultaneamente e o sistema será recalculado mantendo
-          volume da amostra, acidez e temperatura constantes.
+          Altere livremente as concentrações de{" "}
+          {rotuloAnalito} e de KMnO₄. Os dois valores podem
+          ser modificados simultaneamente e o sistema será
+          recalculado mantendo as demais condições
+          experimentais constantes.
         </p>
       </header>
 
@@ -475,7 +580,7 @@ export default function EfeitoConcentracaoRedox({
 
 
           <label>
-            Concentração de Fe²⁺
+            Concentração de {rotuloAnalito}
 
             <div className="oxirreducaoInputUnit">
               <input
@@ -584,8 +689,8 @@ export default function EfeitoConcentracaoRedox({
 
         <div className="oxirreducaoConcentracaoComparison">
           <article>
-            <span>
-              Fe²⁺ original
+          <span>
+              {rotuloAnalito} original
             </span>
 
             <strong>
@@ -600,8 +705,8 @@ export default function EfeitoConcentracaoRedox({
 
 
           <article>
-            <span>
-              Fe²⁺ simulado
+          <span>
+              {rotuloAnalito} simulado
             </span>
 
             <strong>
@@ -673,7 +778,7 @@ export default function EfeitoConcentracaoRedox({
         </span>
 
         <strong>
-          Fe²⁺
+          {rotuloAnalito}
         </strong>
       </div>
 
@@ -1006,12 +1111,12 @@ export default function EfeitoConcentracaoRedox({
             </span>
 
             <strong>
-              VPE ∝
+              VPE ∝ {fatorEstequiometricoTexto}
             </strong>
 
             <div className="oxirreducaoConcentracaoFraction">
               <span>
-                [Fe²⁺]
+                [{rotuloAnalito}]
               </span>
 
               <i />
@@ -1022,7 +1127,12 @@ export default function EfeitoConcentracaoRedox({
             </div>
 
             <p>
-              Quanto maior essa razão, maior será o volume de
+              O fator estequiométrico é{" "}
+              {ehPeroxido
+                ? "2/5"
+                : "1/5"}{" "}
+              para este sistema. Quanto maior a razão entre
+              titulado e titulante, maior será o volume de
               titulante necessário para atingir a equivalência.
             </p>
           </div>
@@ -1042,7 +1152,7 @@ export default function EfeitoConcentracaoRedox({
               </strong>
 
               <small>
-                [Fe²⁺] / [MnO₄⁻]
+                [{rotuloAnalito}] / [MnO₄⁻]
               </small>
             </article>
 
@@ -1065,7 +1175,7 @@ export default function EfeitoConcentracaoRedox({
               </strong>
 
               <small>
-                [Fe²⁺] / [MnO₄⁻]
+                [{rotuloAnalito}] / [MnO₄⁻]
               </small>
             </article>
 
@@ -1093,8 +1203,8 @@ export default function EfeitoConcentracaoRedox({
 
         <div className="oxirreducaoConcentracaoInterpretacaoFooter">
           <div>
-            <strong>
-              ↑ [Fe²⁺]
+          <strong>
+              ↑ [{rotuloAnalito}]
             </strong>
 
             <span>
@@ -1130,10 +1240,9 @@ export default function EfeitoConcentracaoRedox({
         </strong>
 
         <p>
-          Esta simulação altera somente as duas concentrações
-          informadas. O volume inicial da amostra, a
-          concentração de H⁺ e a temperatura permanecem iguais
-          ao sistema definido na calculadora principal.
+          Esta simulação altera somente as concentrações de{" "}
+          {rotuloAnalito} e KMnO₄.{" "}
+          {explicacaoConstantes}
         </p>
       </div>
     </section>

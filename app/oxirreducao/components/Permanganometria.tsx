@@ -60,6 +60,10 @@ import DerivadasRedox from "./DerivadasRedox";
 
 import EfeitoConcentracaoRedox from "./EfeitoConcentracaoRedox";
 
+import TempoRealRedox from "./TempoRealRedox";
+
+import ErroExperimentalRedox from "./ErroExperimentalRedox";
+
 
 function converterNumero(
   valor: string
@@ -890,6 +894,7 @@ export default function Permanganometria() {
 {ehFerro &&
   abaAtiva === "derivadas" && (
     <DerivadasRedox
+      sistema="ferro-ii"
       volumeEquivalenciaMl={
         resultadoFerro
           .volumeEquivalenciaMl
@@ -905,6 +910,27 @@ export default function Permanganometria() {
   abaAtiva ===
     "concentracao" && (
     <EfeitoConcentracaoRedox
+      sistema="ferro-ii"
+      resultadoBase={
+        resultadoFerro
+      }
+    />
+  )}
+
+{ehFerro &&
+  abaAtiva ===
+    "tempo-real" && (
+    <TempoRealRedox
+      resultadoBase={
+        resultadoFerro
+      }
+    />
+  )}
+
+{ehFerro &&
+  abaAtiva ===
+    "erro-experimental" && (
+    <ErroExperimentalRedox
       resultadoBase={
         resultadoFerro
       }
@@ -949,6 +975,7 @@ export default function Permanganometria() {
 {ehPeroxido &&
   abaAtiva === "derivadas" && (
     <DerivadasRedox
+      sistema="peroxido-hidrogenio"
       volumeEquivalenciaMl={
         resultadoPeroxido
           .volumeEquivalenciaMl
@@ -956,6 +983,17 @@ export default function Permanganometria() {
       pontos={
         resultadoPeroxido
           .pontosValidos
+      }
+    />
+  )}
+
+{ehPeroxido &&
+  abaAtiva ===
+    "concentracao" && (
+    <EfeitoConcentracaoRedox
+      sistema="peroxido-hidrogenio"
+      resultadoBase={
+        resultadoPeroxido
       }
     />
   )}

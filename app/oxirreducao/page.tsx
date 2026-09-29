@@ -4,6 +4,7 @@ import {
   useState,
 } from "react";
 
+import "../precipitacao/styles/precipitacao.css";
 import "./styles/oxirreducao.css";
 
 import ModuleHeader from "./components/ModuleHeader";

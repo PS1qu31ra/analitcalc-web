@@ -18,6 +18,10 @@ type PontoCurvaPreparado = {
 
 
 export type PontoPrimeiraDerivadaRedox = {
+  /*
+   * Volume médio do intervalo
+   * utilizado em ΔE/ΔV.
+   */
   volumeMl: number;
 
   primeiraDerivada: number;
@@ -25,6 +29,10 @@ export type PontoPrimeiraDerivadaRedox = {
 
 
 export type PontoSegundaDerivadaRedox = {
+  /*
+   * Volume médio entre dois pontos
+   * consecutivos da 1ª derivada.
+   */
   volumeMl: number;
 
   segundaDerivada: number;
@@ -38,13 +46,21 @@ export type ResultadoDerivadasRedox = {
   segundaDerivada:
     PontoSegundaDerivadaRedox[];
 
-  volumePEPrimeiraDerivadaMl:
+  /*
+   * PF teórico determinado pelo
+   * máximo da primeira derivada.
+   */
+  volumePFPrimeiraDerivadaMl:
     number;
 
   valorMaximoPrimeiraDerivada:
     number;
 
-  volumePESegundaDerivadaMl:
+  /*
+   * PF teórico determinado pelo
+   * zero da segunda derivada.
+   */
+  volumePFSegundaDerivadaMl:
     number | null;
 };
 
@@ -111,59 +127,42 @@ function prepararPontos(
 
 
 /* =========================================================
- * DERIVADAS CENTRADAS
+ * PRIMEIRA DERIVADA
  * ======================================================= */
 
-/**
- * Agora que a curva E × V é contínua,
- * podemos calcular as derivadas
- * diretamente NOS PONTOS ORIGINAIS
- * da curva.
+/*
+ * ΔE / ΔV =
+ *
+ * E(i+1) - E(i)
+ * ----------------
+ * V(i+1) - V(i)
  *
  *
- * Para três pontos:
+ * A derivada é atribuída ao
+ * VOLUME MÉDIO:
  *
- * x(i-1), x(i), x(i+1)
+ * Vm =
  *
- *
- * usamos uma aproximação central
- * válida também para espaçamentos
- * não uniformes.
- *
- *
- * Isso é importante porque a nossa
- * curva possui:
- *
- * - malha normal;
- * - malha densa;
- * - malha ultra-densa perto do PE.
+ * V(i+1) + V(i)
+ * ----------------
+ *        2
  */
-function calcularDerivadasCentradas(
+
+function calcularPrimeiraDerivada(
   pontos:
     PontoCurvaPreparado[]
-) {
-  const primeiraDerivada:
+): PontoPrimeiraDerivadaRedox[] {
+  const resultado:
     PontoPrimeiraDerivadaRedox[] =
     [];
 
 
-  const segundaDerivada:
-    PontoSegundaDerivadaRedox[] =
-    [];
-
-
   for (
-    let indice = 1;
+    let indice = 0;
     indice <
     pontos.length - 1;
     indice += 1
   ) {
-    const anterior =
-      pontos[
-        indice - 1
-      ];
-
-
     const atual =
       pontos[
         indice
@@ -176,156 +175,159 @@ function calcularDerivadasCentradas(
       ];
 
 
-    const h1 =
-      atual.volumeMl -
-      anterior.volumeMl;
-
-
-    const h2 =
+    const deltaVolume =
       proximo.volumeMl -
       atual.volumeMl;
 
 
     if (
       !Number.isFinite(
-        h1
+        deltaVolume
       ) ||
-      !Number.isFinite(
-        h2
-      ) ||
-      h1 <=
-        0 ||
-      h2 <=
+      deltaVolume <=
         0
     ) {
       continue;
     }
 
 
-    /*
-     * =====================================================
-     * PRIMEIRA DERIVADA
-     * =====================================================
-     *
-     * Fórmula central para malha
-     * não necessariamente uniforme.
-     */
+    const deltaPotencial =
+      proximo.potencialV -
+      atual.potencialV;
 
-    const coeficienteAnterior =
-      -h2 /
+
+    const primeiraDerivada =
+      deltaPotencial /
+      deltaVolume;
+
+
+    const volumeMedio =
       (
-        h1 *
-        (
-          h1 +
-          h2
-        )
-      );
-
-
-    const coeficienteAtual =
-      (
-        h2 -
-        h1
+        atual.volumeMl +
+        proximo.volumeMl
       ) /
-      (
-        h1 *
-        h2
-      );
-
-
-    const coeficienteProximo =
-      h1 /
-      (
-        h2 *
-        (
-          h1 +
-          h2
-        )
-      );
-
-
-    const primeira =
-      coeficienteAnterior *
-        anterior.potencialV +
-      coeficienteAtual *
-        atual.potencialV +
-      coeficienteProximo *
-        proximo.potencialV;
-
-
-    /*
-     * =====================================================
-     * SEGUNDA DERIVADA
-     * =====================================================
-     */
-
-    const segunda =
-      2 *
-      (
-        anterior.potencialV /
-          (
-            h1 *
-            (
-              h1 +
-              h2
-            )
-          ) -
-        atual.potencialV /
-          (
-            h1 *
-            h2
-          ) +
-        proximo.potencialV /
-          (
-            h2 *
-            (
-              h1 +
-              h2
-            )
-          )
-      );
+      2;
 
 
     if (
-      Number.isFinite(
-        primeira
+      !Number.isFinite(
+        primeiraDerivada
+      ) ||
+      !Number.isFinite(
+        volumeMedio
       )
     ) {
-      primeiraDerivada.push({
-        volumeMl:
-          atual.volumeMl,
-
-        primeiraDerivada:
-          primeira,
-      });
+      continue;
     }
 
 
-    if (
-      Number.isFinite(
-        segunda
-      )
-    ) {
-      segundaDerivada.push({
-        volumeMl:
-          atual.volumeMl,
+    resultado.push({
+      volumeMl:
+        volumeMedio,
 
-        segundaDerivada:
-          segunda,
-      });
-    }
+      primeiraDerivada,
+    });
   }
 
 
-  return {
-    primeiraDerivada,
-    segundaDerivada,
-  };
+  return resultado;
 }
 
 
 /* =========================================================
- * MÁXIMO DA PRIMEIRA DERIVADA
+ * SEGUNDA DERIVADA
+ * ======================================================= */
+
+function calcularSegundaDerivada(
+  primeiraDerivada:
+    PontoPrimeiraDerivadaRedox[]
+): PontoSegundaDerivadaRedox[] {
+  const resultado:
+    PontoSegundaDerivadaRedox[] =
+    [];
+
+
+  for (
+    let indice = 0;
+    indice <
+    primeiraDerivada.length - 1;
+    indice += 1
+  ) {
+    const atual =
+      primeiraDerivada[
+        indice
+      ];
+
+
+    const proximo =
+      primeiraDerivada[
+        indice + 1
+      ];
+
+
+    const deltaVolume =
+      proximo.volumeMl -
+      atual.volumeMl;
+
+
+    if (
+      !Number.isFinite(
+        deltaVolume
+      ) ||
+      deltaVolume <=
+        0
+    ) {
+      continue;
+    }
+
+
+    const deltaPrimeiraDerivada =
+      proximo
+        .primeiraDerivada -
+      atual
+        .primeiraDerivada;
+
+
+    const segundaDerivada =
+      deltaPrimeiraDerivada /
+      deltaVolume;
+
+
+    const volumeMedio =
+      (
+        atual.volumeMl +
+        proximo.volumeMl
+      ) /
+      2;
+
+
+    if (
+      !Number.isFinite(
+        segundaDerivada
+      ) ||
+      !Number.isFinite(
+        volumeMedio
+      )
+    ) {
+      continue;
+    }
+
+
+    resultado.push({
+      volumeMl:
+        volumeMedio,
+
+      segundaDerivada,
+    });
+  }
+
+
+  return resultado;
+}
+
+
+/* =========================================================
+ * PF — PRIMEIRA DERIVADA
  * ======================================================= */
 
 function encontrarMaximoPrimeiraDerivada(
@@ -364,7 +366,7 @@ function encontrarMaximoPrimeiraDerivada(
 
 
 /* =========================================================
- * ZERO DA SEGUNDA DERIVADA
+ * PF — SEGUNDA DERIVADA
  * ======================================================= */
 
 function encontrarZeroSegundaDerivada({
@@ -399,16 +401,9 @@ function encontrarZeroSegundaDerivada({
       ];
 
 
-    /*
-     * Caso um ponto calculado já seja
-     * numericamente zero.
-     */
-
     if (
-      Math.abs(
-        atual.segundaDerivada
-      ) <
-      1e-12
+      atual.segundaDerivada ===
+      0
     ) {
       candidatos.push(
         atual.volumeMl
@@ -470,10 +465,8 @@ function encontrarZeroSegundaDerivada({
 
 
     /*
-     * Interpolação linear do ponto
-     * em que:
-     *
-     * d²E/dV² = 0
+     * Interpolação linear para
+     * localizar d²E/dV² = 0.
      */
 
     const volumeZero =
@@ -509,8 +502,9 @@ function encontrarZeroSegundaDerivada({
 
 
   /*
-   * Escolhemos o cruzamento mais
-   * próximo do máximo de dE/dV.
+   * Pode haver outros cruzamentos.
+   * Escolhemos aquele mais próximo
+   * do máximo da 1ª derivada.
    */
 
   return candidatos.reduce(
@@ -565,23 +559,26 @@ export function calcularDerivadasRedox(
   }
 
 
-  const {
-    primeiraDerivada,
-    segundaDerivada,
-  } =
-    calcularDerivadasCentradas(
+  const primeiraDerivada =
+    calcularPrimeiraDerivada(
       pontos
     );
 
 
   if (
-    primeiraDerivada.length ===
-    0
+    primeiraDerivada.length <
+    2
   ) {
     throw new Error(
-      "Não foi possível calcular a primeira derivada."
+      "Não existem pontos suficientes para calcular a primeira derivada."
     );
   }
+
+
+  const segundaDerivada =
+    calcularSegundaDerivada(
+      primeiraDerivada
+    );
 
 
   if (
@@ -589,7 +586,7 @@ export function calcularDerivadasRedox(
     0
   ) {
     throw new Error(
-      "Não foi possível calcular a segunda derivada."
+      "Não existem pontos suficientes para calcular a segunda derivada."
     );
   }
 
@@ -600,7 +597,7 @@ export function calcularDerivadasRedox(
     );
 
 
-  const volumePESegundaDerivadaMl =
+  const volumePFSegundaDerivadaMl =
     encontrarZeroSegundaDerivada({
       pontos:
         segundaDerivada,
@@ -616,7 +613,7 @@ export function calcularDerivadasRedox(
 
     segundaDerivada,
 
-    volumePEPrimeiraDerivadaMl:
+    volumePFPrimeiraDerivadaMl:
       pontoMaximo
         .volumeMl,
 
@@ -624,6 +621,6 @@ export function calcularDerivadasRedox(
       pontoMaximo
         .primeiraDerivada,
 
-    volumePESegundaDerivadaMl,
+    volumePFSegundaDerivadaMl,
   };
 }

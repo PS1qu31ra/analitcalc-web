@@ -5,11 +5,9 @@ import {
 
 import {
   calcularFatorNernst,
-  calcularPotencialNernst,
 } from "./nernst";
 
 import {
-  calcularConcentracaoAposMistura,
   calcularMols,
   calcularVolumeEquivalencia,
   determinarRegiaoTitulacao,
@@ -19,6 +17,10 @@ import {
 import {
   calcularPotencialFormalPermanganato,
 } from "./permanganometria";
+
+import {
+  resolverEquilibrioPermanganometriaPeroxido,
+} from "./equilibrioPermanganometriaPeroxido";
   
   
   /* =========================================================
@@ -410,16 +412,43 @@ import {
       });
   
   
-    const potencialEquivalenciaV =
-      calcularPotencialEquivalenciaPeroxido({
+      const equilibrioPE =
+      resolverEquilibrioPermanganometriaPeroxido({
+        molH2O2Total:
+          estequiometria
+            .molAnalitoInicial,
+    
+        molMnTotal:
+          estequiometria
+            .molTitulanteEquivalencia,
+    
+        volumeTotalMl:
+          entrada.volumeAnalitoMl +
+          estequiometria
+            .volumeEquivalenciaMl,
+    
         concentracaoHPlusMolL:
           entrada
             .concentracaoHPlusMolL,
-  
+    
         atividadeOxigenio,
-  
+    
         temperaturaC,
       });
+    
+    
+    if (
+      equilibrioPE.potencialV ===
+      null
+    ) {
+      throw new Error(
+        "Não foi possível calcular o potencial de equilíbrio no PE do sistema H₂O₂/MnO₄⁻."
+      );
+    }
+    
+    
+    const potencialEquivalenciaV =
+      equilibrioPE.potencialV;
   
   
     return {
@@ -534,11 +563,6 @@ import {
       });
   
   
-    const molH2O2Inicial =
-      sistema
-        .molH2O2Inicial;
-  
-  
     const molMnO4Adicionado =
       calcularMols({
         concentracaoMolL:
@@ -550,305 +574,108 @@ import {
       });
   
   
+    /*
+     * No PE usamos exatamente a quantidade
+     * estequiométrica já calculada pelo sistema.
+     *
+     * Isso evita que pequenas diferenças de
+     * ponto flutuante como:
+     *
+     * 50
+     * versus
+     * 50.00000000000001
+     *
+     * alterem artificialmente o potencial
+     * em uma região extremamente sensível.
+     */
+  
+    const molMnTotalEquilibrio =
+      regiao ===
+      "pe"
+        ? sistema
+            .molMnO4Equivalencia
+        : molMnO4Adicionado;
+  
+  
     /* =======================================================
-     * ANTES DO PE
-     * ===================================================== */
+     * EQUILÍBRIO CONTÍNUO
+     * =======================================================
+     *
+     * O potencial é obtido impondo:
+     *
+     * E(O₂/H₂O₂)
+     * =
+     * E(MnO₄⁻/Mn²⁺)
+     *
+     * simultaneamente ao balanço:
+     *
+     * n(H₂O₂ consumido)
+     * =
+     * (5/2) n(Mn²⁺)
+     *
+     * A atividade de O₂ permanece uma condição externa
+     * do modelo porque O₂ é uma espécie gasosa.
+     */
+  
+    const equilibrio =
+      resolverEquilibrioPermanganometriaPeroxido({
+        molH2O2Total:
+          sistema
+            .molH2O2Inicial,
+  
+        molMnTotal:
+          molMnTotalEquilibrio,
+  
+        volumeTotalMl,
+  
+        concentracaoHPlusMolL:
+          entrada
+            .concentracaoHPlusMolL,
+  
+        atividadeOxigenio,
+  
+        temperaturaC,
+      });
+  
+  
+    let parControlador:
+      ResultadoPontoPermanganometriaPeroxido[
+        "parControlador"
+      ];
+  
+  
+    let descricao:
+      string;
+  
   
     if (
       regiao ===
       "antes_pe"
     ) {
-      /*
-       * 2 MnO₄⁻
-       * reagem com
-       * 5 H₂O₂.
-       */
-  
-      const molH2O2Consumido =
-        (
-          5 /
-          2
-        ) *
-        molMnO4Adicionado;
+      parControlador =
+        "O2/H2O2";
   
   
-      const molH2O2 =
-        Math.max(
-          molH2O2Inicial -
-            molH2O2Consumido,
-          0
-        );
-  
-  
-      const molO2 =
-        molH2O2Consumido;
-  
-  
-      const molMn2 =
-        molMnO4Adicionado;
-  
-  
-      const concentracaoH2O2MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molH2O2,
-  
-          volumeTotalMl,
-        });
-  
-  
-      const concentracaoMn2MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molMn2,
-  
-          volumeTotalMl,
-        });
-  
-  
-      /*
-       * Em V = 0 não houve formação
-       * de O₂ pela titulação.
-       *
-       * Evitamos representar o ponto
-       * inicial como um equilíbrio
-       * plenamente estabelecido.
-       */
-  
-      if (
-        molO2 <= 0 ||
-        molH2O2 <= 0
-      ) {
-        return {
-          volumeAdicionadoMl,
-  
-          volumeTotalMl,
-  
-          volumeEquivalenciaMl:
-            sistema
-              .volumeEquivalenciaMl,
-  
-          regiao,
-  
-          potencialV:
-            null,
-  
-          parControlador:
-            "O2/H2O2",
-  
-          molH2O2,
-  
-          molO2,
-  
-          molMnO4:
-            0,
-  
-          molMn2,
-  
-          concentracaoH2O2MolL,
-  
-          concentracaoMnO4MolL:
-            0,
-  
-          concentracaoMn2MolL,
-  
-          descricao:
-            "No início da titulação ainda não há O₂ formado pelo processo para representar diretamente o equilíbrio O₂/H₂O₂.",
-        };
-      }
-  
-  
-      const resultadoNernst =
-        calcularPotencialNernst({
-          par:
-            PAR_OXIGENIO_PEROXIDO,
-  
-          temperaturaC,
-  
-          atividades: {
-            "H2O2":
-              concentracaoH2O2MolL,
-  
-            "O2":
-              atividadeOxigenio,
-  
-            "H+":
-              entrada
-                .concentracaoHPlusMolL,
-          },
-        });
-  
-  
-      return {
-        volumeAdicionadoMl,
-  
-        volumeTotalMl,
-  
-        volumeEquivalenciaMl:
-          sistema
-            .volumeEquivalenciaMl,
-  
-        regiao,
-  
-        potencialV:
-          resultadoNernst.status ===
-          "ok"
-            ? resultadoNernst
-                .potencial
-            : null,
-  
-        parControlador:
-          "O2/H2O2",
-  
-        molH2O2,
-  
-        molO2,
-  
-        molMnO4:
-          0,
-  
-        molMn2,
-  
-        concentracaoH2O2MolL,
-  
-        concentracaoMnO4MolL:
-          0,
-  
-        concentracaoMn2MolL,
-  
-        descricao:
-          "Antes do ponto de equivalência, o modelo termodinâmico utiliza o par O₂/H₂O₂.",
-      };
-    }
-  
-  
-    /* =======================================================
-     * PONTO DE EQUIVALÊNCIA
-     * ===================================================== */
-  
-    if (
+      descricao =
+        "Antes do ponto de equivalência, o par O₂/H₂O₂ é predominante, mas o potencial é obtido pelo equilíbrio simultâneo com MnO₄⁻/Mn²⁺.";
+    } else if (
       regiao ===
       "pe"
     ) {
-      const molMn2 =
-        sistema
-          .molMnO4Equivalencia;
+      parControlador =
+        "equivalencia";
   
   
-      const molO2 =
-        molH2O2Inicial;
+      descricao =
+        "No ponto de equivalência, o potencial é obtido pelo equilíbrio simultâneo entre os pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺.";
+    } else {
+      parControlador =
+        "MnO4-/Mn2+";
   
   
-      const concentracaoMn2MolL =
-        calcularConcentracaoAposMistura({
-          mols:
-            molMn2,
-  
-          volumeTotalMl,
-        });
-  
-  
-      return {
-        volumeAdicionadoMl,
-  
-        volumeTotalMl,
-  
-        volumeEquivalenciaMl:
-          sistema
-            .volumeEquivalenciaMl,
-  
-        regiao,
-  
-        potencialV:
-          sistema
-            .potencialEquivalenciaV,
-  
-        parControlador:
-          "equivalencia",
-  
-        molH2O2:
-          0,
-  
-        molO2,
-  
-        molMnO4:
-          0,
-  
-        molMn2,
-  
-        concentracaoH2O2MolL:
-          0,
-  
-        concentracaoMnO4MolL:
-          0,
-  
-        concentracaoMn2MolL,
-  
-        descricao:
-          "No ponto de equivalência, o potencial é estimado pela combinação dos potenciais formais dos pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺.",
-      };
+      descricao =
+        "Após o ponto de equivalência, o par MnO₄⁻/Mn²⁺ é predominante, mas o potencial continua sendo obtido pelo equilíbrio simultâneo dos dois pares.";
     }
-  
-  
-    /* =======================================================
-     * APÓS O PE
-     * ===================================================== */
-  
-    const molMnO4Excesso =
-      Math.max(
-        molMnO4Adicionado -
-          sistema
-            .molMnO4Equivalencia,
-        0
-      );
-  
-  
-    const molMn2 =
-      sistema
-        .molMnO4Equivalencia;
-  
-  
-    const molO2 =
-      molH2O2Inicial;
-  
-  
-    const concentracaoMnO4MolL =
-      calcularConcentracaoAposMistura({
-        mols:
-          molMnO4Excesso,
-  
-        volumeTotalMl,
-      });
-  
-  
-    const concentracaoMn2MolL =
-      calcularConcentracaoAposMistura({
-        mols:
-          molMn2,
-  
-        volumeTotalMl,
-      });
-  
-  
-    const resultadoNernst =
-      calcularPotencialNernst({
-        par:
-          PAR_PERMANGANATO_MANGANES,
-  
-        temperaturaC,
-  
-        atividades: {
-          "MnO4-":
-            concentracaoMnO4MolL,
-  
-          "Mn2+":
-            concentracaoMn2MolL,
-  
-          "H+":
-            entrada
-              .concentracaoHPlusMolL,
-        },
-      });
   
   
     return {
@@ -863,33 +690,39 @@ import {
       regiao,
   
       potencialV:
-        resultadoNernst.status ===
-        "ok"
-          ? resultadoNernst
-              .potencial
-          : null,
+        equilibrio
+          .potencialV,
   
-      parControlador:
-        "MnO4-/Mn2+",
+      parControlador,
   
       molH2O2:
-        0,
+        equilibrio
+          .molH2O2,
   
-      molO2,
+      molO2:
+        equilibrio
+          .molO2,
   
       molMnO4:
-        molMnO4Excesso,
+        equilibrio
+          .molMnO4,
   
-      molMn2,
+      molMn2:
+        equilibrio
+          .molMn2,
   
       concentracaoH2O2MolL:
-        0,
+        equilibrio
+          .concentracaoH2O2MolL,
   
-      concentracaoMnO4MolL,
+      concentracaoMnO4MolL:
+        equilibrio
+          .concentracaoMnO4MolL,
   
-      concentracaoMn2MolL,
+      concentracaoMn2MolL:
+        equilibrio
+          .concentracaoMn2MolL,
   
-      descricao:
-        "Após o ponto de equivalência, o excesso de MnO₄⁻ passa a controlar o potencial da solução.",
+      descricao,
     };
   }
