@@ -10,10 +10,19 @@ import type {
   ResultadoCurvaRedox,
 } from "@/lib/oxirreducao/curvaRedox";
 
+import type {
+  ResultadoCurvaRedoxPeroxido,
+} from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
 import {
   calcularPontoPermanganometriaFerro,
   type ResultadoPontoPermanganometria,
 } from "@/lib/oxirreducao/permanganometria";
+
+import {
+  calcularPontoPermanganometriaPeroxido,
+  type ResultadoPontoPermanganometriaPeroxido,
+} from "@/lib/oxirreducao/permanganometriaPeroxido";
 
 import {
   calcularDerivadasRedox,
@@ -22,9 +31,27 @@ import {
 import SimulacaoTempoRealRedoxChart from "./SimulacaoTempoRealRedoxChart";
 
 
+type SistemaTempoRealRedox =
+  | "ferro-ii"
+  | "peroxido-hidrogenio";
+
+
+type ResultadoCurvaTempoRealRedox =
+  | ResultadoCurvaRedox
+  | ResultadoCurvaRedoxPeroxido;
+
+
+type PontoTempoRealRedox =
+  | ResultadoPontoPermanganometria
+  | ResultadoPontoPermanganometriaPeroxido;
+
+
 type TempoRealRedoxProps = {
+  sistema:
+    SistemaTempoRealRedox;
+
   resultadoBase:
-    ResultadoCurvaRedox;
+    ResultadoCurvaTempoRealRedox;
 };
 
 
@@ -90,9 +117,45 @@ function formatarCientifico(
 }
 
 
+function nomeRegiao(
+  ponto:
+    PontoTempoRealRedox
+) {
+  if (
+    ponto.regiao ===
+    "antes_pe"
+  ) {
+    return "Antes do PE";
+  }
+
+
+  if (
+    ponto.regiao ===
+    "pe"
+  ) {
+    return "PE";
+  }
+
+
+  return "Após o PE";
+}
+
+
 export default function TempoRealRedox({
+  sistema,
   resultadoBase,
 }: TempoRealRedoxProps) {
+  const ehPeroxido =
+    sistema ===
+    "peroxido-hidrogenio";
+
+
+  const nomeAnalito =
+    ehPeroxido
+      ? "H₂O₂"
+      : "Fe²⁺";
+
+
   const [
     volumeAtualTempoReal,
     setVolumeAtualTempoReal,
@@ -116,7 +179,7 @@ export default function TempoRealRedox({
     setPontosTempoReal,
   ] =
     useState<
-      ResultadoPontoPermanganometria[]
+      PontoTempoRealRedox[]
     >(
       []
     );
@@ -131,12 +194,31 @@ export default function TempoRealRedox({
     );
 
 
+  /*
+   * =======================================================
+   * PE / PF
+   * =======================================================
+   */
+
   const derivadas =
     useMemo(
       () =>
         calcularDerivadasRedox(
           resultadoBase
             .pontosValidos
+            .map(
+              (
+                ponto
+              ) => ({
+                volumeAdicionadoMl:
+                  ponto
+                    .volumeAdicionadoMl,
+
+                potencialV:
+                  ponto
+                    .potencialV,
+              })
+            )
         ),
       [
         resultadoBase,
@@ -177,6 +259,45 @@ export default function TempoRealRedox({
       : null;
 
 
+  /*
+   * =======================================================
+   * TIPOS ESPECÍFICOS DO PONTO ATUAL
+   * =======================================================
+   */
+
+  const pontoFerro =
+    !ehPeroxido &&
+    pontoAtual
+      ? pontoAtual as
+          ResultadoPontoPermanganometria
+      : null;
+
+
+  const pontoPeroxido =
+    ehPeroxido &&
+    pontoAtual
+      ? pontoAtual as
+          ResultadoPontoPermanganometriaPeroxido
+      : null;
+
+
+  const atividadeOxigenio =
+    ehPeroxido
+      ? (
+          resultadoBase as
+            ResultadoCurvaRedoxPeroxido
+        ).entrada
+          .atividadeOxigenio ??
+        1
+      : null;
+
+
+  /*
+   * =======================================================
+   * RESET
+   * =======================================================
+   */
+
   useEffect(
     () => {
       setVolumeAtualTempoReal(
@@ -197,17 +318,49 @@ export default function TempoRealRedox({
     },
     [
       resultadoBase,
+      sistema,
     ]
   );
 
 
+  /*
+   * =======================================================
+   * CÁLCULO DO PONTO
+   * =======================================================
+   */
+
   function calcularPonto(
     volume:
       number
-  ) {
+  ): PontoTempoRealRedox {
+    if (
+      sistema ===
+      "peroxido-hidrogenio"
+    ) {
+      const resultadoPeroxido =
+        resultadoBase as
+          ResultadoCurvaRedoxPeroxido;
+
+
+      return calcularPontoPermanganometriaPeroxido({
+        entrada:
+          resultadoPeroxido
+            .entrada,
+
+        volumeAdicionadoMl:
+          volume,
+      });
+    }
+
+
+    const resultadoFerro =
+      resultadoBase as
+        ResultadoCurvaRedox;
+
+
     return calcularPontoPermanganometriaFerro({
       entrada:
-        resultadoBase
+        resultadoFerro
           .entrada,
 
       volumeAdicionadoMl:
@@ -215,6 +368,12 @@ export default function TempoRealRedox({
     });
   }
 
+
+  /*
+   * =======================================================
+   * ADIÇÃO DE TITULANTE
+   * =======================================================
+   */
 
   function adicionarVolumeTempoReal(
     incremento:
@@ -305,6 +464,12 @@ export default function TempoRealRedox({
   }
 
 
+  /*
+   * =======================================================
+   * ATALHOS
+   * =======================================================
+   */
+
   function irParaPETempoReal() {
     const ponto =
       calcularPonto(
@@ -383,30 +548,6 @@ export default function TempoRealRedox({
   }
 
 
-  function nomeRegiao(
-    ponto:
-      ResultadoPontoPermanganometria
-  ) {
-    if (
-      ponto.regiao ===
-      "antes_pe"
-    ) {
-      return "Antes do PE";
-    }
-
-
-    if (
-      ponto.regiao ===
-      "pe"
-    ) {
-      return "PE";
-    }
-
-
-    return "Após o PE";
-  }
-
-
   return (
     <section className="oxirreducaoTabPanel">
       <div className="liveSimulationDashboard">
@@ -420,10 +561,13 @@ export default function TempoRealRedox({
           </h2>
 
           <p>
-            Esta aba simula a adição gradual de KMnO₄ sobre
-            a curva potenciométrica ideal já calculada. A
-            linha representa a curva completa e os pontos
-            mostram os volumes adicionados pelo usuário.
+            Acompanhe a adição gradual de KMnO₄ ao sistema{" "}
+            <strong>
+              {nomeAnalito}
+            </strong>
+            . A linha representa a curva potenciométrica
+            ideal e os pontos mostram os volumes adicionados
+            durante a simulação.
           </p>
         </div>
 
@@ -608,185 +752,253 @@ export default function TempoRealRedox({
           </h2>
 
 
-          {pontoAtual ===
-          null ? (
-            <div className="resultGrid">
-              <div className="resultCard">
-                <span>
-                  Volume KMnO₄
-                </span>
+          <div className="resultGrid">
+            <div className="resultCard">
+              <span>
+                Volume KMnO₄
+              </span>
 
-                <strong>
-                  -
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>
-                  Potencial E
-                </span>
-
-                <strong>
-                  -
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>
-                  [Fe²⁺]
-                </span>
-
-                <strong>
-                  -
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>
-                  [Fe³⁺]
-                </span>
-
-                <strong>
-                  -
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>
-                  [MnO₄⁻]
-                </span>
-
-                <strong>
-                  -
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>
-                  [Mn²⁺]
-                </span>
-
-                <strong>
-                  -
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>
-                  Região
-                </span>
-
-                <strong>
-                  -
-                </strong>
-              </div>
+              <strong>
+                {pontoAtual
+                  ? `${formatarNumero(
+                      pontoAtual
+                        .volumeAdicionadoMl,
+                      2
+                    )} mL`
+                  : "-"}
+              </strong>
             </div>
-          ) : (
-            <div className="resultGrid">
-              <div className="resultCard">
-                <span>
-                  Volume KMnO₄
-                </span>
-
-                <strong>
-                  {formatarNumero(
-                    pontoAtual
-                      .volumeAdicionadoMl,
-                    2
-                  )}{" "}
-                  mL
-                </strong>
-              </div>
 
 
-              <div className="resultCard">
-                <span>
-                  Potencial E
-                </span>
+            <div className="resultCard">
+              <span>
+                Potencial E
+              </span>
 
-                <strong>
-                  {pontoAtual
-                    .potencialV !==
+              <strong>
+                {pontoAtual &&
+                pontoAtual
+                  .potencialV !==
                   null
-                    ? `${formatarNumero(
-                        pontoAtual
-                          .potencialV,
-                        4
-                      )} V`
-                    : "-"}
-                </strong>
-              </div>
-
-
-              <div className="resultCard">
-                <span>
-                  [Fe²⁺]
-                </span>
-
-                <strong>
-                  {formatarCientifico(
-                    pontoAtual
-                      .concentracaoFe2MolL
-                  )}
-                </strong>
-              </div>
-
-
-              <div className="resultCard">
-                <span>
-                  [Fe³⁺]
-                </span>
-
-                <strong>
-                  {formatarCientifico(
-                    pontoAtual
-                      .concentracaoFe3MolL
-                  )}
-                </strong>
-              </div>
-
-
-              <div className="resultCard">
-                <span>
-                  [MnO₄⁻]
-                </span>
-
-                <strong>
-                  {formatarCientifico(
-                    pontoAtual
-                      .concentracaoMnO4MolL
-                  )}
-                </strong>
-              </div>
-
-
-              <div className="resultCard">
-                <span>
-                  [Mn²⁺]
-                </span>
-
-                <strong>
-                  {formatarCientifico(
-                    pontoAtual
-                      .concentracaoMn2MolL
-                  )}
-                </strong>
-              </div>
-
-
-              <div className="resultCard">
-                <span>
-                  Região
-                </span>
-
-                <strong>
-                  {nomeRegiao(
-                    pontoAtual
-                  )}
-                </strong>
-              </div>
+                  ? `${formatarNumero(
+                      pontoAtual
+                        .potencialV,
+                      4
+                    )} V`
+                  : "-"}
+              </strong>
             </div>
-          )}
+
+
+            {ehPeroxido ? (
+              <>
+                <div className="resultCard">
+                  <span>
+                    [H₂O₂]
+                  </span>
+
+                  <strong>
+                    {pontoPeroxido
+                      ? formatarCientifico(
+                          pontoPeroxido
+                            .concentracaoH2O2MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoPeroxido && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    n(O₂)
+                  </span>
+
+                  <strong>
+                    {pontoPeroxido
+                      ? formatarCientifico(
+                          pontoPeroxido
+                            .molO2
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoPeroxido && (
+                    <small>
+                      mol
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    [MnO₄⁻]
+                  </span>
+
+                  <strong>
+                    {pontoPeroxido
+                      ? formatarCientifico(
+                          pontoPeroxido
+                            .concentracaoMnO4MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoPeroxido && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    [Mn²⁺]
+                  </span>
+
+                  <strong>
+                    {pontoPeroxido
+                      ? formatarCientifico(
+                          pontoPeroxido
+                            .concentracaoMn2MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoPeroxido && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    a(O₂)
+                  </span>
+
+                  <strong>
+                    {formatarNumero(
+                      atividadeOxigenio,
+                      3
+                    )}
+                  </strong>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="resultCard">
+                  <span>
+                    [Fe²⁺]
+                  </span>
+
+                  <strong>
+                    {pontoFerro
+                      ? formatarCientifico(
+                          pontoFerro
+                            .concentracaoFe2MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoFerro && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    [Fe³⁺]
+                  </span>
+
+                  <strong>
+                    {pontoFerro
+                      ? formatarCientifico(
+                          pontoFerro
+                            .concentracaoFe3MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoFerro && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    [MnO₄⁻]
+                  </span>
+
+                  <strong>
+                    {pontoFerro
+                      ? formatarCientifico(
+                          pontoFerro
+                            .concentracaoMnO4MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoFerro && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+
+
+                <div className="resultCard">
+                  <span>
+                    [Mn²⁺]
+                  </span>
+
+                  <strong>
+                    {pontoFerro
+                      ? formatarCientifico(
+                          pontoFerro
+                            .concentracaoMn2MolL
+                        )
+                      : "-"}
+                  </strong>
+
+                  {pontoFerro && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
+                </div>
+              </>
+            )}
+
+
+            <div className="resultCard">
+              <span>
+                Região
+              </span>
+
+              <strong>
+                {pontoAtual
+                  ? nomeRegiao(
+                      pontoAtual
+                    )
+                  : "-"}
+              </strong>
+            </div>
+          </div>
         </div>
 
 
@@ -860,8 +1072,10 @@ export default function TempoRealRedox({
 
           <div className="explanationBox">
             <p>
-              Erro relativo (%) = ((VPF − VPE) / VPE) ×
-              100.
+              O PF corresponde ao mesmo ponto de inflexão
+              identificado pelo máximo da primeira derivada
+              e pelo zero da segunda derivada. O erro relativo
+              é calculado por ((VPF − VPE) / VPE) × 100.
             </p>
           </div>
         </div>
@@ -897,21 +1111,43 @@ export default function TempoRealRedox({
                       E (V)
                     </th>
 
-                    <th>
-                      [Fe²⁺]
-                    </th>
+                    {ehPeroxido ? (
+                      <>
+                        <th>
+                          [H₂O₂]
+                        </th>
 
-                    <th>
-                      [Fe³⁺]
-                    </th>
+                        <th>
+                          n(O₂)
+                        </th>
 
-                    <th>
-                      [MnO₄⁻]
-                    </th>
+                        <th>
+                          [MnO₄⁻]
+                        </th>
 
-                    <th>
-                      [Mn²⁺]
-                    </th>
+                        <th>
+                          [Mn²⁺]
+                        </th>
+                      </>
+                    ) : (
+                      <>
+                        <th>
+                          [Fe²⁺]
+                        </th>
+
+                        <th>
+                          [Fe³⁺]
+                        </th>
+
+                        <th>
+                          [MnO₄⁻]
+                        </th>
+
+                        <th>
+                          [Mn²⁺]
+                        </th>
+                      </>
+                    )}
 
                     <th>
                       Região
@@ -925,69 +1161,150 @@ export default function TempoRealRedox({
                     (
                       ponto,
                       index
-                    ) => (
-                      <tr
-                        key={`${ponto.volumeAdicionadoMl}-${index}`}
-                      >
-                        <td>
-                          {index +
-                            1}
-                        </td>
+                    ) => {
+                      if (
+                        ehPeroxido
+                      ) {
+                        const pontoPeroxidoTabela =
+                          ponto as
+                            ResultadoPontoPermanganometriaPeroxido;
 
-                        <td>
-                          {formatarNumero(
-                            ponto
-                              .volumeAdicionadoMl,
-                            2
-                          )}{" "}
-                          mL
-                        </td>
 
-                        <td>
-                          <strong>
+                        return (
+                          <tr
+                            key={`${pontoPeroxidoTabela.volumeAdicionadoMl}-${index}`}
+                          >
+                            <td>
+                              {index +
+                                1}
+                            </td>
+
+                            <td>
+                              {formatarNumero(
+                                pontoPeroxidoTabela
+                                  .volumeAdicionadoMl,
+                                2
+                              )}{" "}
+                              mL
+                            </td>
+
+                            <td>
+                              <strong>
+                                {formatarNumero(
+                                  pontoPeroxidoTabela
+                                    .potencialV,
+                                  4
+                                )}
+                              </strong>
+                            </td>
+
+                            <td>
+                              {formatarCientifico(
+                                pontoPeroxidoTabela
+                                  .concentracaoH2O2MolL
+                              )}
+                            </td>
+
+                            <td>
+                              {formatarCientifico(
+                                pontoPeroxidoTabela
+                                  .molO2
+                              )}
+                            </td>
+
+                            <td>
+                              {formatarCientifico(
+                                pontoPeroxidoTabela
+                                  .concentracaoMnO4MolL
+                              )}
+                            </td>
+
+                            <td>
+                              {formatarCientifico(
+                                pontoPeroxidoTabela
+                                  .concentracaoMn2MolL
+                              )}
+                            </td>
+
+                            <td>
+                              {nomeRegiao(
+                                pontoPeroxidoTabela
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      }
+
+
+                      const pontoFerroTabela =
+                        ponto as
+                          ResultadoPontoPermanganometria;
+
+
+                      return (
+                        <tr
+                          key={`${pontoFerroTabela.volumeAdicionadoMl}-${index}`}
+                        >
+                          <td>
+                            {index +
+                              1}
+                          </td>
+
+                          <td>
                             {formatarNumero(
-                              ponto
-                                .potencialV,
-                              4
+                              pontoFerroTabela
+                                .volumeAdicionadoMl,
+                              2
+                            )}{" "}
+                            mL
+                          </td>
+
+                          <td>
+                            <strong>
+                              {formatarNumero(
+                                pontoFerroTabela
+                                  .potencialV,
+                                4
+                              )}
+                            </strong>
+                          </td>
+
+                          <td>
+                            {formatarCientifico(
+                              pontoFerroTabela
+                                .concentracaoFe2MolL
                             )}
-                          </strong>
-                        </td>
+                          </td>
 
-                        <td>
-                          {formatarCientifico(
-                            ponto
-                              .concentracaoFe2MolL
-                          )}
-                        </td>
+                          <td>
+                            {formatarCientifico(
+                              pontoFerroTabela
+                                .concentracaoFe3MolL
+                            )}
+                          </td>
 
-                        <td>
-                          {formatarCientifico(
-                            ponto
-                              .concentracaoFe3MolL
-                          )}
-                        </td>
+                          <td>
+                            {formatarCientifico(
+                              pontoFerroTabela
+                                .concentracaoMnO4MolL
+                            )}
+                          </td>
 
-                        <td>
-                          {formatarCientifico(
-                            ponto
-                              .concentracaoMnO4MolL
-                          )}
-                        </td>
+                          <td>
+                            {formatarCientifico(
+                              pontoFerroTabela
+                                .concentracaoMn2MolL
+                            )}
+                          </td>
 
-                        <td>
-                          {formatarCientifico(
-                            ponto
-                              .concentracaoMn2MolL
-                          )}
-                        </td>
-
-                        <td>
-                          {nomeRegiao(
-                            ponto
-                          )}
-                        </td>
-                      </tr>
-                    )
+                          <td>
+                            {nomeRegiao(
+                              pontoFerroTabela
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    }
                   )}
                 </tbody>
               </table>

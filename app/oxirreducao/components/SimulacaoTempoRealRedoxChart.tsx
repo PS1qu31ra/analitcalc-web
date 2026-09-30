@@ -5,16 +5,34 @@ import type {
 } from "@/lib/oxirreducao/curvaRedox";
 
 import type {
+  ResultadoCurvaRedoxPeroxido,
+} from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
+import type {
   ResultadoPontoPermanganometria,
 } from "@/lib/oxirreducao/permanganometria";
+
+import type {
+  ResultadoPontoPermanganometriaPeroxido,
+} from "@/lib/oxirreducao/permanganometriaPeroxido";
+
+
+type ResultadoCurvaTempoRealRedox =
+  | ResultadoCurvaRedox
+  | ResultadoCurvaRedoxPeroxido;
+
+
+type PontoTempoRealRedox =
+  | ResultadoPontoPermanganometria
+  | ResultadoPontoPermanganometriaPeroxido;
 
 
 type SimulacaoTempoRealRedoxChartProps = {
   curva:
-    ResultadoCurvaRedox;
+    ResultadoCurvaTempoRealRedox;
 
   pontosAdicionados:
-    ResultadoPontoPermanganometria[];
+    PontoTempoRealRedox[];
 };
 
 

@@ -1081,12 +1081,14 @@ import {
     </h4>
 
     <p>
-      A primeira derivada é calculada entre pontos
-      consecutivos da curva E × V e associada ao
-      volume médio de cada intervalo. O máximo de
-      ΔE/ΔV determina o PF teórico pelo método da
-      primeira derivada.
-    </p>
+  A primeira derivada é calculada entre pontos
+  consecutivos da curva E × V e associada ao
+  volume médio de cada intervalo. Ao redor do
+  maior valor discreto, três pontos são usados
+  em uma interpolação parabólica para determinar
+  com maior precisão o máximo de ΔE/ΔV e,
+  consequentemente, o PF teórico.
+</p>
   </header>
 
 
@@ -1122,12 +1124,13 @@ import {
     </h4>
 
     <p>
-      A segunda derivada muda de sinal na região de
-      inflexão da curva E × V. O cruzamento por zero
-      é estimado por interpolação entre os pontos
-      adjacentes e fornece uma segunda estimativa do
-      PF teórico.
-    </p>
+  A segunda derivada é a derivada da curva local
+  ajustada para ΔE/ΔV. Por isso, seu cruzamento por
+  zero ocorre exatamente no mesmo volume em que a
+  primeira derivada atinge o máximo. Os dois métodos
+  representam o mesmo ponto de inflexão e, portanto,
+  o mesmo PF teórico.
+</p>
   </header>
 
 
@@ -1163,12 +1166,12 @@ import {
 
   <p>
     A linha vertical tracejada representa o PE
-    estequiométrico. Os marcadores representam o PF
-    teórico determinado pelas derivadas. O erro absoluto
-    é VPF − VPE. O erro relativo é calculado por
-    ((VPF − VPE) / VPE) × 100. O sinal é preservado:
-    valores negativos indicam PF antes do PE e valores
-    positivos indicam PF depois do PE.
+    estequiométrico. O máximo da primeira derivada e o
+    zero da segunda derivada representam o mesmo ponto
+    de inflexão e, portanto, devem fornecer o mesmo PF.
+    PE e PF, por outro lado, podem apresentar volumes
+    diferentes em curvas redox assimétricas. O erro
+    relativo é calculado por ((VPF − VPE) / VPE) × 100.
   </p>
 </div>
       </section>

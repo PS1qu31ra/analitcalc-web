@@ -412,43 +412,27 @@ import {
       });
   
   
-      const equilibrioPE =
-      resolverEquilibrioPermanganometriaPeroxido({
-        molH2O2Total:
-          estequiometria
-            .molAnalitoInicial,
-    
-        molMnTotal:
-          estequiometria
-            .molTitulanteEquivalencia,
-    
-        volumeTotalMl:
-          entrada.volumeAnalitoMl +
-          estequiometria
-            .volumeEquivalenciaMl,
-    
-        concentracaoHPlusMolL:
-          entrada
-            .concentracaoHPlusMolL,
-    
-        atividadeOxigenio,
-    
-        temperaturaC,
-      });
-    
-    
-    if (
-      equilibrioPE.potencialV ===
-      null
-    ) {
-      throw new Error(
-        "Não foi possível calcular o potencial de equilíbrio no PE do sistema H₂O₂/MnO₄⁻."
-      );
-    }
-    
-    
-    const potencialEquivalenciaV =
-      equilibrioPE.potencialV;
+      const potencialEquivalenciaV =
+  calcularPotencialEquivalenciaPeroxido({
+    concentracaoHPlusMolL:
+      entrada
+        .concentracaoHPlusMolL,
+
+    atividadeOxigenio,
+
+    temperaturaC,
+  });
+
+
+if (
+  !Number.isFinite(
+    potencialEquivalenciaV
+  )
+) {
+  throw new Error(
+    "Não foi possível calcular o potencial ponderado no PE do sistema H₂O₂/MnO₄⁻."
+  );
+}
   
   
     return {
@@ -658,16 +642,16 @@ import {
   
       descricao =
         "Antes do ponto de equivalência, o par O₂/H₂O₂ é predominante, mas o potencial é obtido pelo equilíbrio simultâneo com MnO₄⁻/Mn²⁺.";
-    } else if (
-      regiao ===
-      "pe"
-    ) {
-      parControlador =
-        "equivalencia";
-  
-  
-      descricao =
-        "No ponto de equivalência, o potencial é obtido pelo equilíbrio simultâneo entre os pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺.";
+      } else if (
+        regiao ===
+        "pe"
+      ) {
+        parControlador =
+          "equivalencia";
+      
+      
+        descricao =
+          "No ponto de equivalência, o potencial é determinado pela média ponderada dos potenciais formais dos pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺, com pesos correspondentes aos números de elétrons das semirreações.";
     } else {
       parControlador =
         "MnO4-/Mn2+";
@@ -690,8 +674,12 @@ import {
       regiao,
   
       potencialV:
-        equilibrio
-          .potencialV,
+  regiao ===
+  "pe"
+    ? sistema
+        .potencialEquivalenciaV
+    : equilibrio
+        .potencialV,
   
       parControlador,
   

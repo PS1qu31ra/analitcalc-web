@@ -11,18 +11,39 @@ import type {
   ResultadoCurvaRedox,
 } from "@/lib/oxirreducao/curvaRedox";
 
+import type {
+  ResultadoCurvaRedoxPeroxido,
+} from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
 import {
   calcularPontoPermanganometriaFerro,
 } from "@/lib/oxirreducao/permanganometria";
+
+import {
+  calcularPontoPermanganometriaPeroxido,
+} from "@/lib/oxirreducao/permanganometriaPeroxido";
 
 import {
   calcularDerivadasRedox,
 } from "@/lib/oxirreducao/derivadas";
 
 
+type SistemaErroExperimentalRedox =
+  | "ferro-ii"
+  | "peroxido-hidrogenio";
+
+
+type ResultadoCurvaErroExperimentalRedox =
+  | ResultadoCurvaRedox
+  | ResultadoCurvaRedoxPeroxido;
+
+
 type ErroExperimentalRedoxProps = {
+  sistema:
+    SistemaErroExperimentalRedox;
+
   resultadoBase:
-    ResultadoCurvaRedox;
+    ResultadoCurvaErroExperimentalRedox;
 };
 
 
@@ -75,14 +96,37 @@ function formatarComSinal(
 
 
 export default function ErroExperimentalRedox({
+  sistema,
   resultadoBase,
 }: ErroExperimentalRedoxProps) {
+  const ehPeroxido =
+    sistema ===
+    "peroxido-hidrogenio";
+
+
+  const rotuloAnalito =
+    ehPeroxido
+      ? "H₂O₂"
+      : "Fe²⁺";
+
+
   const derivadas =
     useMemo(
       () =>
         calcularDerivadasRedox(
           resultadoBase
             .pontosValidos
+            .map(
+              (ponto) => ({
+                volumeAdicionadoMl:
+                  ponto
+                    .volumeAdicionadoMl,
+
+                potencialV:
+                  ponto
+                    .potencialV,
+              })
+            )
         ),
       [
         resultadoBase,
@@ -277,15 +321,28 @@ export default function ErroExperimentalRedox({
     0.0005;
 
 
-  const pontoExperimental =
-    calcularPontoPermanganometriaFerro({
-      entrada:
-        resultadoBase
-          .entrada,
-
-      volumeAdicionadoMl:
-        volumeExperimental,
-    });
+    const pontoExperimental =
+    ehPeroxido
+      ? calcularPontoPermanganometriaPeroxido({
+          entrada:
+            (
+              resultadoBase as
+                ResultadoCurvaRedoxPeroxido
+            ).entrada,
+  
+          volumeAdicionadoMl:
+            volumeExperimental,
+        })
+      : calcularPontoPermanganometriaFerro({
+          entrada:
+            (
+              resultadoBase as
+                ResultadoCurvaRedox
+            ).entrada,
+  
+          volumeAdicionadoMl:
+            volumeExperimental,
+        });
 
 
   const classificacaoPE =
@@ -478,15 +535,15 @@ export default function ErroExperimentalRedox({
 
 
         <div className="precipitacaoErrorContextGrid">
-          <article>
-            <span>
-              Titulado
-            </span>
+        <article>
+  <span>
+    Titulado
+  </span>
 
-            <strong>
-              Fe²⁺
-            </strong>
-          </article>
+  <strong>
+    {rotuloAnalito}
+  </strong>
+</article>
 
 
           <article>
@@ -709,12 +766,15 @@ export default function ErroExperimentalRedox({
 
 
           <GraficoErroExperimentalRedox
-            curva={
-              resultadoBase
-            }
-            volumePE={
-              volumePE
-            }
+  sistema={
+    sistema
+  }
+  curva={
+    resultadoBase
+  }
+  volumePE={
+    volumePE
+  }
             volumePFTeorico={
               volumePFTeorico
             }
@@ -1127,13 +1187,17 @@ export default function ErroExperimentalRedox({
  * ======================================================= */
 
 function GraficoErroExperimentalRedox({
+  sistema,
   curva,
   volumePE,
   volumePFTeorico,
   volumeExperimental,
 }: {
+  sistema:
+    SistemaErroExperimentalRedox;
+
   curva:
-    ResultadoCurvaRedox;
+    ResultadoCurvaErroExperimentalRedox;
 
   volumePE:
     number;
@@ -1178,14 +1242,29 @@ function GraficoErroExperimentalRedox({
       );
 
 
-  const pontoExperimental =
-    calcularPontoPermanganometriaFerro({
-      entrada:
-        curva.entrada,
-
-      volumeAdicionadoMl:
-        volumeExperimental,
-    });
+      const pontoExperimental =
+      sistema ===
+      "peroxido-hidrogenio"
+        ? calcularPontoPermanganometriaPeroxido({
+            entrada:
+              (
+                curva as
+                  ResultadoCurvaRedoxPeroxido
+              ).entrada,
+    
+            volumeAdicionadoMl:
+              volumeExperimental,
+          })
+        : calcularPontoPermanganometriaFerro({
+            entrada:
+              (
+                curva as
+                  ResultadoCurvaRedox
+              ).entrada,
+    
+            volumeAdicionadoMl:
+              volumeExperimental,
+          });
 
 
   const xMax =

@@ -921,6 +921,7 @@ export default function Permanganometria() {
   abaAtiva ===
     "tempo-real" && (
     <TempoRealRedox
+      sistema="ferro-ii"
       resultadoBase={
         resultadoFerro
       }
@@ -931,6 +932,7 @@ export default function Permanganometria() {
   abaAtiva ===
     "erro-experimental" && (
     <ErroExperimentalRedox
+      sistema="ferro-ii"
       resultadoBase={
         resultadoFerro
       }
@@ -991,6 +993,28 @@ export default function Permanganometria() {
   abaAtiva ===
     "concentracao" && (
     <EfeitoConcentracaoRedox
+      sistema="peroxido-hidrogenio"
+      resultadoBase={
+        resultadoPeroxido
+      }
+    />
+  )}
+
+{ehPeroxido &&
+  abaAtiva ===
+    "tempo-real" && (
+    <TempoRealRedox
+      sistema="peroxido-hidrogenio"
+      resultadoBase={
+        resultadoPeroxido
+      }
+    />
+  )}
+
+{ehPeroxido &&
+  abaAtiva ===
+    "erro-experimental" && (
+    <ErroExperimentalRedox
       sistema="peroxido-hidrogenio"
       resultadoBase={
         resultadoPeroxido

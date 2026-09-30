@@ -167,26 +167,30 @@ if (
 }
   
   
-  if (
-    aba ===
-      "tempo-real"
-  ) {
-    return (
-      sistemaAtivo ===
-      "ferro-ii"
-    );
-  }
+if (
+  aba ===
+    "tempo-real"
+) {
+  return (
+    sistemaAtivo ===
+      "ferro-ii" ||
+    sistemaAtivo ===
+      "peroxido-hidrogenio"
+  );
+}
   
   
-  if (
-    aba ===
-      "erro-experimental"
-  ) {
-    return (
-      sistemaAtivo ===
-      "ferro-ii"
-    );
-  }
+if (
+  aba ===
+    "erro-experimental"
+) {
+  return (
+    sistemaAtivo ===
+      "ferro-ii" ||
+    sistemaAtivo ===
+      "peroxido-hidrogenio"
+  );
+}
   
   
   return false;

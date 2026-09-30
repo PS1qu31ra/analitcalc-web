@@ -572,16 +572,16 @@ import {
   
       descricao =
         "Antes do ponto de equivalência, o par Fe³⁺/Fe²⁺ é predominante, mas o potencial é obtido pelo equilíbrio simultâneo com MnO₄⁻/Mn²⁺.";
-    } else if (
-      regiao ===
-      "pe"
-    ) {
-      parControlador =
-        "equivalencia";
-  
-  
-      descricao =
-        "No ponto de equivalência, o potencial é obtido pelo equilíbrio simultâneo entre os pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺.";
+      } else if (
+        regiao ===
+        "pe"
+      ) {
+        parControlador =
+          "equivalencia";
+      
+      
+        descricao =
+          "No ponto de equivalência, o potencial é determinado pela média ponderada dos potenciais dos pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺, considerando os respectivos números de elétrons das semirreações.";
     } else {
       parControlador =
         "MnO4-/Mn2+";
@@ -604,8 +604,12 @@ import {
       regiao,
   
       potencialV:
-        equilibrio
-          .potencialV,
+  regiao ===
+  "pe"
+    ? sistema
+        .potencialEquivalenciaV
+    : equilibrio
+        .potencialV,
   
       parControlador,
   
