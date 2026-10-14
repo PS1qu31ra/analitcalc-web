@@ -999,6 +999,7 @@ export default function Permanganometria() {
   abaAtiva ===
     "tempo-real" && (
     <TempoRealRedox
+      sistema="ferro-ii"
       resultadoBase={
         resultadoFerro
       }
@@ -1009,6 +1010,7 @@ export default function Permanganometria() {
   abaAtiva ===
     "erro-experimental" && (
     <ErroExperimentalRedox
+      sistema="ferro-ii"
       resultadoBase={
         resultadoFerro
       }
