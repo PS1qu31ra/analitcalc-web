@@ -107,16 +107,67 @@ function abaDisponivel({
   sistemaAtivo:
     SistemaPermanganometriaId;
 }) {
+  /*
+   * Implementado para
+   * todos os sistemas.
+   */
   if (
     aba ===
       "visao-geral" ||
     aba ===
-      "estequiometria"
+      "semirreacoes" ||
+    aba ===
+      "estequiometria" ||
+    aba ===
+      "curva"
   ) {
     return true;
   }
 
 
+  /*
+   * Os três sistemas possuem
+   * determinação do PF.
+   */
+  if (
+    aba ===
+      "derivadas"
+  ) {
+    return (
+      sistemaAtivo ===
+        "ferro-ii" ||
+      sistemaAtivo ===
+        "peroxido-hidrogenio" ||
+      sistemaAtivo ===
+        "oxalato"
+    );
+  }
+
+
+  /*
+   * Os três sistemas possuem
+   * comparação de concentração.
+   */
+  if (
+    aba ===
+      "concentracao"
+  ) {
+    return (
+      sistemaAtivo ===
+        "ferro-ii" ||
+      sistemaAtivo ===
+        "peroxido-hidrogenio" ||
+      sistemaAtivo ===
+        "oxalato"
+    );
+  }
+
+
+  /*
+   * As ferramentas seguintes
+   * do oxalato ainda serão
+   * implementadas.
+   */
   if (
     sistemaAtivo ===
     "oxalato"
@@ -127,72 +178,30 @@ function abaDisponivel({
 
   if (
     aba ===
-      "semirreacoes" ||
-    aba ===
-      "curva"
+      "tempo-real"
   ) {
-    return true;
+    return (
+      sistemaAtivo ===
+        "ferro-ii" ||
+      sistemaAtivo ===
+        "peroxido-hidrogenio"
+    );
   }
 
 
-  /*
- * Fe²⁺ e H₂O₂ já utilizam
- * o motor de equilíbrio contínuo
- * e podem ter o PF determinado
- * pelas derivadas da curva E × V.
- */
-if (
-  aba ===
-    "derivadas"
-) {
-  return (
-    sistemaAtivo ===
-      "ferro-ii" ||
-    sistemaAtivo ===
-      "peroxido-hidrogenio"
-  );
-}
-  
-  
-if (
-  aba ===
-    "concentracao"
-) {
-  return (
-    sistemaAtivo ===
-      "ferro-ii" ||
-    sistemaAtivo ===
-      "peroxido-hidrogenio"
-  );
-}
-  
-  
-if (
-  aba ===
-    "tempo-real"
-) {
-  return (
-    sistemaAtivo ===
-      "ferro-ii" ||
-    sistemaAtivo ===
-      "peroxido-hidrogenio"
-  );
-}
-  
-  
-if (
-  aba ===
-    "erro-experimental"
-) {
-  return (
-    sistemaAtivo ===
-      "ferro-ii" ||
-    sistemaAtivo ===
-      "peroxido-hidrogenio"
-  );
-}
-  
-  
+  if (
+    aba ===
+      "erro-experimental"
+  ) {
+    return (
+      sistemaAtivo ===
+        "ferro-ii" ||
+      sistemaAtivo ===
+        "peroxido-hidrogenio"
+    );
+  }
+
+
   return false;
 }
 

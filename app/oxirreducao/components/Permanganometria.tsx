@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useMemo,
   useState,
   type FormEvent,
 } from "react";
@@ -16,9 +17,9 @@ import {
 } from "@/lib/oxirreducao/curvaRedoxPeroxido";
 
 import {
-  calcularSistemaPermanganometriaOxalato,
-  type ResultadoPermanganometriaOxalato,
-} from "@/lib/oxirreducao/permanganometriaOxalato";
+  gerarCurvaPermanganometriaOxalato,
+  type ResultadoCurvaRedoxOxalato,
+} from "@/lib/oxirreducao/curvaRedoxOxalato";
 
 import type {
   EntradaPermanganometriaFerro,
@@ -54,7 +55,9 @@ import EstequiometriaPeroxido from "./EstequiometriaPeroxido";
 import CurvaPotenciometricaPeroxido from "./CurvaPotenciometricaPeroxido";
 
 import VisaoGeralOxalato from "./VisaoGeralOxalato";
+import SemirreacoesOxalato from "./SemirreacoesOxalato";
 import EstequiometriaOxalato from "./EstequiometriaOxalato";
+import CurvaPotenciometricaOxalato from "./CurvaPotenciometricaOxalato";
 
 import DerivadasRedox from "./DerivadasRedox";
 
@@ -146,21 +149,26 @@ function gerarResultadoPeroxidoInicial() {
 
 
 function gerarResultadoOxalatoInicial() {
-  return calcularSistemaPermanganometriaOxalato({
-    concentracaoAnalitoMolL:
-      0.1,
+  return gerarCurvaPermanganometriaOxalato({
+    entrada: {
+      concentracaoAnalitoMolL:
+        0.1,
 
-    volumeAnalitoMl:
-      25,
+      volumeAnalitoMl:
+        25,
 
-    concentracaoTitulanteMolL:
-      0.02,
+      concentracaoTitulanteMolL:
+        0.02,
 
-    concentracaoHPlusMolL:
-      1,
+      concentracaoHPlusMolL:
+        1,
 
-    temperaturaC:
-      25,
+      atividadeCO2:
+        1,
+
+      temperaturaC:
+        25,
+    },
   });
 }
 
@@ -255,14 +263,13 @@ export default function Permanganometria() {
       gerarResultadoPeroxidoInicial
     );
 
-
-  const [
-    resultadoOxalato,
-    setResultadoOxalato,
-  ] =
-    useState<ResultadoPermanganometriaOxalato>(
-      gerarResultadoOxalatoInicial
-    );
+    const [
+      resultadoOxalato,
+      setResultadoOxalato,
+    ] =
+      useState<ResultadoCurvaRedoxOxalato>(
+        gerarResultadoOxalatoInicial
+      );
 
 
   const [
@@ -287,6 +294,78 @@ export default function Permanganometria() {
     sistemaAtivo ===
     "oxalato";
 
+    const resultadoOxalatoDerivadas =
+  useMemo(
+    () => {
+      if (
+        !ehOxalato ||
+        abaAtiva !==
+          "derivadas"
+      ) {
+        return null;
+      }
+
+
+      const volumePE =
+        resultadoOxalato
+          .volumeEquivalenciaMl;
+
+
+      return gerarCurvaPermanganometriaOxalato({
+        entrada:
+          resultadoOxalato
+            .entrada,
+
+        configuracao: {
+          /*
+           * A curva visual permanece com
+           * resolução normal.
+           *
+           * Esta curva é usada somente
+           * pelo cálculo das derivadas.
+           */
+
+          volumeMaximoMl:
+            resultadoOxalato
+              .volumeMaximoMl,
+
+          passoBaseMl:
+            Math.max(
+              volumePE /
+                100,
+
+              0.05
+            ),
+
+          /*
+           * Para VPE = 50 mL:
+           *
+           * passo = 0,005 mL
+           */
+          passoProximoPEMl:
+            Math.max(
+              volumePE /
+                10000,
+
+              0.001
+            ),
+
+          /*
+           * Alta resolução apenas na
+           * região ±2% ao redor do PE.
+           */
+          faixaDensaFracao:
+            0.02,
+        },
+      });
+    },
+    [
+      abaAtiva,
+      ehOxalato,
+      resultadoOxalato,
+    ]
+  );
+
 
   const volumeEquivalenciaAtivo =
     ehFerro
@@ -298,16 +377,15 @@ export default function Permanganometria() {
         : resultadoOxalato
             .volumeEquivalenciaMl;
 
-
-  const potencialEquivalenciaAtivo =
-    ehFerro
-      ? resultadoFerro
-          .potencialEquivalenciaV
-      : ehPeroxido
-        ? resultadoPeroxido
-            .potencialEquivalenciaV
-        : null;
-
+            const potencialEquivalenciaAtivo =
+            ehFerro
+              ? resultadoFerro
+                  .potencialEquivalenciaV
+              : ehPeroxido
+                ? resultadoPeroxido
+                    .potencialEquivalenciaV
+                : resultadoOxalato
+                    .potencialEquivalenciaV;
 
   function alterarSistema(
     novoSistema:
@@ -469,11 +547,11 @@ export default function Permanganometria() {
           };
 
 
-        setResultadoOxalato(
-          calcularSistemaPermanganometriaOxalato(
-            entrada
-          )
-        );
+          setResultadoOxalato(
+            gerarCurvaPermanganometriaOxalato({
+              entrada,
+            })
+          );
 
 
         setErro(
@@ -921,7 +999,6 @@ export default function Permanganometria() {
   abaAtiva ===
     "tempo-real" && (
     <TempoRealRedox
-      sistema="ferro-ii"
       resultadoBase={
         resultadoFerro
       }
@@ -932,7 +1009,6 @@ export default function Permanganometria() {
   abaAtiva ===
     "erro-experimental" && (
     <ErroExperimentalRedox
-      sistema="ferro-ii"
       resultadoBase={
         resultadoFerro
       }
@@ -1000,28 +1076,6 @@ export default function Permanganometria() {
     />
   )}
 
-{ehPeroxido &&
-  abaAtiva ===
-    "tempo-real" && (
-    <TempoRealRedox
-      sistema="peroxido-hidrogenio"
-      resultadoBase={
-        resultadoPeroxido
-      }
-    />
-  )}
-
-{ehPeroxido &&
-  abaAtiva ===
-    "erro-experimental" && (
-    <ErroExperimentalRedox
-      sistema="peroxido-hidrogenio"
-      resultadoBase={
-        resultadoPeroxido
-      }
-    />
-  )}
-
 
       {ehOxalato &&
         abaAtiva === "visao-geral" && (
@@ -1032,6 +1086,11 @@ export default function Permanganometria() {
           />
         )}
 
+{ehOxalato &&
+  abaAtiva === "semirreacoes" && (
+    <SemirreacoesOxalato />
+  )}
+
 
       {ehOxalato &&
         abaAtiva === "estequiometria" && (
@@ -1041,6 +1100,43 @@ export default function Permanganometria() {
             }
           />
         )}
+
+{ehOxalato &&
+  abaAtiva === "curva" && (
+    <CurvaPotenciometricaOxalato
+      resultado={
+        resultadoOxalato
+      }
+    />
+  )}
+
+{ehOxalato &&
+  abaAtiva ===
+    "derivadas" &&
+  resultadoOxalatoDerivadas && (
+    <DerivadasRedox
+      sistema="oxalato"
+      volumeEquivalenciaMl={
+        resultadoOxalato
+          .volumeEquivalenciaMl
+      }
+      pontos={
+        resultadoOxalatoDerivadas
+          .pontosValidos
+      }
+    />
+  )}
+
+{ehOxalato &&
+  abaAtiva ===
+    "concentracao" && (
+    <EfeitoConcentracaoRedox
+      sistema="oxalato"
+      resultadoBase={
+        resultadoOxalato
+      }
+    />
+  )}
     </section>
   );
 }

@@ -95,6 +95,49 @@ export const O2:
   estado: "g",
 };
 
+export const H2C2O4:
+  EspecieRedox = {
+  id:
+    "H2C2O4",
+
+  nome:
+    "Ácido oxálico",
+
+  formula:
+    "H2C2O4",
+
+  formulaExibicao:
+    "H₂C₂O₄",
+
+  carga:
+    0,
+
+  estado:
+    "aq",
+};
+
+
+export const CO2:
+  EspecieRedox = {
+  id:
+    "CO2",
+
+  nome:
+    "Dióxido de carbono",
+
+  formula:
+    "CO2",
+
+  formulaExibicao:
+    "CO₂",
+
+  carga:
+    0,
+
+  estado:
+    "g",
+};
+
 
 /* =========================================================
  * LISTA DE ESPÉCIES
@@ -110,8 +153,9 @@ export const especiesRedox:
   FE2_MAIS,
   H2O2,
   O2,
+  H2C2O4,
+  CO2,
 ];
-
 
 /* =========================================================
  * PAR MnO₄⁻ / Mn²⁺
@@ -349,6 +393,98 @@ export const PAR_OXIGENIO_PEROXIDO:
     "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C: aproximadamente +0,695 V.",
 };
 
+/* =========================================================
+ * PAR CO₂ / H₂C₂O₄
+ * ======================================================= */
+
+/**
+ * Semirreação escrita no sentido
+ * de redução:
+ *
+ * 2 CO₂ + 2 H⁺ + 2 e⁻
+ * ⇌
+ * H₂C₂O₄
+ *
+ * E° ≈ -0,49 V
+ *
+ * Durante a permanganometria,
+ * a reação ocorre no sentido
+ * contrário:
+ *
+ * H₂C₂O₄
+ * →
+ * 2 CO₂ + 2 H⁺ + 2 e⁻
+ *
+ *
+ * Q =
+ *
+ * a(H₂C₂O₄)
+ * -------------------------
+ * a(CO₂)^2 × a(H⁺)^2
+ */
+export const PAR_DIOXIDO_CARBONO_ACIDO_OXALICO:
+  ParRedox = {
+  id:
+    "CO2/H2C2O4",
+
+  nome:
+    "Dióxido de carbono / ácido oxálico",
+
+  oxidante:
+    CO2,
+
+  redutor:
+    H2C2O4,
+
+  numeroEletrons:
+    2,
+
+  potencialPadraoReducao:
+    -0.49,
+
+  semirreacaoReducao:
+    "2 CO₂ + 2 H⁺ + 2 e⁻ ⇌ H₂C₂O₄",
+
+  meios: [
+    "acido",
+  ],
+
+  quocienteReacao: {
+    numerador: [
+      {
+        especieId:
+          "H2C2O4",
+
+        expoente:
+          1,
+      },
+    ],
+
+    denominador: [
+      {
+        especieId:
+          "CO2",
+
+        expoente:
+          2,
+      },
+
+      {
+        especieId:
+          "H+",
+
+        expoente:
+          2,
+      },
+    ],
+  },
+
+  observacao:
+    "O potencial do sistema oxalato é tratado pelo par CO₂/H₂C₂O₄. A concentração analítica total de oxalato deve ser convertida na fração protonada H₂C₂O₄ antes da aplicação da equação de Nernst.",
+
+  referencia:
+    "E° adotado para 2 CO₂ + 2 H⁺ + 2 e⁻ ⇌ H₂C₂O₄ a 25 °C: aproximadamente -0,49 V.",
+};
 
 /* =========================================================
  * BASE DE PARES
@@ -359,8 +495,8 @@ export const paresRedox:
   PAR_PERMANGANATO_MANGANES,
   PAR_FERRO_III_FERRO_II,
   PAR_OXIGENIO_PEROXIDO,
+  PAR_DIOXIDO_CARBONO_ACIDO_OXALICO,
 ];
-
 
 /* =========================================================
  * CONSULTAS

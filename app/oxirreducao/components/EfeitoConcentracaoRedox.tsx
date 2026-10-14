@@ -24,27 +24,39 @@ import type {
   EntradaPermanganometriaPeroxido,
 } from "@/lib/oxirreducao/permanganometriaPeroxido";
 
+import {
+  gerarCurvaPermanganometriaOxalato,
+  type ResultadoCurvaRedoxOxalato,
+} from "@/lib/oxirreducao/curvaRedoxOxalato";
+
+import type {
+  EntradaPermanganometriaOxalato,
+} from "@/lib/oxirreducao/permanganometriaOxalato";
+
 import GraficoComparacaoConcentracaoRedox from "./GraficoComparacaoConcentracaoRedox";
 
 
 type ResultadoCurvaConcentracao =
   | ResultadoCurvaRedox
-  | ResultadoCurvaRedoxPeroxido;
+  | ResultadoCurvaRedoxPeroxido
+  | ResultadoCurvaRedoxOxalato;
 
 
-type EntradaConcentracao =
+  type EntradaConcentracao =
   | EntradaPermanganometriaFerro
-  | EntradaPermanganometriaPeroxido;
+  | EntradaPermanganometriaPeroxido
+  | EntradaPermanganometriaOxalato;
 
 
-type EfeitoConcentracaoRedoxProps = {
-  sistema:
-    | "ferro-ii"
-    | "peroxido-hidrogenio";
-
-  resultadoBase:
-    ResultadoCurvaConcentracao;
-};
+  type EfeitoConcentracaoRedoxProps = {
+    sistema:
+      | "ferro-ii"
+      | "peroxido-hidrogenio"
+      | "oxalato";
+  
+    resultadoBase:
+      ResultadoCurvaConcentracao;
+  };
 
 
 function converterNumero(
@@ -121,28 +133,37 @@ export default function EfeitoConcentracaoRedox({
     resultadoBase.entrada;
 
 
-  const ehPeroxido =
+    const ehPeroxido =
     sistema ===
     "peroxido-hidrogenio";
-
-
+  
+  
+  const ehOxalato =
+    sistema ===
+    "oxalato";
+  
+  
   const rotuloAnalito =
-    ehPeroxido
-      ? "H₂O₂"
-      : "Fe²⁺";
-
-
+    ehOxalato
+      ? "Oxalato total"
+      : ehPeroxido
+        ? "H₂O₂"
+        : "Fe²⁺";
+  
+  
   const fatorEstequiometricoTexto =
-    ehPeroxido
+    ehPeroxido ||
+    ehOxalato
       ? "2/5 ×"
       : "1/5 ×";
-
-
+  
+  
   const explicacaoConstantes =
-    ehPeroxido
-      ? "O volume inicial da amostra, a concentração de H⁺, a atividade de O₂ e a temperatura permanecem iguais ao sistema definido na calculadora principal."
-      : "O volume inicial da amostra, a concentração de H⁺ e a temperatura permanecem iguais ao sistema definido na calculadora principal.";
-
+    ehOxalato
+      ? "O volume inicial da amostra, a concentração de H⁺, a atividade de CO₂ e a temperatura permanecem iguais ao sistema definido na calculadora principal."
+      : ehPeroxido
+        ? "O volume inicial da amostra, a concentração de H⁺, a atividade de O₂ e a temperatura permanecem iguais ao sistema definido na calculadora principal."
+        : "O volume inicial da amostra, a concentração de H⁺ e a temperatura permanecem iguais ao sistema definido na calculadora principal.";
 
   const [
     concentracaoFe2,
@@ -310,10 +331,41 @@ export default function EfeitoConcentracaoRedox({
   }: {
     concentracaoAnalitoMolL:
       number;
-
+  
     concentracaoTitulanteMolL:
       number;
   }) {
+    if (
+      sistema ===
+      "oxalato"
+    ) {
+      const novaEntrada:
+        EntradaPermanganometriaOxalato =
+        {
+          ...(
+            entradaBase as
+              EntradaPermanganometriaOxalato
+          ),
+  
+          concentracaoAnalitoMolL,
+  
+          concentracaoTitulanteMolL,
+        };
+  
+  
+      return {
+        entrada:
+          novaEntrada,
+  
+        curva:
+          gerarCurvaPermanganometriaOxalato({
+            entrada:
+              novaEntrada,
+          }),
+      };
+    }
+  
+  
     if (
       sistema ===
       "peroxido-hidrogenio"
@@ -1127,11 +1179,12 @@ export default function EfeitoConcentracaoRedox({
             </div>
 
             <p>
-              O fator estequiométrico é{" "}
-              {ehPeroxido
-                ? "2/5"
-                : "1/5"}{" "}
-              para este sistema. Quanto maior a razão entre
+            O fator estequiométrico é{" "}
+{ehPeroxido ||
+ehOxalato
+  ? "2/5"
+  : "1/5"}{" "}
+para este sistema. Quanto maior a razão entre
               titulado e titulante, maior será o volume de
               titulante necessário para atingir a equivalência.
             </p>

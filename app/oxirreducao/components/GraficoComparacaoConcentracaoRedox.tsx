@@ -6,10 +6,15 @@ import type {
   ResultadoCurvaRedoxPeroxido,
 } from "@/lib/oxirreducao/curvaRedoxPeroxido";
 
+import type {
+  ResultadoCurvaRedoxOxalato,
+} from "@/lib/oxirreducao/curvaRedoxOxalato";
+
 
 type CurvaComparavelRedox =
   | ResultadoCurvaRedox
-  | ResultadoCurvaRedoxPeroxido;
+  | ResultadoCurvaRedoxPeroxido
+  | ResultadoCurvaRedoxOxalato;
 
 
 type GraficoComparacaoConcentracaoRedoxProps = {

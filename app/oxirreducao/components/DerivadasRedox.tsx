@@ -14,7 +14,8 @@ import {
   type DerivadasRedoxProps = {
     sistema:
       | "ferro-ii"
-      | "peroxido-hidrogenio";
+      | "peroxido-hidrogenio"
+      | "oxalato";
   
     volumeEquivalenciaMl:
       number;
@@ -823,21 +824,30 @@ import {
       );
   
   
-    const ehPeroxido =
+      const ehPeroxido =
       sistema ===
       "peroxido-hidrogenio";
-  
-  
+    
+    
+    const ehOxalato =
+      sistema ===
+      "oxalato";
+    
+    
     const nomeSistema =
-      ehPeroxido
-        ? "H₂O₂/MnO₄⁻"
-        : "Fe²⁺/MnO₄⁻";
-  
-  
+      ehOxalato
+        ? "Oxalato/MnO₄⁻"
+        : ehPeroxido
+          ? "H₂O₂/MnO₄⁻"
+          : "Fe²⁺/MnO₄⁻";
+    
+    
     const proporcaoEstequiometrica =
-      ehPeroxido
-        ? "5 H₂O₂ : 2 MnO₄⁻"
-        : "5 Fe²⁺ : 1 MnO₄⁻";
+      ehOxalato
+        ? "5 C₂O₄²⁻ : 2 MnO₄⁻"
+        : ehPeroxido
+          ? "5 H₂O₂ : 2 MnO₄⁻"
+          : "5 Fe²⁺ : 1 MnO₄⁻";
   
   
       const erroAbsolutoPrimeira =
@@ -1083,11 +1093,11 @@ import {
     <p>
   A primeira derivada é calculada entre pontos
   consecutivos da curva E × V e associada ao
-  volume médio de cada intervalo. Ao redor do
-  maior valor discreto, três pontos são usados
-  em uma interpolação parabólica para determinar
-  com maior precisão o máximo de ΔE/ΔV e,
-  consequentemente, o PF teórico.
+  volume médio de cada intervalo. Na região do
+  maior valor discreto, três pontos são ajustados
+  por uma parábola para refinar matematicamente
+  a posição do máximo de ΔE/ΔV e determinar o
+  PF teórico.
 </p>
   </header>
 
@@ -1124,12 +1134,12 @@ import {
     </h4>
 
     <p>
-  A segunda derivada é a derivada da curva local
-  ajustada para ΔE/ΔV. Por isso, seu cruzamento por
-  zero ocorre exatamente no mesmo volume em que a
-  primeira derivada atinge o máximo. Os dois métodos
-  representam o mesmo ponto de inflexão e, portanto,
-  o mesmo PF teórico.
+  A segunda derivada é vinculada ao mesmo ajuste
+  local utilizado para refinar a primeira derivada.
+  O zero de Δ²E/ΔV² ocorre exatamente no mesmo
+  volume em que ΔE/ΔV apresenta seu máximo.
+  Portanto, as duas derivadas representam o mesmo
+  ponto de inflexão e o mesmo PF teórico.
 </p>
   </header>
 
@@ -1166,12 +1176,13 @@ import {
 
   <p>
     A linha vertical tracejada representa o PE
-    estequiométrico. O máximo da primeira derivada e o
-    zero da segunda derivada representam o mesmo ponto
-    de inflexão e, portanto, devem fornecer o mesmo PF.
-    PE e PF, por outro lado, podem apresentar volumes
-    diferentes em curvas redox assimétricas. O erro
-    relativo é calculado por ((VPF − VPE) / VPE) × 100.
+    estequiométrico. O máximo da primeira derivada
+    e o zero da segunda derivada representam o mesmo
+    ponto de inflexão e, portanto, devem fornecer
+    exatamente o mesmo PF teórico. PE e PF podem,
+    entretanto, ocorrer em volumes diferentes. O erro
+    absoluto é VPF − VPE e o erro relativo é calculado
+    por ((VPF − VPE) / VPE) × 100, preservando o sinal.
   </p>
 </div>
       </section>

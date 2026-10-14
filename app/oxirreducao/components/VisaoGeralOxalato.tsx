@@ -205,17 +205,18 @@ import type {
   
   
         <div className="oxirreducaoEducationalNote">
-          <strong>
-            Modelo potenciométrico
-          </strong>
-  
-          <p>
-            A estequiometria já está implementada, mas a curva
-            E × V e o tratamento completo dos potenciais ainda
-            estão em desenvolvimento para evitar aplicar ao
-            oxalato um modelo simplificado inadequado.
-          </p>
-        </div>
+  <strong>
+    Modelo potenciométrico
+  </strong>
+
+  <p>
+    A curva E × V utiliza equilíbrio redox simultâneo e
+    especiação ácido-base do oxalato. A concentração
+    analítica total é distribuída entre H₂C₂O₄,
+    HC₂O₄⁻ e C₂O₄²⁻ antes do cálculo do potencial pelo
+    par CO₂/H₂C₂O₄.
+  </p>
+</div>
       </section>
     );
   }
