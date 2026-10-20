@@ -14,6 +14,10 @@ import type {
   ResultadoCurvaRedoxPeroxido,
 } from "@/lib/oxirreducao/curvaRedoxPeroxido";
 
+import type {
+  ResultadoCurvaRedoxOxalato,
+} from "@/lib/oxirreducao/curvaRedoxOxalato";
+
 import {
   calcularPontoPermanganometriaFerro,
   type ResultadoPontoPermanganometria,
@@ -25,6 +29,11 @@ import {
 } from "@/lib/oxirreducao/permanganometriaPeroxido";
 
 import {
+  calcularPontoPermanganometriaOxalato,
+  type ResultadoPontoPermanganometriaOxalato,
+} from "@/lib/oxirreducao/permanganometriaOxalato";
+
+import {
   calcularDerivadasRedox,
 } from "@/lib/oxirreducao/derivadas";
 
@@ -33,17 +42,20 @@ import SimulacaoTempoRealRedoxChart from "./SimulacaoTempoRealRedoxChart";
 
 type SistemaTempoRealRedox =
   | "ferro-ii"
-  | "peroxido-hidrogenio";
+  | "peroxido-hidrogenio"
+  | "oxalato";
 
 
-type ResultadoCurvaTempoRealRedox =
+  type ResultadoCurvaTempoRealRedox =
   | ResultadoCurvaRedox
-  | ResultadoCurvaRedoxPeroxido;
+  | ResultadoCurvaRedoxPeroxido
+  | ResultadoCurvaRedoxOxalato;
 
 
-type PontoTempoRealRedox =
+  type PontoTempoRealRedox =
   | ResultadoPontoPermanganometria
-  | ResultadoPontoPermanganometriaPeroxido;
+  | ResultadoPontoPermanganometriaPeroxido
+  | ResultadoPontoPermanganometriaOxalato;
 
 
 type TempoRealRedoxProps = {
@@ -146,12 +158,19 @@ export default function TempoRealRedox({
   resultadoBase,
 }: TempoRealRedoxProps) {
   const ehPeroxido =
-    sistema ===
-    "peroxido-hidrogenio";
+  sistema ===
+  "peroxido-hidrogenio";
 
 
-  const nomeAnalito =
-    ehPeroxido
+const ehOxalato =
+  sistema ===
+  "oxalato";
+
+
+const nomeAnalito =
+  ehOxalato
+    ? "Oxalato total"
+    : ehPeroxido
       ? "H₂O₂"
       : "Fe²⁺";
 
@@ -266,8 +285,9 @@ export default function TempoRealRedox({
    */
 
   const pontoFerro =
-    !ehPeroxido &&
-    pontoAtual
+  !ehPeroxido &&
+  !ehOxalato &&
+  pontoAtual
       ? pontoAtual as
           ResultadoPontoPermanganometria
       : null;
@@ -280,6 +300,13 @@ export default function TempoRealRedox({
           ResultadoPontoPermanganometriaPeroxido
       : null;
 
+      const pontoOxalato =
+  ehOxalato &&
+  pontoAtual
+    ? pontoAtual as
+        ResultadoPontoPermanganometriaOxalato
+    : null;
+
 
   const atividadeOxigenio =
     ehPeroxido
@@ -290,6 +317,16 @@ export default function TempoRealRedox({
           .atividadeOxigenio ??
         1
       : null;
+
+      const atividadeCO2 =
+  ehOxalato
+    ? (
+        resultadoBase as
+          ResultadoCurvaRedoxOxalato
+      ).entrada
+        .atividadeCO2 ??
+      1
+    : null;
 
 
   /*
@@ -333,6 +370,24 @@ export default function TempoRealRedox({
     volume:
       number
   ): PontoTempoRealRedox {
+    if (
+      sistema ===
+      "oxalato"
+    ) {
+      const resultadoOxalato =
+        resultadoBase as
+          ResultadoCurvaRedoxOxalato;
+    
+    
+      return calcularPontoPermanganometriaOxalato({
+        entrada:
+          resultadoOxalato
+            .entrada,
+    
+        volumeAdicionadoMl:
+          volume,
+      });
+    }
     if (
       sistema ===
       "peroxido-hidrogenio"
@@ -790,7 +845,132 @@ export default function TempoRealRedox({
             </div>
 
 
-            {ehPeroxido ? (
+            {ehOxalato ? (
+  <>
+    <div className="resultCard">
+      <span>
+        [Oxalato total]
+      </span>
+
+      <strong>
+        {pontoOxalato
+          ? formatarCientifico(
+              pontoOxalato
+                .concentracaoOxalatoTotalMolL
+            )
+          : "-"}
+      </strong>
+
+      {pontoOxalato && (
+        <small>
+          mol/L
+        </small>
+      )}
+    </div>
+
+
+    <div className="resultCard">
+      <span>
+        [H₂C₂O₄]
+      </span>
+
+      <strong>
+        {pontoOxalato
+          ? formatarCientifico(
+              pontoOxalato
+                .concentracaoH2C2O4MolL
+            )
+          : "-"}
+      </strong>
+
+      {pontoOxalato && (
+        <small>
+          mol/L
+        </small>
+      )}
+    </div>
+
+
+    <div className="resultCard">
+      <span>
+        n(CO₂)
+      </span>
+
+      <strong>
+        {pontoOxalato
+          ? formatarCientifico(
+              pontoOxalato
+                .molCO2
+            )
+          : "-"}
+      </strong>
+
+      {pontoOxalato && (
+        <small>
+          mol
+        </small>
+      )}
+    </div>
+
+
+    <div className="resultCard">
+      <span>
+        [MnO₄⁻]
+      </span>
+
+      <strong>
+        {pontoOxalato
+          ? formatarCientifico(
+              pontoOxalato
+                .concentracaoMnO4MolL
+            )
+          : "-"}
+      </strong>
+
+      {pontoOxalato && (
+        <small>
+          mol/L
+        </small>
+      )}
+    </div>
+
+
+    <div className="resultCard">
+      <span>
+        [Mn²⁺]
+      </span>
+
+      <strong>
+        {pontoOxalato
+          ? formatarCientifico(
+              pontoOxalato
+                .concentracaoMn2MolL
+            )
+          : "-"}
+      </strong>
+
+      {pontoOxalato && (
+        <small>
+          mol/L
+        </small>
+      )}
+    </div>
+
+
+    <div className="resultCard">
+      <span>
+        a(CO₂)
+      </span>
+
+      <strong>
+        {formatarNumero(
+          atividadeCO2,
+          3
+        )}
+      </strong>
+    </div>
+  </>
+) : ehPeroxido ? (
               <>
                 <div className="resultCard">
                   <span>
@@ -1111,7 +1291,29 @@ export default function TempoRealRedox({
                       E (V)
                     </th>
 
-                    {ehPeroxido ? (
+                    {ehOxalato ? (
+  <>
+    <th>
+      [Oxalato total]
+    </th>
+
+    <th>
+      [H₂C₂O₄]
+    </th>
+
+    <th>
+      n(CO₂)
+    </th>
+
+    <th>
+      [MnO₄⁻]
+    </th>
+
+    <th>
+      [Mn²⁺]
+    </th>
+  </>
+) : ehPeroxido ? (
                       <>
                         <th>
                           [H₂O₂]
@@ -1162,6 +1364,92 @@ export default function TempoRealRedox({
                       ponto,
                       index
                     ) => {
+                      if (
+                        ehOxalato
+                      ) {
+                        const pontoOxalatoTabela =
+                          ponto as
+                            ResultadoPontoPermanganometriaOxalato;
+                      
+                      
+                        return (
+                          <tr
+                            key={`${pontoOxalatoTabela.volumeAdicionadoMl}-${index}`}
+                          >
+                            <td>
+                              {index + 1}
+                            </td>
+                      
+                      
+                            <td>
+                              {formatarNumero(
+                                pontoOxalatoTabela
+                                  .volumeAdicionadoMl,
+                                2
+                              )}{" "}
+                              mL
+                            </td>
+                      
+                      
+                            <td>
+                              <strong>
+                                {formatarNumero(
+                                  pontoOxalatoTabela
+                                    .potencialV,
+                                  4
+                                )}
+                              </strong>
+                            </td>
+                      
+                      
+                            <td>
+                              {formatarCientifico(
+                                pontoOxalatoTabela
+                                  .concentracaoOxalatoTotalMolL
+                              )}
+                            </td>
+                      
+                      
+                            <td>
+                              {formatarCientifico(
+                                pontoOxalatoTabela
+                                  .concentracaoH2C2O4MolL
+                              )}
+                            </td>
+                      
+                      
+                            <td>
+                              {formatarCientifico(
+                                pontoOxalatoTabela
+                                  .molCO2
+                              )}
+                            </td>
+                      
+                      
+                            <td>
+                              {formatarCientifico(
+                                pontoOxalatoTabela
+                                  .concentracaoMnO4MolL
+                              )}
+                            </td>
+                      
+                      
+                            <td>
+                              {formatarCientifico(
+                                pontoOxalatoTabela
+                                  .concentracaoMn2MolL
+                              )}
+                            </td>
+                      
+                      
+                            <td>
+                              {nomeRegiao(
+                                pontoOxalatoTabela
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      }
                       if (
                         ehPeroxido
                       ) {

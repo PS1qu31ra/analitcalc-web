@@ -15,6 +15,10 @@ import type {
   ResultadoCurvaRedoxPeroxido,
 } from "@/lib/oxirreducao/curvaRedoxPeroxido";
 
+import type {
+  ResultadoCurvaRedoxOxalato,
+} from "@/lib/oxirreducao/curvaRedoxOxalato";
+
 import {
   calcularPontoPermanganometriaFerro,
 } from "@/lib/oxirreducao/permanganometria";
@@ -24,18 +28,24 @@ import {
 } from "@/lib/oxirreducao/permanganometriaPeroxido";
 
 import {
+  calcularPontoPermanganometriaOxalato,
+} from "@/lib/oxirreducao/permanganometriaOxalato";
+
+import {
   calcularDerivadasRedox,
 } from "@/lib/oxirreducao/derivadas";
 
 
 type SistemaErroExperimentalRedox =
   | "ferro-ii"
-  | "peroxido-hidrogenio";
+  | "peroxido-hidrogenio"
+  | "oxalato";
 
 
-type ResultadoCurvaErroExperimentalRedox =
+  type ResultadoCurvaErroExperimentalRedox =
   | ResultadoCurvaRedox
-  | ResultadoCurvaRedoxPeroxido;
+  | ResultadoCurvaRedoxPeroxido
+  | ResultadoCurvaRedoxOxalato;
 
 
 type ErroExperimentalRedoxProps = {
@@ -100,12 +110,19 @@ export default function ErroExperimentalRedox({
   resultadoBase,
 }: ErroExperimentalRedoxProps) {
   const ehPeroxido =
-    sistema ===
-    "peroxido-hidrogenio";
+  sistema ===
+  "peroxido-hidrogenio";
 
 
-  const rotuloAnalito =
-    ehPeroxido
+const ehOxalato =
+  sistema ===
+  "oxalato";
+
+
+const rotuloAnalito =
+  ehOxalato
+    ? "Oxalato total"
+    : ehPeroxido
       ? "H₂O₂"
       : "Fe²⁺";
 
@@ -322,24 +339,37 @@ export default function ErroExperimentalRedox({
 
 
     const pontoExperimental =
-    ehPeroxido
+  ehOxalato
+    ? calcularPontoPermanganometriaOxalato({
+        entrada:
+          (
+            resultadoBase as
+              ResultadoCurvaRedoxOxalato
+          ).entrada,
+
+        volumeAdicionadoMl:
+          volumeExperimental,
+      })
+
+    : ehPeroxido
       ? calcularPontoPermanganometriaPeroxido({
           entrada:
             (
               resultadoBase as
                 ResultadoCurvaRedoxPeroxido
             ).entrada,
-  
+
           volumeAdicionadoMl:
             volumeExperimental,
         })
+
       : calcularPontoPermanganometriaFerro({
           entrada:
             (
               resultadoBase as
                 ResultadoCurvaRedox
             ).entrada,
-  
+
           volumeAdicionadoMl:
             volumeExperimental,
         });
@@ -1243,28 +1273,42 @@ function GraficoErroExperimentalRedox({
 
 
       const pontoExperimental =
-      sistema ===
-      "peroxido-hidrogenio"
-        ? calcularPontoPermanganometriaPeroxido({
-            entrada:
-              (
-                curva as
-                  ResultadoCurvaRedoxPeroxido
-              ).entrada,
-    
-            volumeAdicionadoMl:
-              volumeExperimental,
-          })
-        : calcularPontoPermanganometriaFerro({
-            entrada:
-              (
-                curva as
-                  ResultadoCurvaRedox
-              ).entrada,
-    
-            volumeAdicionadoMl:
-              volumeExperimental,
-          });
+  sistema ===
+  "oxalato"
+    ? calcularPontoPermanganometriaOxalato({
+        entrada:
+          (
+            curva as
+              ResultadoCurvaRedoxOxalato
+          ).entrada,
+
+        volumeAdicionadoMl:
+          volumeExperimental,
+      })
+
+    : sistema ===
+        "peroxido-hidrogenio"
+      ? calcularPontoPermanganometriaPeroxido({
+          entrada:
+            (
+              curva as
+                ResultadoCurvaRedoxPeroxido
+            ).entrada,
+
+          volumeAdicionadoMl:
+            volumeExperimental,
+        })
+
+      : calcularPontoPermanganometriaFerro({
+          entrada:
+            (
+              curva as
+                ResultadoCurvaRedox
+            ).entrada,
+
+          volumeAdicionadoMl:
+            volumeExperimental,
+        });
 
 
   const xMax =

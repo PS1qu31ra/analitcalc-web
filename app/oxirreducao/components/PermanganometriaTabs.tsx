@@ -107,10 +107,6 @@ function abaDisponivel({
   sistemaAtivo:
     SistemaPermanganometriaId;
 }) {
-  /*
-   * Implementado para
-   * todos os sistemas.
-   */
   if (
     aba ===
       "visao-geral" ||
@@ -125,58 +121,11 @@ function abaDisponivel({
   }
 
 
-  /*
-   * Os três sistemas possuem
-   * determinação do PF.
-   */
   if (
     aba ===
-      "derivadas"
-  ) {
-    return (
-      sistemaAtivo ===
-        "ferro-ii" ||
-      sistemaAtivo ===
-        "peroxido-hidrogenio" ||
-      sistemaAtivo ===
-        "oxalato"
-    );
-  }
-
-
-  /*
-   * Os três sistemas possuem
-   * comparação de concentração.
-   */
-  if (
+      "derivadas" ||
     aba ===
-      "concentracao"
-  ) {
-    return (
-      sistemaAtivo ===
-        "ferro-ii" ||
-      sistemaAtivo ===
-        "peroxido-hidrogenio" ||
-      sistemaAtivo ===
-        "oxalato"
-    );
-  }
-
-
-  /*
-   * As ferramentas seguintes
-   * do oxalato ainda serão
-   * implementadas.
-   */
-  if (
-    sistemaAtivo ===
-    "oxalato"
-  ) {
-    return false;
-  }
-
-
-  if (
+      "concentracao" ||
     aba ===
       "tempo-real"
   ) {
@@ -184,7 +133,9 @@ function abaDisponivel({
       sistemaAtivo ===
         "ferro-ii" ||
       sistemaAtivo ===
-        "peroxido-hidrogenio"
+        "peroxido-hidrogenio" ||
+      sistemaAtivo ===
+        "oxalato"
     );
   }
 
@@ -197,7 +148,9 @@ function abaDisponivel({
       sistemaAtivo ===
         "ferro-ii" ||
       sistemaAtivo ===
-        "peroxido-hidrogenio"
+        "peroxido-hidrogenio" ||
+      sistemaAtivo ===
+        "oxalato"
     );
   }
 

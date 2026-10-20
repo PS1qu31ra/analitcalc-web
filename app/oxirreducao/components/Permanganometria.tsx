@@ -295,76 +295,60 @@ export default function Permanganometria() {
     "oxalato";
 
     const resultadoOxalatoDerivadas =
-  useMemo(
-    () => {
-      if (
-        !ehOxalato ||
-        abaAtiva !==
-          "derivadas"
-      ) {
-        return null;
-      }
+    useMemo(
+      () => {
+        const abaUsaCurvaRefinada =
+          abaAtiva === "derivadas" ||
+          abaAtiva === "tempo-real" ||
+          abaAtiva === "erro-experimental";
 
 
-      const volumePE =
-        resultadoOxalato
-          .volumeEquivalenciaMl;
+        if (
+          !ehOxalato ||
+          !abaUsaCurvaRefinada
+        ) {
+          return null;
+        }
 
 
-      return gerarCurvaPermanganometriaOxalato({
-        entrada:
+        const volumePE =
           resultadoOxalato
-            .entrada,
+            .volumeEquivalenciaMl;
 
-        configuracao: {
-          /*
-           * A curva visual permanece com
-           * resolução normal.
-           *
-           * Esta curva é usada somente
-           * pelo cálculo das derivadas.
-           */
 
-          volumeMaximoMl:
+        return gerarCurvaPermanganometriaOxalato({
+          entrada:
             resultadoOxalato
-              .volumeMaximoMl,
+              .entrada,
 
-          passoBaseMl:
-            Math.max(
-              volumePE /
-                100,
+          configuracao: {
+            volumeMaximoMl:
+              resultadoOxalato
+                .volumeMaximoMl,
 
-              0.05
-            ),
+            passoBaseMl:
+              Math.max(
+                volumePE / 100,
+                0.05
+              ),
 
-          /*
-           * Para VPE = 50 mL:
-           *
-           * passo = 0,005 mL
-           */
-          passoProximoPEMl:
-            Math.max(
-              volumePE /
-                10000,
+            passoProximoPEMl:
+              Math.max(
+                volumePE / 10000,
+                0.001
+              ),
 
-              0.001
-            ),
-
-          /*
-           * Alta resolução apenas na
-           * região ±2% ao redor do PE.
-           */
-          faixaDensaFracao:
-            0.02,
-        },
-      });
-    },
-    [
-      abaAtiva,
-      ehOxalato,
-      resultadoOxalato,
-    ]
-  );
+            faixaDensaFracao:
+              0.02,
+          },
+        });
+      },
+      [
+        abaAtiva,
+        ehOxalato,
+        resultadoOxalato,
+      ]
+    );
 
 
   const volumeEquivalenciaAtivo =
@@ -1078,6 +1062,29 @@ export default function Permanganometria() {
     />
   )}
 
+{ehPeroxido &&
+  abaAtiva ===
+    "tempo-real" && (
+    <TempoRealRedox
+      sistema="peroxido-hidrogenio"
+      resultadoBase={
+        resultadoPeroxido
+      }
+    />
+  )}
+
+
+{ehPeroxido &&
+  abaAtiva ===
+    "erro-experimental" && (
+    <ErroExperimentalRedox
+      sistema="peroxido-hidrogenio"
+      resultadoBase={
+        resultadoPeroxido
+      }
+    />
+  )}
+
 
       {ehOxalato &&
         abaAtiva === "visao-geral" && (
@@ -1136,6 +1143,30 @@ export default function Permanganometria() {
       sistema="oxalato"
       resultadoBase={
         resultadoOxalato
+      }
+    />
+  )}
+
+{ehOxalato &&
+  abaAtiva ===
+    "tempo-real" &&
+  resultadoOxalatoDerivadas && (
+    <TempoRealRedox
+      sistema="oxalato"
+      resultadoBase={
+        resultadoOxalatoDerivadas
+      }
+    />
+  )}
+
+{ehOxalato &&
+  abaAtiva ===
+    "erro-experimental" &&
+  resultadoOxalatoDerivadas && (
+    <ErroExperimentalRedox
+      sistema="oxalato"
+      resultadoBase={
+        resultadoOxalatoDerivadas
       }
     />
   )}

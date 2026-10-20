@@ -120,7 +120,7 @@ export const SISTEMA_OXALATO:
     "disponivel",
 
   observacao:
-    "Estequiometria e condições experimentais disponíveis. O modelo potenciométrico específico permanece em desenvolvimento.",
+    "Sistema completo com estequiometria, potencial redox, curva potenciométrica, derivadas, efeito da concentração, simulação em tempo real e avaliação do erro experimental.",
 };
 
 
