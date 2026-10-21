@@ -14,6 +14,7 @@ import ModuleTabs, {
 } from "./components/ModuleTabs";
 
 import Permanganometria from "./components/Permanganometria";
+import Iodometria from "./components/Iodometria";
 
 
 export default function OxirreducaoPage() {
@@ -25,24 +26,25 @@ export default function OxirreducaoPage() {
       "permanganometria"
     );
 
-
   return (
     <main className="oxirreducaoPage">
       <ModuleHeader />
 
       <ModuleTabs
-        abaAtiva={
-          abaAtiva
-        }
-        onChange={
-          setAbaAtiva
-        }
+        abaAtiva={abaAtiva}
+        onChange={setAbaAtiva}
       />
 
       {abaAtiva ===
         "permanganometria" && (
         <Permanganometria />
       )}
+
+      {abaAtiva ===
+        "iodometria" && (
+        <Iodometria />
+      )}
     </main>
   );
 }
+

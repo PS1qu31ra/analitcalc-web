@@ -8,7 +8,8 @@ type ModuleTabsProps = {
     AbaOxirreducao;
 
   onChange: (
-    aba: AbaOxirreducao
+    aba:
+      AbaOxirreducao
   ) => void;
 };
 
@@ -19,7 +20,6 @@ const estudos: {
   titulo: string;
   descricao: string;
   orientacao: string;
-  disponivel: boolean;
 }[] = [
   {
     id:
@@ -35,12 +35,8 @@ const estudos: {
       "Titulações utilizando permanganato como agente oxidante, com acompanhamento estequiométrico e potenciométrico.",
 
     orientacao:
-      "Começaremos pelo sistema clássico Fe²⁺ × MnO₄⁻ em meio ácido.",
-
-    disponivel:
-      true,
+      "Sistemas disponíveis: Fe²⁺, H₂O₂ e oxalato.",
   },
-
   {
     id:
       "iodometria",
@@ -52,13 +48,10 @@ const estudos: {
       "Iodometria",
 
     descricao:
-      "Determinação indireta de espécies oxidantes por formação de iodo e posterior titulação com tiossulfato.",
+      "Determinação indireta de espécies oxidantes por geração de iodo in situ e posterior titulação com tiossulfato de sódio.",
 
     orientacao:
-      "Este módulo será liberado após a validação completa da permanganometria.",
-
-    disponivel:
-      false,
+      "Sistemas disponíveis: Cl₂, Cu²⁺, O₂ dissolvido, H₂O₂, ClO⁻ e IO₃⁻.",
   },
 ];
 
@@ -82,8 +75,7 @@ export default function ModuleTabs({
         </h2>
 
         <p>
-          Cada método possui estequiometria, semirreações e
-          comportamento potenciométrico específicos.
+          Cada método possui estequiometria, semirreações e comportamento potenciométrico específicos.
         </p>
       </header>
 
@@ -100,86 +92,45 @@ export default function ModuleTabs({
 
             return (
               <button
-                key={
-                  estudo.id
-                }
+                key={estudo.id}
                 type="button"
                 role="tab"
-                aria-selected={
-                  estaAtivo
-                }
-                disabled={
-                  !estudo.disponivel
-                }
+                aria-selected={estaAtivo}
                 className={[
                   "oxirreducaoStudyCard",
-
                   estaAtivo
                     ? "oxirreducaoStudyCardActive"
                     : "",
-
-                  !estudo.disponivel
-                    ? "oxirreducaoStudyCardDisabled"
-                    : "",
                 ]
-                  .filter(
-                    Boolean
-                  )
+                  .filter(Boolean)
                   .join(" ")}
-                onClick={() => {
-                  if (
-                    estudo.disponivel
-                  ) {
-                    onChange(
-                      estudo.id
-                    );
-                  }
-                }}
+                onClick={() =>
+                  onChange(estudo.id)
+                }
               >
                 <span className="oxirreducaoStudyNumber">
-                  {
-                    estudo.numero
-                  }
+                  {estudo.numero}
                 </span>
 
                 <span className="oxirreducaoStudyContent">
                   <span className="oxirreducaoStudyTitleRow">
-                    <strong>
-                      {
-                        estudo.titulo
-                      }
-                    </strong>
-
-                    {!estudo.disponivel && (
-                      <small>
-                        Em breve
-                      </small>
-                    )}
+                    <strong>{estudo.titulo}</strong>
                   </span>
 
                   <span className="oxirreducaoStudyDescription">
-                    {
-                      estudo.descricao
-                    }
+                    {estudo.descricao}
                   </span>
 
                   <span className="oxirreducaoStudyOrientation">
-                    {
-                      estudo.orientacao
-                    }
+                    {estudo.orientacao}
                   </span>
                 </span>
 
                 <span className="oxirreducaoStudyAction">
-                  {estudo.disponivel
-                    ? estaAtivo
-                      ? "Selecionado"
-                      : "Escolher método"
-                    : "Em desenvolvimento"}
-
-                  <span>
-                    →
-                  </span>
+                  {estaAtivo
+                    ? "Selecionado"
+                    : "Escolher método"}
+                  <span>→</span>
                 </span>
               </button>
             );
@@ -189,3 +140,4 @@ export default function ModuleTabs({
     </section>
   );
 }
+
