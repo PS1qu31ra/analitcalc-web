@@ -3688,3 +3688,90 @@
       1fr;
   }
 }
+
+/* =========================================================
+   ESTEQUIOMETRIA — IODOMETRIA
+   ========================================================= */
+
+   .iodometriaStoichiometryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+    margin-bottom: 22px;
+  }
+  
+  .iodometriaStoichiometryCard {
+    min-width: 0;
+    min-height: 150px;
+    padding: 26px 28px;
+  
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  .iodometriaStoichiometryCard > span {
+    display: block;
+  
+    font-size: 0.96rem;
+    line-height: 1.28;
+    font-weight: 800;
+  
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+  
+  .iodometriaStoichiometryCard > strong {
+    display: block;
+  
+    margin-top: 12px;
+  
+    font-size: clamp(
+      1.15rem,
+      1.35vw,
+      1.48rem
+    );
+  
+    line-height: 1.25;
+  
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+  
+  
+  /* Fórmulas maiores podem usar melhor a largura do card */
+  
+  .iodometriaStoichiometryCard:nth-child(5) > strong,
+  .iodometriaStoichiometryCard:nth-child(6) > strong {
+    font-size: clamp(
+      1.08rem,
+      1.25vw,
+      1.36rem
+    );
+  }
+  
+  
+  /* Tablet */
+  
+  @media (max-width: 1100px) {
+    .iodometriaStoichiometryGrid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  
+  /* Mobile */
+  
+  @media (max-width: 700px) {
+    .iodometriaStoichiometryGrid {
+      grid-template-columns: 1fr;
+    }
+  
+    .iodometriaStoichiometryCard {
+      min-height: auto;
+    }
+  }

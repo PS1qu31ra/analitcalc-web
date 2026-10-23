@@ -2,7 +2,7 @@ import type {
     ResultadoCurvaRedoxPeroxido,
   } from "@/lib/oxirreducao/curvaRedoxPeroxido";
   
-  import GraficoCurvaRedox from "./GraficoCurvaRedox";
+  import ConsultaCurvaOxirreducao from "./ConsultaCurvaOxirreducao";
   
   
   type CurvaPotenciometricaPeroxidoProps = {
@@ -71,11 +71,10 @@ import type {
         </header>
   
   
-        <GraficoCurvaRedox
-          resultado={
-            resultado
-          }
-        />
+        <ConsultaCurvaOxirreducao
+  modo="peroxido"
+  resultado={resultado}
+/>
   
   
         <div className="oxirreducaoRegionGrid">
