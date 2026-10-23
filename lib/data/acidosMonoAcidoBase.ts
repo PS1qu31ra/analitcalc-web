@@ -16,7 +16,7 @@ export type AcidoMonoAcidoBase = {
   export const acidosMonoAcidoBase: AcidoMonoAcidoBase[] = [
     {
       id: "hclo4",
-      nome: "Perclórico",
+      nome: "Ácido perclórico",
       formula: "HClO4",
       tipo: "forte",
       pKa25C: -15,
@@ -26,7 +26,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "hi",
-      nome: "Hidroiodídrico",
+      nome: "Ácido iodídrico",
       formula: "HI",
       tipo: "forte",
       pKa25C: -9.5,
@@ -36,7 +36,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "hbr",
-      nome: "Hidrobromídrico",
+      nome: "Ácido bromídrico",
       formula: "HBr",
       tipo: "forte",
       pKa25C: -8.8,
@@ -46,7 +46,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "hcl",
-      nome: "Clorídrico",
+      nome: "Ácido clorídrico",
       formula: "HCl",
       tipo: "forte",
       pKa25C: -5.9,
@@ -56,7 +56,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "hno3",
-      nome: "Nítrico",
+      nome: "Ácido nítrico",
       formula: "HNO3",
       tipo: "forte",
       pKa25C: -1.6,
@@ -66,7 +66,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "hclo3",
-      nome: "Clórico",
+      nome: "Ácido clórico",
       formula: "HClO3",
       tipo: "forte",
       pKa25C: -1,
@@ -76,7 +76,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "cf3so3h",
-      nome: "Trifluorometanossulfônico (trifílico)",
+      nome: "Ácido trifluorometanossulfônico (trifílico)",
       formula: "CF3SO3H",
       tipo: "superforte",
       pKa25C: -14,
@@ -86,7 +86,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "ch3so3h",
-      nome: "Metanossulfônico",
+      nome: "Ácido metanossulfônico",
       formula: "CH3SO3H",
       tipo: "forte",
       pKa25C: -1.9,
@@ -96,7 +96,7 @@ export type AcidoMonoAcidoBase = {
     },
     {
       id: "ch3c6h4so3h",
-      nome: "p-Toluenossulfônico (p-TsOH)",
+      nome: "Ácido p-toluenossulfônico (p-TsOH)",
       formula: "CH3C6H4SO3H",
       tipo: "forte",
       pKa25C: -2.8,

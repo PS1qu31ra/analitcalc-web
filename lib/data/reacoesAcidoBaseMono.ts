@@ -62,26 +62,56 @@ export type ReacaoAcidoBaseMono = {
   }
   
   const acidosFortesComoTitulantes: TabelaAcidoForte[] = [
-    { nome: "Perclórico", formula: "HClO4", anion: "ClO4", obs: "Ácido forte" },
-    { nome: "Hidroiodídrico", formula: "HI", anion: "I", obs: "Ácido forte" },
-    { nome: "Hidrobromídrico", formula: "HBr", anion: "Br", obs: "Ácido forte" },
-    { nome: "Clorídrico", formula: "HCl", anion: "Cl", obs: "Ácido forte" },
-    { nome: "Nítrico", formula: "HNO3", anion: "NO3", obs: "Ácido forte" },
-    { nome: "Clórico", formula: "HClO3", anion: "ClO3", obs: "Ácido forte" },
     {
-      nome: "Trifluorometanossulfônico (trifílico)",
+      nome: "Ácido perclórico",
+      formula: "HClO4",
+      anion: "ClO4",
+      obs: "Ácido forte",
+    },
+    {
+      nome: "Ácido iodídrico",
+      formula: "HI",
+      anion: "I",
+      obs: "Ácido forte",
+    },
+    {
+      nome: "Ácido bromídrico",
+      formula: "HBr",
+      anion: "Br",
+      obs: "Ácido forte",
+    },
+    {
+      nome: "Ácido clorídrico",
+      formula: "HCl",
+      anion: "Cl",
+      obs: "Ácido forte",
+    },
+    {
+      nome: "Ácido nítrico",
+      formula: "HNO3",
+      anion: "NO3",
+      obs: "Ácido forte",
+    },
+    {
+      nome: "Ácido clórico",
+      formula: "HClO3",
+      anion: "ClO3",
+      obs: "Ácido forte",
+    },
+    {
+      nome: "Ácido trifluorometanossulfônico (trifílico)",
       formula: "CF3SO3H",
       anion: "CF3SO3",
       obs: "Ácido superforte",
     },
     {
-      nome: "Metanossulfônico",
+      nome: "Ácido metanossulfônico",
       formula: "CH3SO3H",
       anion: "CH3SO3",
       obs: "Ácido forte",
     },
     {
-      nome: "p-Toluenossulfônico (p-TsOH)",
+      nome: "Ácido p-toluenossulfônico (p-TsOH)",
       formula: "CH3C6H4SO3H",
       anion: "CH3C6H4SO3",
       obs: "Ácido forte orgânico",
@@ -190,36 +220,93 @@ export type ReacaoAcidoBaseMono = {
 
 { nome: "2,4-Dinitrofenol", formula: "(O2N)2C6H3OH", sal: { K: "K(O2N)2C6H3O", Na: "(O2N)2C6H3ONa" }, obs: "Ácido fraco" },
 
-{ nome: "Perclórico", formula: "HClO4", sal: { K: "KClO4", Na: "NaClO4" }, obs: "Ácido forte" },
-
-{ nome: "Hidroiodídrico", formula: "HI", sal: { K: "KI", Na: "NaI" }, obs: "Ácido forte" },
-
-{ nome: "Hidrobromídrico", formula: "HBr", sal: { K: "KBr", Na: "NaBr" }, obs: "Ácido forte" },
-
-{ nome: "Clorídrico", formula: "HCl", sal: { K: "KCl", Na: "NaCl" }, obs: "Ácido forte" },
-
-{ nome: "Nítrico", formula: "HNO3", sal: { K: "KNO3", Na: "NaNO3" }, obs: "Ácido forte" },
-
-{ nome: "Clórico", formula: "HClO3", sal: { K: "KClO3", Na: "NaClO3" }, obs: "Ácido forte" },
-
 {
-  nome: "Trifluorometanossulfônico (trifílico)",
-  formula: "CF3SO3H",
-  sal: { K: "KCF3SO3", Na: "CF3SO3Na" },
-  obs: "Ácido superforte",
-},
-
-{
-  nome: "Metanossulfônico",
-  formula: "CH3SO3H",
-  sal: { K: "KCH3SO3", Na: "CH3SO3Na" },
+  nome: "Ácido perclórico",
+  formula: "HClO4",
+  sal: {
+    K: "KClO4",
+    Na: "NaClO4",
+  },
   obs: "Ácido forte",
 },
 
 {
-  nome: "p-Toluenossulfônico (p-TsOH)",
+  nome: "Ácido iodídrico",
+  formula: "HI",
+  sal: {
+    K: "KI",
+    Na: "NaI",
+  },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "Ácido bromídrico",
+  formula: "HBr",
+  sal: {
+    K: "KBr",
+    Na: "NaBr",
+  },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "Ácido clorídrico",
+  formula: "HCl",
+  sal: {
+    K: "KCl",
+    Na: "NaCl",
+  },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "Ácido nítrico",
+  formula: "HNO3",
+  sal: {
+    K: "KNO3",
+    Na: "NaNO3",
+  },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "Ácido clórico",
+  formula: "HClO3",
+  sal: {
+    K: "KClO3",
+    Na: "NaClO3",
+  },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "Ácido trifluorometanossulfônico (trifílico)",
+  formula: "CF3SO3H",
+  sal: {
+    K: "KCF3SO3",
+    Na: "CF3SO3Na",
+  },
+  obs: "Ácido superforte",
+},
+
+{
+  nome: "Ácido metanossulfônico",
+  formula: "CH3SO3H",
+  sal: {
+    K: "KCH3SO3",
+    Na: "CH3SO3Na",
+  },
+  obs: "Ácido forte",
+},
+
+{
+  nome: "Ácido p-toluenossulfônico (p-TsOH)",
   formula: "CH3C6H4SO3H",
-  sal: { K: "KCH3C6H4SO3", Na: "CH3C6H4SO3Na" },
+  sal: {
+    K: "KCH3C6H4SO3",
+    Na: "CH3C6H4SO3Na",
+  },
   obs: "Ácido forte orgânico",
 },
   ];
