@@ -1358,10 +1358,33 @@ const [pontosTempoRealMono, setPontosTempoRealMono] = useState<
     const [indicadorMonoSelecionado, setIndicadorMonoSelecionado] =
   useState<RankingIndicadorAcidoBase | null>(null);
 
-  const titulantesMono = listarTitulantesMono();
+  const titulantesMono =
+  listarTitulantesMono()
+    .sort(
+      (a, b) =>
+        a.nome.localeCompare(
+          b.nome,
+          "pt-BR",
+          {
+            sensitivity: "base",
+          }
+        )
+    );
 
-  const tituladosDisponiveisMono = titulanteMono
-    ? listarTituladosPorTitulanteMono(titulanteMono)
+const tituladosDisponiveisMono =
+  titulanteMono
+    ? listarTituladosPorTitulanteMono(
+        titulanteMono
+      ).sort(
+        (a, b) =>
+          a.nome.localeCompare(
+            b.nome,
+            "pt-BR",
+            {
+              sensitivity: "base",
+            }
+          )
+      )
     : [];
 
   function converterNumeroMono(valor: string) {
@@ -3770,11 +3793,24 @@ const [indicadorSelecionado, setIndicadorSelecionado] =
   useState<RankingIndicadorAcidoBase | null>(null);
 
   const tituladosDisponiveis =
+  (
     titulante === "HCl"
       ? basesPolibasicasKb
       : titulante === "NaOH"
         ? acidosPoliproticosKa
-        : [];
+        : []
+  )
+    .slice()
+    .sort(
+      (a, b) =>
+        a.nome.localeCompare(
+          b.nome,
+          "pt-BR",
+          {
+            sensitivity: "base",
+          }
+        )
+    );
 
   function converterNumero(valor: string) {
     return Number(String(valor).replace(",", "."));
@@ -4282,8 +4318,13 @@ const tabelaSegundaDerivada =
                   }}
                 >
                   <option value="">Selecione o titulante...</option>
-                  <option value="NaOH">NaOH — base forte</option>
-                  <option value="HCl">HCl — ácido forte</option>
+                  <option value="HCl">
+  Ácido clorídrico — HCl
+</option>
+
+<option value="NaOH">
+  Hidróxido de sódio — NaOH
+</option>
                 </select>
               </label>
 
