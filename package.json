@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:redox": "tsc -p tsconfig.redox.json && node scripts/testar-oxirreducao.js"
   },
   "dependencies": {
     "@types/node": "20.6.2",

@@ -8,9 +8,11 @@ import {
 } from "react";
 
 import {
-  E0_I2_I,
+  E0_I2_AQ_I,
   E0_TETRATIONATO_TIOS,
   REACAO_TIOS,
+  EQUILIBRIO_TRIIODeto,
+  K_FORMACAO_I3_25C,
   SEMIRREACAO_IODO,
   SEMIRREACAO_TIOS,
   TEXTO_INDICADOR_AMIDO,
@@ -264,7 +266,15 @@ function SemirreacoesIodometria({
             <span>Par I₂/I⁻</span>
             <strong>{SEMIRREACAO_IODO}</strong>
             <small>
-              2 e⁻ • E° = {formatarNumero(E0_I2_I, 4)} V
+              I₂(aq)/I⁻ • E° = {formatarNumero(E0_I2_AQ_I, 4)} V
+            </small>
+          </div>
+
+          <div className="reactionWideCard">
+            <span>Complexação do iodo em excesso de iodeto</span>
+            <strong>{EQUILIBRIO_TRIIODeto}</strong>
+            <small>
+              Kf ≈ {formatarNumero(K_FORMACAO_I3_25C, 0)} (escala molal) a 25 °C; usado como aproximação em solução diluída. Kf varia com a temperatura por van&apos;t Hoff; atividades são aproximadas por concentrações.
             </small>
           </div>
 
@@ -504,7 +514,7 @@ function CurvaIodometria({
 
       <div className="explanationBox">
         <p>
-          Antes do PE predomina o sistema I₂/I⁻. Após o PE, o excesso de tiossulfato e o tetrationato formado passam a controlar o potencial. O excesso de iodeto proveniente de KI também participa do termo de Nernst do par I₂/I⁻.
+          O modelo considera o equilíbrio I₂(aq) + I⁻ ⇌ I₃⁻. As concentrações livres de I₂ e I⁻, após a especiação, entram na equação de Nernst; o I₃⁻ é apresentado separadamente. Após o PE, o excesso de tiossulfato e o tetrationato formado passam a controlar o potencial. Os potenciais padrão exibidos são referências a 25 °C; a correção térmica completa dos potenciais padrão e dos coeficientes de atividade ainda não está incluída.
         </p>
       </div>
     </section>
@@ -887,12 +897,16 @@ function TempoRealIodometria({
             <strong>{pontoAtual ? `${formatarNumero(pontoAtual.potencialV, 4)} V` : "-"}</strong>
           </div>
           <div className="resultCard">
-            <span>[I₂]</span>
+            <span>[I₂(aq)] livre</span>
             <strong>{pontoAtual ? formatarCientifico(pontoAtual.concentracaoI2MolL) : "-"}</strong>
           </div>
           <div className="resultCard">
-            <span>[I⁻]</span>
+            <span>[I⁻] livre</span>
             <strong>{pontoAtual ? formatarCientifico(pontoAtual.concentracaoIodetoMolL) : "-"}</strong>
+          </div>
+          <div className="resultCard">
+            <span>[I₃⁻]</span>
+            <strong>{pontoAtual ? formatarCientifico(pontoAtual.concentracaoI3MolL) : "-"}</strong>
           </div>
           <div className="resultCard">
             <span>[S₂O₃²⁻]</span>
@@ -923,8 +937,9 @@ function TempoRealIodometria({
                   <th>#</th>
                   <th>Volume</th>
                   <th>E (V)</th>
-                  <th>[I₂]</th>
-                  <th>[I⁻]</th>
+                  <th>[I₂(aq)] livre</th>
+                  <th>[I⁻] livre</th>
+                  <th>[I₃⁻]</th>
                   <th>[S₂O₃²⁻]</th>
                   <th>[S₄O₆²⁻]</th>
                   <th>Região</th>
@@ -938,6 +953,7 @@ function TempoRealIodometria({
                     <td>{formatarNumero(ponto.potencialV, 4)}</td>
                     <td>{formatarCientifico(ponto.concentracaoI2MolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoIodetoMolL)}</td>
+                    <td>{formatarCientifico(ponto.concentracaoI3MolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoTiossulfatoMolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoTetrationatoMolL)}</td>
                     <td>{nomeRegiao(ponto)}</td>

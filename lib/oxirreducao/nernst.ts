@@ -70,213 +70,119 @@ import type {
   }
   
   
-  function atividadeValida(
-    atividade: number
-  ) {
-    return (
-      Number.isFinite(
-        atividade
-      ) &&
-      atividade > 0
-    );
-  }
-  
-  
   /* =========================================================
-   * PRODUTO DAS ATIVIDADES
+   * QUOCIENTE DE REAÇÃO EM ESPAÇO LOGARÍTMICO
    * ======================================================= */
-  
-  function calcularProdutoAtividades({
+
+  const LOG10_MAX_NUMBER = Math.log10(Number.MAX_VALUE);
+  const LOG10_MIN_NUMBER = Math.log10(Number.MIN_VALUE);
+
+  function calcularLog10ProdutoAtividades({
     termos,
     atividades,
   }: {
-    termos:
-      TermoQuocienteRedox[];
-  
-    atividades:
-      AtividadesRedox;
+    termos: TermoQuocienteRedox[];
+    atividades: AtividadesRedox;
   }) {
-    let produto =
-      1;
-  
-    for (
-      const termo of termos
-    ) {
-      const atividade =
-        atividades[
-          termo.especieId
-        ];
-  
-      if (
-        !atividadeValida(
-          atividade
-        )
-      ) {
+    let log10Produto = 0;
+
+    for (const termo of termos) {
+      const atividade = atividades[termo.especieId];
+      if (!Number.isFinite(atividade) || atividade <= 0) {
         return {
-          valido:
-            false as const,
-  
-          produto:
-            NaN,
-  
-          especieInvalida:
-            termo.especieId,
+          valido: false as const,
+          log10Produto: NaN,
+          especieInvalida: termo.especieId,
         };
       }
-  
-      if (
-        !Number.isFinite(
-          termo.expoente
-        ) ||
-        termo.expoente <= 0
-      ) {
+
+      if (!Number.isFinite(termo.expoente) || termo.expoente <= 0) {
         return {
-          valido:
-            false as const,
-  
-          produto:
-            NaN,
-  
-          especieInvalida:
-            termo.especieId,
+          valido: false as const,
+          log10Produto: NaN,
+          especieInvalida: termo.especieId,
         };
       }
-  
-      produto *=
-        Math.pow(
-          atividade,
-          termo.expoente
-        );
+
+      log10Produto += termo.expoente * Math.log10(atividade);
+      if (!Number.isFinite(log10Produto)) {
+        return {
+          valido: false as const,
+          log10Produto: NaN,
+          especieInvalida: termo.especieId,
+        };
+      }
     }
-  
+
     return {
-      valido:
-        true as const,
-  
-      produto,
-  
-      especieInvalida:
-        null,
+      valido: true as const,
+      log10Produto,
+      especieInvalida: null,
     };
   }
-  
-  
-  /* =========================================================
-   * QUOCIENTE DE REAÇÃO
-   * ======================================================= */
-  
+
+  function converterLog10ParaNumeroFinito(log10Valor: number) {
+    return Math.pow(
+      10,
+      Math.min(LOG10_MAX_NUMBER, Math.max(LOG10_MIN_NUMBER, log10Valor))
+    );
+  }
+
   export function calcularQuocienteReacaoRedox({
     par,
     atividades,
   }: {
-    par:
-      ParRedox;
-  
-    atividades:
-      AtividadesRedox;
+    par: ParRedox;
+    atividades: AtividadesRedox;
   }) {
-    const numerador =
-      calcularProdutoAtividades({
-        termos:
-          par
-            .quocienteReacao
-            .numerador,
-  
-        atividades,
-      });
-  
-    if (
-      !numerador.valido
-    ) {
+    const numerador = calcularLog10ProdutoAtividades({
+      termos: par.quocienteReacao.numerador,
+      atividades,
+    });
+
+    if (!numerador.valido) {
       return {
-        valido:
-          false as const,
-  
-        quociente:
-          NaN,
-  
-        mensagem:
-          `Informe uma atividade positiva e finita para ${numerador.especieInvalida}.`,
+        valido: false as const,
+        quociente: NaN,
+        log10Quociente: NaN,
+        mensagem: `Informe uma atividade positiva e finita para ${numerador.especieInvalida}.`,
       };
     }
-  
-    const denominador =
-      calcularProdutoAtividades({
-        termos:
-          par
-            .quocienteReacao
-            .denominador,
-  
-        atividades,
-      });
-  
-    if (
-      !denominador.valido
-    ) {
+
+    const denominador = calcularLog10ProdutoAtividades({
+      termos: par.quocienteReacao.denominador,
+      atividades,
+    });
+
+    if (!denominador.valido) {
       return {
-        valido:
-          false as const,
-  
-        quociente:
-          NaN,
-  
-        mensagem:
-          `Informe uma atividade positiva e finita para ${denominador.especieInvalida}.`,
+        valido: false as const,
+        quociente: NaN,
+        log10Quociente: NaN,
+        mensagem: `Informe uma atividade positiva e finita para ${denominador.especieInvalida}.`,
       };
     }
-  
-    if (
-      denominador.produto <= 0 ||
-      !Number.isFinite(
-        denominador.produto
-      )
-    ) {
+
+    const log10Quociente = numerador.log10Produto - denominador.log10Produto;
+    if (!Number.isFinite(log10Quociente)) {
       return {
-        valido:
-          false as const,
-  
-        quociente:
-          NaN,
-  
-        mensagem:
-          "O denominador do quociente de reação deve ser positivo e finito.",
+        valido: false as const,
+        quociente: NaN,
+        log10Quociente: NaN,
+        mensagem: 'Não foi possível calcular o logaritmo do quociente de reação.',
       };
     }
-  
-    const quociente =
-      numerador.produto /
-      denominador.produto;
-  
-    if (
-      !Number.isFinite(
-        quociente
-      ) ||
-      quociente <= 0
-    ) {
-      return {
-        valido:
-          false as const,
-  
-        quociente:
-          NaN,
-  
-        mensagem:
-          "Não foi possível calcular um quociente de reação positivo e finito.",
-      };
-    }
-  
+
     return {
-      valido:
-        true as const,
-  
-      quociente,
-  
-      mensagem:
-        "Quociente de reação calculado com sucesso.",
+      valido: true as const,
+      // Q é limitado apenas para exibição; o potencial usa o logaritmo sem truncamento.
+      quociente: converterLog10ParaNumeroFinito(log10Quociente),
+      log10Quociente,
+      mensagem: 'Quociente de reação calculado em espaço logarítmico.',
     };
   }
-  
-  
+
+
   /* =========================================================
    * FATOR DE NERNST
    * ======================================================= */
@@ -318,7 +224,7 @@ import type {
       ZERO_CELSIUS_EM_KELVIN;
   
     return (
-      2.303 *
+      Math.LN10 *
       R *
       temperaturaK
     ) /
@@ -380,6 +286,9 @@ import type {
   
         quocienteReacao:
           NaN,
+
+        log10QuocienteReacao:
+          NaN,
   
         fatorNernst:
           NaN,
@@ -414,6 +323,9 @@ import type {
   
         quocienteReacao:
           NaN,
+
+        log10QuocienteReacao:
+          NaN,
   
         fatorNernst:
           NaN,
@@ -447,6 +359,9 @@ import type {
           par.potencialPadraoReducao,
   
         quocienteReacao:
+          NaN,
+
+        log10QuocienteReacao:
           NaN,
   
         fatorNernst:
@@ -486,6 +401,9 @@ import type {
   
         quocienteReacao:
           NaN,
+
+        log10QuocienteReacao:
+          NaN,
   
         fatorNernst:
           NaN,
@@ -509,9 +427,7 @@ import type {
     const potencial =
       par.potencialPadraoReducao -
       fatorNernst *
-        Math.log10(
-          resultadoQ.quociente
-        );
+        resultadoQ.log10Quociente;
   
     if (
       !Number.isFinite(
@@ -535,6 +451,9 @@ import type {
   
         quocienteReacao:
           resultadoQ.quociente,
+
+        log10QuocienteReacao:
+          resultadoQ.log10Quociente,
   
         fatorNernst,
   
@@ -563,6 +482,9 @@ import type {
   
       quocienteReacao:
         resultadoQ.quociente,
+
+      log10QuocienteReacao:
+        resultadoQ.log10Quociente,
   
       fatorNernst,
   

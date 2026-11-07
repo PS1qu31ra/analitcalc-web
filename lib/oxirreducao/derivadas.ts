@@ -1,861 +1,299 @@
 /* =========================================================
- * TIPOS
+ * DERIVADAS NUMÉRICAS DA CURVA POTENCIOMÉTRICA REDOX
  * ======================================================= */
 
 export type PontoBaseDerivadaRedox = {
   volumeAdicionadoMl: number;
-
-  potencialV:
-    number | null;
+  potencialV: number | null;
 };
-
 
 type PontoCurvaPreparado = {
-  volumeMl:
-    number;
-
-  potencialV:
-    number;
+  volumeMl: number;
+  potencialV: number;
 };
-
 
 export type PontoPrimeiraDerivadaRedox = {
-  volumeMl:
-    number;
-
-  primeiraDerivada:
-    number;
+  volumeMl: number;
+  primeiraDerivada: number;
 };
-
 
 export type PontoSegundaDerivadaRedox = {
-  volumeMl:
-    number;
-
-  segundaDerivada:
-    number;
+  volumeMl: number;
+  segundaDerivada: number;
 };
-
 
 export type ResultadoDerivadasRedox = {
-  primeiraDerivada:
-    PontoPrimeiraDerivadaRedox[];
-
-  segundaDerivada:
-    PontoSegundaDerivadaRedox[];
-
-  volumePFPrimeiraDerivadaMl:
-    number;
-
-  valorMaximoPrimeiraDerivada:
-    number;
-
-  volumePFSegundaDerivadaMl:
-    number;
+  primeiraDerivada: PontoPrimeiraDerivadaRedox[];
+  segundaDerivada: PontoSegundaDerivadaRedox[];
+  volumePFPrimeiraDerivadaMl: number;
+  valorMaximoPrimeiraDerivada: number;
+  /** null quando a segunda derivada não apresenta cruzamento real por zero. */
+  volumePFSegundaDerivadaMl: number | null;
 };
-
 
 type PontoInflexaoRefinado = {
-  volumeMl:
-    number;
-
-  valorMaximoPrimeiraDerivada:
-    number;
+  volumeMl: number;
+  valorMaximoPrimeiraDerivada: number;
 };
 
+function prepararPontos(pontos: PontoBaseDerivadaRedox[]): PontoCurvaPreparado[] {
+  const mapa = new Map<number, number>();
 
-/* =========================================================
- * PREPARAÇÃO
- * ======================================================= */
+  pontos.forEach((ponto) => {
+    if (
+      !Number.isFinite(ponto.volumeAdicionadoMl) ||
+      ponto.potencialV === null ||
+      !Number.isFinite(ponto.potencialV)
+    ) return;
 
-function prepararPontos(
-  pontos:
-    PontoBaseDerivadaRedox[]
-): PontoCurvaPreparado[] {
-  const mapa =
-    new Map<
-      number,
-      number
-    >();
+    mapa.set(ponto.volumeAdicionadoMl, ponto.potencialV);
+  });
 
-
-  pontos.forEach(
-    (
-      ponto
-    ) => {
-      if (
-        !Number.isFinite(
-          ponto
-            .volumeAdicionadoMl
-        ) ||
-        ponto.potencialV ===
-          null ||
-        !Number.isFinite(
-          ponto
-            .potencialV
-        )
-      ) {
-        return;
-      }
-
-
-      mapa.set(
-        ponto
-          .volumeAdicionadoMl,
-
-        ponto
-          .potencialV
-      );
-    }
-  );
-
-
-  return Array.from(
-    mapa.entries()
-  )
-    .map(
-      (
-        [
-          volumeMl,
-          potencialV,
-        ]
-      ) => ({
-        volumeMl,
-
-        potencialV,
-      })
-    )
-    .sort(
-      (
-        a,
-        b
-      ) =>
-        a.volumeMl -
-        b.volumeMl
-    );
+  return Array.from(mapa.entries())
+    .map(([volumeMl, potencialV]) => ({ volumeMl, potencialV }))
+    .sort((a, b) => a.volumeMl - b.volumeMl);
 }
 
-
-/* =========================================================
- * PRIMEIRA DERIVADA
- * ======================================================= */
-
+/** Diferenças finitas progressivas, associadas ao ponto médio do intervalo. */
 function calcularPrimeiraDerivada(
-  pontos:
-    PontoCurvaPreparado[]
+  pontos: PontoCurvaPreparado[]
 ): PontoPrimeiraDerivadaRedox[] {
-  const resultado:
-    PontoPrimeiraDerivadaRedox[] =
-    [];
+  const resultado: PontoPrimeiraDerivadaRedox[] = [];
 
+  for (let indice = 0; indice < pontos.length - 1; indice += 1) {
+    const atual = pontos[indice];
+    const proximo = pontos[indice + 1];
+    const deltaVolume = proximo.volumeMl - atual.volumeMl;
 
-  for (
-    let indice = 0;
-
-    indice <
-    pontos.length - 1;
-
-    indice +=
-      1
-  ) {
-    const atual =
-      pontos[
-        indice
-      ];
-
-
-    const proximo =
-      pontos[
-        indice +
-        1
-      ];
-
-
-    const deltaVolume =
-      proximo
-        .volumeMl -
-      atual
-        .volumeMl;
-
-
-    if (
-      !Number.isFinite(
-        deltaVolume
-      ) ||
-      deltaVolume <=
-        0
-    ) {
-      continue;
-    }
-
+    if (!Number.isFinite(deltaVolume) || deltaVolume <= 0) continue;
 
     const primeiraDerivada =
-      (
-        proximo
-          .potencialV -
-        atual
-          .potencialV
-      ) /
-      deltaVolume;
+      (proximo.potencialV - atual.potencialV) / deltaVolume;
+    const volumeMedio = (atual.volumeMl + proximo.volumeMl) / 2;
 
-
-    const volumeMedio =
-      (
-        atual
-          .volumeMl +
-        proximo
-          .volumeMl
-      ) /
-      2;
-
-
-    if (
-      !Number.isFinite(
-        primeiraDerivada
-      ) ||
-      !Number.isFinite(
-        volumeMedio
-      )
-    ) {
-      continue;
+    if (Number.isFinite(primeiraDerivada) && Number.isFinite(volumeMedio)) {
+      resultado.push({ volumeMl: volumeMedio, primeiraDerivada });
     }
-
-
-    resultado.push({
-      volumeMl:
-        volumeMedio,
-
-      primeiraDerivada,
-    });
   }
-
 
   return resultado;
 }
 
-
-/* =========================================================
- * SEGUNDA DERIVADA
- * ======================================================= */
-
+/**
+ * Segunda derivada calculada DIRETAMENTE da curva E(V), usando a fórmula
+ * de três pontos para espaçamentos não uniformes:
+ *
+ * E''(Vᵢ) ≈ 2/(h₁+h₂) × [(Eᵢ₊₁-Eᵢ)/h₂ - (Eᵢ-Eᵢ₋₁)/h₁]
+ *
+ * Não depende do máximo da primeira derivada e não insere zeros artificiais.
+ */
 function calcularSegundaDerivada(
-  primeiraDerivada:
-    PontoPrimeiraDerivadaRedox[]
+  pontos: PontoCurvaPreparado[]
 ): PontoSegundaDerivadaRedox[] {
-  const resultado:
-    PontoSegundaDerivadaRedox[] =
-    [];
+  const resultado: PontoSegundaDerivadaRedox[] = [];
 
-
-  for (
-    let indice = 0;
-
-    indice <
-    primeiraDerivada.length -
-      1;
-
-    indice +=
-      1
-  ) {
-    const atual =
-      primeiraDerivada[
-        indice
-      ];
-
-
-    const proximo =
-      primeiraDerivada[
-        indice +
-        1
-      ];
-
-
-    const deltaVolume =
-      proximo
-        .volumeMl -
-      atual
-        .volumeMl;
-
+  for (let indice = 1; indice < pontos.length - 1; indice += 1) {
+    const anterior = pontos[indice - 1];
+    const atual = pontos[indice];
+    const proximo = pontos[indice + 1];
+    const h1 = atual.volumeMl - anterior.volumeMl;
+    const h2 = proximo.volumeMl - atual.volumeMl;
 
     if (
-      !Number.isFinite(
-        deltaVolume
-      ) ||
-      deltaVolume <=
-        0
-    ) {
-      continue;
-    }
+      !Number.isFinite(h1) || !Number.isFinite(h2) ||
+      h1 <= 0 || h2 <= 0
+    ) continue;
 
-
+    const inclinacaoAnterior =
+      (atual.potencialV - anterior.potencialV) / h1;
+    const inclinacaoPosterior =
+      (proximo.potencialV - atual.potencialV) / h2;
     const segundaDerivada =
-      (
-        proximo
-          .primeiraDerivada -
-        atual
-          .primeiraDerivada
-      ) /
-      deltaVolume;
+      (2 * (inclinacaoPosterior - inclinacaoAnterior)) / (h1 + h2);
 
-
-    const volumeMedio =
-      (
-        atual
-          .volumeMl +
-        proximo
-          .volumeMl
-      ) /
-      2;
-
-
-    if (
-      !Number.isFinite(
-        segundaDerivada
-      ) ||
-      !Number.isFinite(
-        volumeMedio
-      )
-    ) {
-      continue;
+    if (Number.isFinite(segundaDerivada)) {
+      resultado.push({ volumeMl: atual.volumeMl, segundaDerivada });
     }
-
-
-    resultado.push({
-      volumeMl:
-        volumeMedio,
-
-      segundaDerivada,
-    });
   }
-
 
   return resultado;
 }
-
-
-/* =========================================================
- * REFINAMENTO DO PONTO DE INFLEXÃO
- * ======================================================= */
 
 function encontrarIndiceMaximoPrimeiraDerivada(
-  pontos:
-    PontoPrimeiraDerivadaRedox[]
-) {
-  if (
-    pontos.length ===
-    0
-  ) {
-    throw new Error(
-      "Não existem pontos válidos para localizar o máximo da primeira derivada."
-    );
+  pontos: PontoPrimeiraDerivadaRedox[]
+): number {
+  if (pontos.length === 0) {
+    throw new Error('Não existem pontos válidos para localizar o máximo da primeira derivada.');
   }
 
-
-  let indiceMaximo =
-    0;
-
-
-  for (
-    let indice = 1;
-
-    indice <
-    pontos.length;
-
-    indice +=
-      1
-  ) {
-    if (
-      pontos[
-        indice
-      ]
-        .primeiraDerivada >
-      pontos[
-        indiceMaximo
-      ]
-        .primeiraDerivada
-    ) {
-      indiceMaximo =
-        indice;
+  let indiceMaximo = 0;
+  for (let indice = 1; indice < pontos.length; indice += 1) {
+    if (pontos[indice].primeiraDerivada > pontos[indiceMaximo].primeiraDerivada) {
+      indiceMaximo = indice;
     }
   }
-
-
   return indiceMaximo;
 }
 
-
-function refinarPontoInflexao(
-  pontos:
-    PontoPrimeiraDerivadaRedox[]
+function refinarExtremoPrimeiraDerivada(
+  pontos: PontoPrimeiraDerivadaRedox[],
+  usarMagnitude = false
 ): PontoInflexaoRefinado {
-  const indiceMaximo =
-    encontrarIndiceMaximoPrimeiraDerivada(
-      pontos
-    );
+  const indiceExtremo = usarMagnitude
+    ? pontos.reduce((melhor, ponto, indice, lista) =>
+        Math.abs(ponto.primeiraDerivada) > Math.abs(lista[melhor].primeiraDerivada)
+          ? indice : melhor, 0)
+    : encontrarIndiceMaximoPrimeiraDerivada(pontos);
 
+  const central = pontos[indiceExtremo];
+  const valorCentral = central.primeiraDerivada;
 
-  const central =
-    pontos[
-      indiceMaximo
-    ];
-
-
-  /*
-   * Precisamos de um ponto
-   * de cada lado para realizar
-   * a interpolação parabólica.
-   */
-  if (
-    indiceMaximo ===
-      0 ||
-    indiceMaximo ===
-      pontos.length -
-        1
-  ) {
-    return {
-      volumeMl:
-        central
-          .volumeMl,
-
-      valorMaximoPrimeiraDerivada:
-        central
-          .primeiraDerivada,
-    };
+  if (indiceExtremo === 0 || indiceExtremo === pontos.length - 1) {
+    return { volumeMl: central.volumeMl, valorMaximoPrimeiraDerivada: valorCentral };
   }
 
+  const anterior = pontos[indiceExtremo - 1];
+  const posterior = pontos[indiceExtremo + 1];
+  const uAnterior = anterior.volumeMl - central.volumeMl;
+  const uPosterior = posterior.volumeMl - central.volumeMl;
 
-  const anterior =
-    pontos[
-      indiceMaximo -
-        1
-    ];
-
-
-  const posterior =
-    pontos[
-      indiceMaximo +
-        1
-    ];
-
-
-  /*
-   * Ajuste parabólico local:
-   *
-   * y = a u² + b u + c
-   *
-   * onde:
-   *
-   * u = V - Vcentral
-   *
-   * e:
-   *
-   * c = ycentral
-   *
-   *
-   * O vértice ocorre em:
-   *
-   * uPF = -b / 2a
-   *
-   *
-   * A derivada da parábola é:
-   *
-   * dy/du = 2au + b
-   *
-   * Portanto:
-   *
-   * máximo da 1ª derivada
-   *         ⇕
-   * zero da 2ª derivada
-   *
-   * e ambos representam
-   * exatamente o mesmo PF.
-   */
-
-  const uAnterior =
-    anterior
-      .volumeMl -
-    central
-      .volumeMl;
-
-
-  const uPosterior =
-    posterior
-      .volumeMl -
-    central
-      .volumeMl;
-
-
-  if (
-    uAnterior ===
-      0 ||
-    uPosterior ===
-      0 ||
-    uAnterior ===
-      uPosterior
-  ) {
-    return {
-      volumeMl:
-        central
-          .volumeMl,
-
-      valorMaximoPrimeiraDerivada:
-        central
-          .primeiraDerivada,
-    };
+  if (uAnterior === 0 || uPosterior === 0 || uAnterior === uPosterior) {
+    return { volumeMl: central.volumeMl, valorMaximoPrimeiraDerivada: valorCentral };
   }
-
 
   const inclinacaoAnterior =
-    (
-      anterior
-        .primeiraDerivada -
-      central
-        .primeiraDerivada
-    ) /
-    uAnterior;
-
-
+    (anterior.primeiraDerivada - valorCentral) / uAnterior;
   const inclinacaoPosterior =
-    (
-      posterior
-        .primeiraDerivada -
-      central
-        .primeiraDerivada
-    ) /
-    uPosterior;
-
-
+    (posterior.primeiraDerivada - valorCentral) / uPosterior;
   const a =
-    (
-      inclinacaoAnterior -
-      inclinacaoPosterior
-    ) /
-    (
-      uAnterior -
-      uPosterior
-    );
+    (inclinacaoAnterior - inclinacaoPosterior) / (uAnterior - uPosterior);
+  const b = inclinacaoAnterior - a * uAnterior;
 
-
-  const b =
-    inclinacaoAnterior -
-    a *
-      uAnterior;
-
-
-  /*
-   * Para representar um máximo,
-   * a parábola precisa ser côncava
-   * para baixo:
-   *
-   * a < 0
-   */
-  if (
-    !Number.isFinite(
-      a
-    ) ||
-    !Number.isFinite(
-      b
-    ) ||
-    a >=
-      0 ||
-    Math.abs(
-      a
-    ) <
-      1e-18
-  ) {
-    return {
-      volumeMl:
-        central
-          .volumeMl,
-
-      valorMaximoPrimeiraDerivada:
-        central
-          .primeiraDerivada,
-    };
+  // Máximo: parábola côncava para baixo. Mínimo: côncava para cima.
+  if (!Number.isFinite(a) || !Number.isFinite(b) || Math.abs(a) < 1e-18) {
+    return { volumeMl: central.volumeMl, valorMaximoPrimeiraDerivada: valorCentral };
+  }
+  const esperaConcavidadeParaBaixo =
+    !usarMagnitude || central.primeiraDerivada >= 0;
+  const parabolaNaoRepresentaExtremo = esperaConcavidadeParaBaixo
+    ? a >= 0
+    : a <= 0;
+  if (parabolaNaoRepresentaExtremo) {
+    return { volumeMl: central.volumeMl, valorMaximoPrimeiraDerivada: valorCentral };
   }
 
-
-  const uVertice =
-    -b /
-    (
-      2 *
-      a
-    );
-
-
-  const volumeVertice =
-    central
-      .volumeMl +
-    uVertice;
-
-
-  /*
-   * O refinamento só é aceito
-   * se o vértice estiver dentro
-   * dos três pontos utilizados.
-   */
+  const uVertice = -b / (2 * a);
+  const volumeVertice = central.volumeMl + uVertice;
   if (
-    !Number.isFinite(
-      volumeVertice
-    ) ||
-    volumeVertice <
-      anterior
-        .volumeMl ||
-    volumeVertice >
-      posterior
-        .volumeMl
+    !Number.isFinite(volumeVertice) ||
+    volumeVertice < anterior.volumeMl ||
+    volumeVertice > posterior.volumeMl
   ) {
-    return {
-      volumeMl:
-        central
-          .volumeMl,
-
-      valorMaximoPrimeiraDerivada:
-        central
-          .primeiraDerivada,
-    };
+    return { volumeMl: central.volumeMl, valorMaximoPrimeiraDerivada: valorCentral };
   }
 
-
-  const valorVertice =
-    a *
-      uVertice *
-      uVertice +
-    b *
-      uVertice +
-    central
-      .primeiraDerivada;
-
-
-  if (
-    !Number.isFinite(
-      valorVertice
-    )
-  ) {
-    return {
-      volumeMl:
-        central
-          .volumeMl,
-
-      valorMaximoPrimeiraDerivada:
-        central
-          .primeiraDerivada,
-    };
+  const valorVertice = a * uVertice * uVertice + b * uVertice + valorCentral;
+  if (!Number.isFinite(valorVertice)) {
+    return { volumeMl: central.volumeMl, valorMaximoPrimeiraDerivada: valorCentral };
   }
-
-
-  return {
-    volumeMl:
-      volumeVertice,
-
-    valorMaximoPrimeiraDerivada:
-      valorVertice,
-  };
+  return { volumeMl: volumeVertice, valorMaximoPrimeiraDerivada: valorVertice };
 }
 
+/** Localiza um cruzamento verdadeiro de sinal em E''(V), se existir. */
+function localizarCruzamentoSegundaDerivada(
+  pontos: PontoSegundaDerivadaRedox[],
+  referenciaVolumeMl: number
+): { pontos: PontoSegundaDerivadaRedox[]; volumeMl: number | null } {
+  const candidatos: number[] = [];
+  for (let indice = 0; indice < pontos.length - 1; indice += 1) {
+    const atual = pontos[indice];
+    const proximo = pontos[indice + 1];
+    const y1 = atual.segundaDerivada;
+    const y2 = proximo.segundaDerivada;
 
-/* =========================================================
- * INSERÇÃO DO PONTO REFINADO
- * ======================================================= */
+    // Cruzamento estrito de sinal: evita declarar PF em curvas sempre positivas.
+    if ((y1 < 0 && y2 > 0) || (y1 > 0 && y2 < 0)) {
+      const volumeZero = atual.volumeMl -
+        y1 * (proximo.volumeMl - atual.volumeMl) / (y2 - y1);
+      if (Number.isFinite(volumeZero)) candidatos.push(volumeZero);
+    }
+  }
 
-function inserirPontoRefinadoPrimeiraDerivada({
-  pontos,
-  pontoInflexao,
-}: {
-  pontos:
-    PontoPrimeiraDerivadaRedox[];
+  // Um zero amostrado só conta quando os pontos dos dois lados têm sinais opostos.
+  for (let indice = 1; indice < pontos.length - 1; indice += 1) {
+    if (pontos[indice].segundaDerivada !== 0) continue;
+    const anterior = pontos[indice - 1].segundaDerivada;
+    const posterior = pontos[indice + 1].segundaDerivada;
+    if ((anterior < 0 && posterior > 0) || (anterior > 0 && posterior < 0)) {
+      candidatos.push(pontos[indice].volumeMl);
+    }
+  }
 
-  pontoInflexao:
-    PontoInflexaoRefinado;
-}) {
-  const tolerancia =
-    1e-12;
+  if (candidatos.length === 0) {
+    return { pontos, volumeMl: null };
+  }
 
-
-  const pontosSemDuplicado =
-    pontos.filter(
-      (
-        ponto
-      ) =>
-        Math.abs(
-          ponto
-            .volumeMl -
-          pontoInflexao
-            .volumeMl
-        ) >
-        tolerancia
-    );
-
-
-  return [
-    ...pontosSemDuplicado,
-
-    {
-      volumeMl:
-        pontoInflexao
-          .volumeMl,
-
-      primeiraDerivada:
-        pontoInflexao
-          .valorMaximoPrimeiraDerivada,
-    },
-  ].sort(
-    (
-      a,
-      b
-    ) =>
-      a.volumeMl -
-      b.volumeMl
+  const volumeMl = candidatos.reduce((maisProximo, candidato) =>
+    Math.abs(candidato - referenciaVolumeMl) < Math.abs(maisProximo - referenciaVolumeMl)
+      ? candidato : maisProximo
   );
-}
 
-
-function inserirZeroRefinadoSegundaDerivada({
-  pontos,
-  volumePFMl,
-}: {
-  pontos:
-    PontoSegundaDerivadaRedox[];
-
-  volumePFMl:
-    number;
-}) {
-  const tolerancia =
-    1e-12;
-
-
-  const pontosSemDuplicado =
-    pontos.filter(
-      (
-        ponto
-      ) =>
-        Math.abs(
-          ponto
-            .volumeMl -
-          volumePFMl
-        ) >
-        tolerancia
-    );
-
-
-  return [
-    ...pontosSemDuplicado,
-
-    {
-      volumeMl:
-        volumePFMl,
-
-      segundaDerivada:
-        0,
-    },
-  ].sort(
-    (
-      a,
-      b
-    ) =>
-      a.volumeMl -
-      b.volumeMl
+  const jaExiste = pontos.some((ponto) =>
+    Math.abs(ponto.volumeMl - volumeMl) <= 1e-12 &&
+    ponto.segundaDerivada === 0
   );
+
+  const pontosComZero = jaExiste
+    ? pontos
+    : [...pontos, { volumeMl, segundaDerivada: 0 }]
+        .sort((a, b) => a.volumeMl - b.volumeMl);
+
+  return { pontos: pontosComZero, volumeMl };
 }
-
-
-/* =========================================================
- * API PRINCIPAL
- * ======================================================= */
 
 export function calcularDerivadasRedox(
-  pontosEntrada:
-    PontoBaseDerivadaRedox[]
+  pontosEntrada: PontoBaseDerivadaRedox[],
+  usarMagnitudeDaPrimeiraDerivada = false
 ): ResultadoDerivadasRedox {
-  const pontos =
-    prepararPontos(
-      pontosEntrada
-    );
-
-
-  if (
-    pontos.length <
-    4
-  ) {
-    throw new Error(
-      "São necessários pelo menos quatro pontos válidos para calcular e refinar as derivadas."
-    );
+  const pontos = prepararPontos(pontosEntrada);
+  if (pontos.length < 4) {
+    throw new Error('São necessários pelo menos quatro pontos válidos para calcular as derivadas.');
   }
 
-
-  const primeiraDerivadaBase =
-    calcularPrimeiraDerivada(
-      pontos
-    );
-
-
-  if (
-    primeiraDerivadaBase.length <
-    3
-  ) {
-    throw new Error(
-      "Não existem pontos suficientes para refinar a primeira derivada."
-    );
+  const primeiraDerivadaBase = calcularPrimeiraDerivada(pontos);
+  if (primeiraDerivadaBase.length < 3) {
+    throw new Error('Não existem pontos suficientes para refinar a primeira derivada.');
   }
 
-
-  const segundaDerivadaBase =
-    calcularSegundaDerivada(
-      primeiraDerivadaBase
-    );
-
-
-  if (
-    segundaDerivadaBase.length ===
-    0
-  ) {
-    throw new Error(
-      "Não existem pontos suficientes para calcular a segunda derivada."
-    );
+  const segundaDerivadaBase = calcularSegundaDerivada(pontos);
+  if (segundaDerivadaBase.length < 2) {
+    throw new Error('Não existem pontos suficientes para calcular a segunda derivada.');
   }
 
+  const pontoInflexao = refinarExtremoPrimeiraDerivada(
+    primeiraDerivadaBase,
+    usarMagnitudeDaPrimeiraDerivada
+  );
+  const primeiraDerivada = [
+    ...primeiraDerivadaBase.filter((ponto) =>
+      Math.abs(ponto.volumeMl - pontoInflexao.volumeMl) > 1e-12
+    ),
+    {
+      volumeMl: pontoInflexao.volumeMl,
+      primeiraDerivada: pontoInflexao.valorMaximoPrimeiraDerivada,
+    },
+  ].sort((a, b) => a.volumeMl - b.volumeMl);
 
-  const pontoInflexao =
-    refinarPontoInflexao(
-      primeiraDerivadaBase
-    );
-
-
-  const primeiraDerivada =
-    inserirPontoRefinadoPrimeiraDerivada({
-      pontos:
-        primeiraDerivadaBase,
-
-      pontoInflexao,
-    });
-
-
-  const segundaDerivada =
-    inserirZeroRefinadoSegundaDerivada({
-      pontos:
-        segundaDerivadaBase,
-
-      volumePFMl:
-        pontoInflexao
-          .volumeMl,
-    });
-
+  const segundaResultado = localizarCruzamentoSegundaDerivada(
+    segundaDerivadaBase,
+    pontoInflexao.volumeMl
+  );
 
   return {
     primeiraDerivada,
-
-    segundaDerivada,
-
-    volumePFPrimeiraDerivadaMl:
-      pontoInflexao
-        .volumeMl,
-
-    valorMaximoPrimeiraDerivada:
-      pontoInflexao
-        .valorMaximoPrimeiraDerivada,
-
-    volumePFSegundaDerivadaMl:
-      pontoInflexao
-        .volumeMl,
+    segundaDerivada: segundaResultado.pontos,
+    volumePFPrimeiraDerivadaMl: pontoInflexao.volumeMl,
+    valorMaximoPrimeiraDerivada: pontoInflexao.valorMaximoPrimeiraDerivada,
+    volumePFSegundaDerivadaMl: segundaResultado.volumeMl,
   };
 }

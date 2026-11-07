@@ -41,7 +41,7 @@ import type {
   }: {
     pontos: PontoGrafico[];
     volumeEquivalenciaMl: number;
-    volumePFMl: number;
+    volumePFMl: number | null;
     tituloEixoY: string;
     centralizarEmZero?: boolean;
   }) {
@@ -224,16 +224,18 @@ import type {
             className="oxirreducaoChartPELine"
           />
   
-          <line
-            x1={x(volumePFMl)}
-            x2={x(volumePFMl)}
-            y1={margemSuperior}
-            y2={altura - margemInferior}
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeDasharray="4 5"
-            strokeOpacity="0.55"
-          />
+          {volumePFMl !== null && (
+            <line
+              x1={x(volumePFMl)}
+              x2={x(volumePFMl)}
+              y1={margemSuperior}
+              y2={altura - margemInferior}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray="4 5"
+              strokeOpacity="0.55"
+            />
+          )}
   
           <polyline
             points={polyline}
@@ -289,7 +291,7 @@ import type {
           </h2>
   
           <p>
-            Como a adição de tiossulfato reduz o potencial, a primeira derivada apresenta um vale. O PF é localizado pelo extremo de maior magnitude de dE/dV; o zero da segunda derivada é refinado para o mesmo ponto de inflexão.
+            Como a adição de tiossulfato reduz o potencial, a primeira derivada tende a apresentar um vale. A segunda derivada é calculada independentemente a partir dos potenciais medidos; seu PF só é informado quando há um cruzamento real por zero.
           </p>
   
           <div className="resultGrid">
@@ -305,7 +307,9 @@ import type {
   
             <div className="resultCard">
               <span>PF — 2ª derivada</span>
-              <strong>{formatarNumero(derivadas.volumePFSegundaDerivadaMl, 3)} mL</strong>
+              <strong>{derivadas.volumePFSegundaDerivadaMl !== null
+                ? `${formatarNumero(derivadas.volumePFSegundaDerivadaMl, 3)} mL`
+                : "Não localizado"}</strong>
             </div>
   
             <div className="resultCard">

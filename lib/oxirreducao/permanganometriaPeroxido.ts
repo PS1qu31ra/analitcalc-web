@@ -298,75 +298,58 @@ import {
    * ======================================================= */
   
   /**
-   * Para os pares:
-   *
-   * O₂ / H₂O₂
-   * n = 2
-   *
-   * MnO₄⁻ / Mn²⁺
-   * n = 5
-   *
-   * EPE =
-   *
-   * 2 E°'peróxido +
-   * 5 E°'permanganato
-   * ------------------
-   *        7
-   *
-   * São utilizados potenciais formais
-   * para incorporar a influência de H⁺.
+   * Aproximação assintótica do potencial no PE.
+   * Considera [Mn²⁺] ≈ concentração analítica total de Mn e estado padrão
+   * c° = 1 mol/L. Para os resultados do sistema, utiliza-se o resolvedor
+   * completo de equilíbrio, que não depende dessa aproximação.
    */
-  
   export function calcularPotencialEquivalenciaPeroxido({
     concentracaoHPlusMolL,
+    concentracaoMnTotalMolL,
     atividadeOxigenio = 1,
     temperaturaC = 25,
   }: {
     concentracaoHPlusMolL: number;
+    concentracaoMnTotalMolL: number;
     atividadeOxigenio?: number;
     temperaturaC?: number;
   }) {
-    const potencialFormalPeroxido =
-      calcularPotencialFormalPeroxido({
-        concentracaoHPlusMolL,
-        atividadeOxigenio,
-        temperaturaC,
-      });
-  
-  
-    const potencialFormalMn =
-      calcularPotencialFormalPermanganato({
-        concentracaoHPlusMolL,
-        temperaturaC,
-      });
-  
-  
     if (
-      !Number.isFinite(
-        potencialFormalPeroxido
-      ) ||
-      !Number.isFinite(
-        potencialFormalMn
-      )
-    ) {
-      return NaN;
-    }
-  
-  
+      !Number.isFinite(concentracaoMnTotalMolL) ||
+      concentracaoMnTotalMolL <= 0
+    ) return NaN;
+
+    const potencialFormalPeroxido = calcularPotencialFormalPeroxido({
+      concentracaoHPlusMolL,
+      atividadeOxigenio,
+      temperaturaC,
+    });
+    const potencialFormalMn = calcularPotencialFormalPermanganato({
+      concentracaoHPlusMolL,
+      temperaturaC,
+    });
+    const fatorUmEletron = calcularFatorNernst({
+      temperaturaC,
+      numeroEletrons: 1,
+    });
+
+    if (
+      !Number.isFinite(potencialFormalPeroxido) ||
+      !Number.isFinite(potencialFormalMn) ||
+      !Number.isFinite(fatorUmEletron)
+    ) return NaN;
+
+    const correcaoConcentracao =
+      (fatorUmEletron / 7) *
+      Math.log10((5 / 2) * concentracaoMnTotalMolL);
+
     return (
-      (
-        2 *
-        potencialFormalPeroxido
-      ) +
-      (
-        5 *
-        potencialFormalMn
-      )
-    ) /
-      7;
+      (2 * potencialFormalPeroxido + 5 * potencialFormalMn) / 7 -
+      correcaoConcentracao
+    );
   }
-  
-  
+
+
   /* =========================================================
    * SISTEMA
    * ======================================================= */
@@ -412,29 +395,27 @@ import {
       });
   
   
-      const potencialEquivalenciaV =
-  calcularPotencialEquivalenciaPeroxido({
-    concentracaoHPlusMolL:
-      entrada
-        .concentracaoHPlusMolL,
+    const volumeTotalNoPEMl =
+      entrada.volumeAnalitoMl + estequiometria.volumeEquivalenciaMl;
 
-    atividadeOxigenio,
+    const equilibrioNoPE = resolverEquilibrioPermanganometriaPeroxido({
+      molH2O2Total: estequiometria.molAnalitoInicial,
+      molMnTotal: estequiometria.molTitulanteEquivalencia,
+      volumeTotalMl: volumeTotalNoPEMl,
+      concentracaoHPlusMolL: entrada.concentracaoHPlusMolL,
+      atividadeOxigenio,
+      temperaturaC,
+    });
 
-    temperaturaC,
-  });
-
-
-if (
-  !Number.isFinite(
-    potencialEquivalenciaV
-  )
-) {
-  throw new Error(
-    "Não foi possível calcular o potencial ponderado no PE do sistema H₂O₂/MnO₄⁻."
-  );
-}
-  
-  
+    const potencialEquivalenciaV = equilibrioNoPE.potencialV;
+    if (
+      potencialEquivalenciaV === null ||
+      !Number.isFinite(potencialEquivalenciaV)
+    ) {
+      throw new Error(
+        'Não foi possível resolver o potencial de equilíbrio no PE do sistema H₂O₂/MnO₄⁻.'
+      );
+    }
     return {
       reacaoGlobal:
         REACAO_PERMANGANATO_PEROXIDO,
@@ -651,7 +632,7 @@ if (
       
       
         descricao =
-          "No ponto de equivalência, o potencial é determinado pela média ponderada dos potenciais formais dos pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺, com pesos correspondentes aos números de elétrons das semirreações.";
+          "No ponto de equivalência, o potencial é obtido pela solução simultânea das equações de Nernst e do balanço estequiométrico, incluindo a concentração residual de MnO₄⁻/Mn²⁺.";
     } else {
       parControlador =
         "MnO4-/Mn2+";

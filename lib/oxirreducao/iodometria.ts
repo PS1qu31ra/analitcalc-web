@@ -1,3 +1,5 @@
+import { calcularDerivadasRedox } from "./derivadas";
+
 /* =========================================================
  * IODOMETRIA — DADOS, ESTEQUIOMETRIA E MOTOR POTENCIOMÉTRICO
  * ======================================================= */
@@ -45,14 +47,26 @@ export type SistemaIodometria = {
   concentracaoTiossulfatoPadraoMolL: number;
 };
 
-export const E0_I2_I = 0.5355;
+/** Potencial padrão do par I₂(aq)/I⁻ em escala de concentração, a 25 °C. */
+export const E0_I2_AQ_I = 0.621;
+/** @deprecated Use E0_I2_AQ_I; 0,5355 V pertence ao par I₂(s)/I⁻. */
+export const E0_I2_I = E0_I2_AQ_I;
 export const E0_TETRATIONATO_TIOS = 0.080;
 
+/** Constante molal de formação I₂(aq) + I⁻ ⇌ I₃⁻ a 25 °C (tratada como concentração em solução diluída). */
+export const K_FORMACAO_I3_25C = 698;
+const DELTA_H_FORMACAO_I3_J_MOL = -17000;
+const DELTA_CP_FORMACAO_I3_J_MOL_K = -21;
+const TEMPERATURA_REFERENCIA_K = 298.15;
+
 export const REACAO_TIOS =
-  "I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻";
+  "I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻";
+
+export const EQUILIBRIO_TRIIODeto =
+  "I₂(aq) + I⁻ ⇌ I₃⁻";
 
 export const SEMIRREACAO_IODO =
-  "I₂ + 2 e⁻ ⇌ 2 I⁻";
+  "I₂(aq) + 2 e⁻ ⇌ 2 I⁻";
 
 export const SEMIRREACAO_TIOS =
   "S₄O₆²⁻ + 2 e⁻ ⇌ 2 S₂O₃²⁻";
@@ -79,9 +93,9 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "2 I⁻ ⇌ I₂ + 2 e⁻",
+        equacao: "2 I⁻ ⇌ I₂(aq) + 2 e⁻",
         eletrons: 2,
-        potencialPadraoV: E0_I2_I,
+        potencialPadraoV: E0_I2_AQ_I,
         observacao:
           "O valor exibido é o E° de redução do par I₂/I⁻; a semirreação está escrita no sentido de oxidação para compor a reação global.",
       },
@@ -127,9 +141,9 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "2 I⁻ ⇌ I₂ + 2 e⁻",
+        equacao: "2 I⁻ ⇌ I₂(aq) + 2 e⁻",
         eletrons: 2,
-        potencialPadraoV: E0_I2_I,
+        potencialPadraoV: E0_I2_AQ_I,
       },
     ],
     etapasPreTitulacao: [
@@ -175,7 +189,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
         titulo: "Oxidação do iodeto equivalente",
         equacao: "4 I⁻ ⇌ 2 I₂ + 4 e⁻",
         eletrons: 4,
-        potencialPadraoV: E0_I2_I,
+        potencialPadraoV: E0_I2_AQ_I,
       },
     ],
     etapasPreTitulacao: [
@@ -223,9 +237,9 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "2 I⁻ ⇌ I₂ + 2 e⁻",
+        equacao: "2 I⁻ ⇌ I₂(aq) + 2 e⁻",
         eletrons: 2,
-        potencialPadraoV: E0_I2_I,
+        potencialPadraoV: E0_I2_AQ_I,
       },
     ],
     etapasPreTitulacao: [
@@ -299,7 +313,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
           2,
   
         potencialPadraoV:
-          E0_I2_I,
+          E0_I2_AQ_I,
       },
     ],
   
@@ -375,7 +389,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
         titulo: "Oxidação do iodeto",
         equacao: "6 I⁻ ⇌ 3 I₂ + 6 e⁻",
         eletrons: 6,
-        potencialPadraoV: E0_I2_I,
+        potencialPadraoV: E0_I2_AQ_I,
       },
     ],
     etapasPreTitulacao: [
@@ -407,15 +421,13 @@ export const sistemasIodometria: SistemaIodometria[] = [
 ];
 
 export function buscarSistemaIodometria(
-  id: SistemaIodometriaId
+  id: SistemaIodometriaId | string
 ): SistemaIodometria {
-  return (
-    sistemasIodometria.find(
-      (sistema) =>
-        sistema.id === id
-    ) ??
-    sistemasIodometria[0]
-  );
+  const sistema = sistemasIodometria.find((item) => item.id === id);
+  if (!sistema) {
+    throw new RangeError(`Sistema iodimétrico desconhecido: ${String(id)}.`);
+  }
+  return sistema;
 }
 
 export type EntradaIodometria = {
@@ -431,6 +443,11 @@ export type EntradaIodometria = {
   concentracaoTiossulfatoMolL:
     number;
 
+  /**
+   * Concentração efetiva de iodeto remanescente após a geração de I₂,
+   * antes do equilíbrio de complexação I₂(aq) + I⁻ ⇌ I₃⁻.
+   */
+  /** Iodeto efetivo remanescente após a etapa de geração de iodo, antes da complexação. */
   concentracaoIodetoLivreMolL:
     number;
 
@@ -453,10 +470,22 @@ export type PontoIodometria = {
   regiao:
     RegiaoIodometria;
 
+  /** Iodo oxidado total, expresso em equivalentes de I₂: n(I₂) + n(I₃⁻). */
   molI2:
     number;
 
+  /** Iodeto analítico total antes da complexação: n(I⁻) + n(I₃⁻). */
   molIodeto:
+    number;
+
+  /** Quantidade de I₂(aq) livre após o equilíbrio de complexação. */
+  molI2Livre:
+    number;
+
+  molI3:
+    number;
+
+  molIodetoLivre:
     number;
 
   molTiossulfato:
@@ -465,10 +494,15 @@ export type PontoIodometria = {
   molTetrationato:
     number;
 
+  /** Concentração de I₂(aq) livre, utilizada na equação de Nernst. */
   concentracaoI2MolL:
     number;
 
+  /** Concentração de I⁻ livre, utilizada na equação de Nernst. */
   concentracaoIodetoMolL:
+    number;
+
+  concentracaoI3MolL:
     number;
 
   concentracaoTiossulfatoMolL:
@@ -629,93 +663,130 @@ export function calcularResumoEstequiometricoIodometria(
   };
 }
 
-function logQuocienteReacao({
-  extentMol,
-  molI2Inicial,
-  molIodetoInicial,
-  molTiossulfatoAdicionado,
+/**
+ * Constante de formação do triiodeto corrigida pela equação de van't Hoff.
+ * A referência experimental disponível é Kf ≈ 698 (escala molal) a 25 °C,
+ * ΔH° ≈ -17,0 kJ mol⁻¹ e ΔCp° ≈ -21 J mol⁻¹ K⁻¹. O modelo usa
+ * concentrações como aproximação de atividades e não corrige força
+ * iônica/coeficientes de atividade.
+ */
+function calcularConstanteFormacaoTriiodeto(temperaturaC: number) {
+  const temperaturaK = kelvin(temperaturaC);
+  const razaoTemperatura = temperaturaK / TEMPERATURA_REFERENCIA_K;
+  const logK =
+    Math.log(K_FORMACAO_I3_25C) +
+    (DELTA_H_FORMACAO_I3_J_MOL / R) *
+      (1 / TEMPERATURA_REFERENCIA_K - 1 / temperaturaK) +
+    (DELTA_CP_FORMACAO_I3_J_MOL_K / R) *
+      (Math.log(razaoTemperatura) +
+        TEMPERATURA_REFERENCIA_K / temperaturaK -
+        1);
+
+  if (!Number.isFinite(logK) || logK > 700 || logK < -700) {
+    throw new RangeError('A temperatura está fora da faixa numérica do equilíbrio I₂/I₃⁻.');
+  }
+  return Math.exp(logK);
+}
+
+/**
+ * Resolve I₂(aq) + I⁻ ⇌ I₃⁻ a partir das concentrações analíticas totais.
+ * Ct(I₂) = [I₂] + [I₃⁻]; Ct(I⁻) = [I⁻] + [I₃⁻].
+ */
+function calcularEspeciacaoIodo({
+  molI2Total,
+  molIodetoTotal,
   volumeTotalL,
+  temperaturaC,
 }: {
-  extentMol:
-    number;
-
-  molI2Inicial:
-    number;
-
-  molIodetoInicial:
-    number;
-
-  molTiossulfatoAdicionado:
-    number;
-
-  volumeTotalL:
-    number;
+  molI2Total: number;
+  molIodetoTotal: number;
+  volumeTotalL: number;
+  temperaturaC: number;
 }) {
-  const piso =
-    1e-300;
+  const concentracaoI2Total = Math.max(molI2Total, 0) / volumeTotalL;
+  const concentracaoIodetoTotal = Math.max(molIodetoTotal, 0) / volumeTotalL;
+  const constanteFormacao = calcularConstanteFormacaoTriiodeto(temperaturaC);
 
-  const molI2 =
-    Math.max(
-      molI2Inicial -
-        extentMol,
-      piso
-    );
+  if (concentracaoI2Total === 0 || concentracaoIodetoTotal === 0) {
+    return {
+      concentracaoI2LivreMolL: concentracaoI2Total,
+      concentracaoI3MolL: 0,
+      concentracaoIodetoLivreMolL: concentracaoIodetoTotal,
+      molI2Livre: Math.max(molI2Total, 0),
+      molI3: 0,
+      molIodetoLivre: Math.max(molIodetoTotal, 0),
+    };
+  }
 
-  const molIodeto =
-    Math.max(
-      molIodetoInicial +
-        2 *
-          extentMol,
-      piso
-    );
+  // Raiz menor da quadrática calculada na forma estável para evitar cancelamento.
+  const termoA =
+    (1 / constanteFormacao) +
+    concentracaoI2Total +
+    concentracaoIodetoTotal;
+  const produto = concentracaoI2Total * concentracaoIodetoTotal;
+  const discriminante = Math.max(termoA * termoA - 4 * produto, 0);
+  const concentracaoI3MolL =
+    (2 * produto) / (termoA + Math.sqrt(discriminante));
+  const concentracaoI2LivreMolL = Math.max(
+    concentracaoI2Total - concentracaoI3MolL,
+    0
+  );
+  const concentracaoIodetoLivreMolL = Math.max(
+    concentracaoIodetoTotal - concentracaoI3MolL,
+    0
+  );
 
-  const molTiossulfato =
-    Math.max(
-      molTiossulfatoAdicionado -
-        2 *
-          extentMol,
-      piso
-    );
+  return {
+    concentracaoI2LivreMolL,
+    concentracaoI3MolL,
+    concentracaoIodetoLivreMolL,
+    molI2Livre: concentracaoI2LivreMolL * volumeTotalL,
+    molI3: concentracaoI3MolL * volumeTotalL,
+    molIodetoLivre: concentracaoIodetoLivreMolL * volumeTotalL,
+  };
+}
 
-  const molTetrationato =
-    Math.max(
-      extentMol,
-      piso
-    );
+function logQuocienteReacao({
+  molI2Remanescente,
+  molIodetoTotal,
+  molTiossulfatoRemanescente,
+  molTetrationato,
+  volumeTotalL,
+  temperaturaC,
+}: {
+  molI2Remanescente: number;
+  molIodetoTotal: number;
+  molTiossulfatoRemanescente: number;
+  molTetrationato: number;
+  volumeTotalL: number;
+  temperaturaC: number;
+}) {
+  const piso = 1e-300;
+  const especiacao = calcularEspeciacaoIodo({
+    molI2Total: Math.max(molI2Remanescente, 0),
+    molIodetoTotal: Math.max(molIodetoTotal, 0),
+    volumeTotalL,
+    temperaturaC,
+  });
 
-  const cI2 =
-    molI2 /
-    volumeTotalL;
-
-  const cIodeto =
-    molIodeto /
-    volumeTotalL;
-
-  const cTios =
-    molTiossulfato /
-    volumeTotalL;
-
-  const cTetrationato =
-    molTetrationato /
-    volumeTotalL;
+  const cI2Livre = Math.max(especiacao.concentracaoI2LivreMolL, piso);
+  const cIodetoLivre = Math.max(especiacao.concentracaoIodetoLivreMolL, piso);
+  const cTiossulfato = Math.max(molTiossulfatoRemanescente / volumeTotalL, piso);
+  const cTetrationato = Math.max(molTetrationato / volumeTotalL, piso);
 
   return (
-    2 *
-      Math.log(
-        cIodeto
-      ) +
-    Math.log(
-      cTetrationato
-    ) -
-    Math.log(
-      cI2
-    ) -
-    2 *
-      Math.log(
-        cTios
-      )
+    2 * Math.log(cIodetoLivre) +
+    Math.log(cTetrationato) -
+    Math.log(cI2Livre) -
+    2 * Math.log(cTiossulfato)
   );
 }
+
+type ResultadoExtensaoIodometria = {
+  extentMol: number;
+  molI2Remanescente: number;
+  molTiossulfatoRemanescente: number;
+};
 
 function resolverExtensaoEquilibrio({
   molI2Inicial,
@@ -724,167 +795,127 @@ function resolverExtensaoEquilibrio({
   volumeTotalL,
   temperaturaC,
 }: {
-  molI2Inicial:
-    number;
-
-  molIodetoInicial:
-    number;
-
-  molTiossulfatoAdicionado:
-    number;
-
-  volumeTotalL:
-    number;
-
-  temperaturaC:
-    number;
-}) {
-  if (
-    molTiossulfatoAdicionado <=
-    0
-  ) {
-    return 0;
+  molI2Inicial: number;
+  molIodetoInicial: number;
+  molTiossulfatoAdicionado: number;
+  volumeTotalL: number;
+  temperaturaC: number;
+}): ResultadoExtensaoIodometria {
+  if (molTiossulfatoAdicionado <= 0) {
+    return {
+      extentMol: 0,
+      molI2Remanescente: molI2Inicial,
+      molTiossulfatoRemanescente: molTiossulfatoAdicionado,
+    };
   }
 
-  const maximo =
-    Math.min(
-      molI2Inicial,
-      molTiossulfatoAdicionado /
-        2
-    );
-
-  if (
-    maximo <= 0
-  ) {
-    return 0;
+  if (molI2Inicial <= 0) {
+    return {
+      extentMol: 0,
+      molI2Remanescente: 0,
+      molTiossulfatoRemanescente: molTiossulfatoAdicionado,
+    };
   }
 
-  const T =
-    kelvin(
-      temperaturaC
-    );
-
+  const temperaturaK = kelvin(temperaturaC);
   const logK =
-    (
-      2 *
-      F *
-      (
-        E0_I2_I -
-        E0_TETRATIONATO_TIOS
-      )
-    ) /
-    (
-      R *
-      T
-    );
+    (2 * F * (E0_I2_AQ_I - E0_TETRATIONATO_TIOS)) /
+    (R * temperaturaK);
 
-  const epsilon =
-    Math.max(
-      maximo *
-        1e-14,
-      1e-18
-    );
+  // Antes do PE, o tiossulfato é o reagente limitante e seu resíduo é
+  // a variável de busca. Depois do PE, o iodo é limitante e buscamos
+  // diretamente o pequeno resíduo de I₂, evitando cancelamento em nI₂ - ξ.
+  const excessoTiossulfato =
+    molTiossulfatoAdicionado - 2 * molI2Inicial;
+  const aposPE = excessoTiossulfato >= 0;
 
-  let inferior =
-    0;
+  let limiteInferior = 0;
+  let limiteSuperior = aposPE
+    ? molI2Inicial
+    : molTiossulfatoAdicionado;
 
-  let superior =
-    Math.max(
-      maximo -
-        epsilon,
-      maximo *
-        0.999999999999
-    );
+  const avaliar = (residuo: number) => {
+    let extentMol: number;
+    let molI2Remanescente: number;
+    let molTiossulfatoRemanescente: number;
+    let molIodetoTotal: number;
 
-  if (
-    superior <=
-    0
-  ) {
-    return maximo;
-  }
+    if (aposPE) {
+      molI2Remanescente = residuo;
+      extentMol = molI2Inicial - residuo;
+      molTiossulfatoRemanescente = excessoTiossulfato + 2 * residuo;
+      molIodetoTotal = molIodetoInicial + 2 * extentMol;
+    } else {
+      molTiossulfatoRemanescente = residuo;
+      extentMol = (molTiossulfatoAdicionado - residuo) / 2;
+      molI2Remanescente =
+        (molI2Inicial - molTiossulfatoAdicionado / 2) + residuo / 2;
+      molIodetoTotal = molIodetoInicial + molTiossulfatoAdicionado - residuo;
+    }
 
-  const funcao = (
-    extentMol:
-      number
-  ) =>
-    logQuocienteReacao({
-      extentMol,
-      molI2Inicial,
-      molIodetoInicial,
-      molTiossulfatoAdicionado,
+    const logQ = logQuocienteReacao({
+      molI2Remanescente,
+      molIodetoTotal,
+      molTiossulfatoRemanescente,
+      molTetrationato: extentMol,
       volumeTotalL,
-    }) -
-    logK;
+      temperaturaC,
+    });
 
-  let fInferior =
-    funcao(
-      inferior
+    return {
+      funcao: logQ - logK,
+      extentMol,
+      molI2Remanescente,
+      molTiossulfatoRemanescente,
+    };
+  };
+
+  let resultadoInferior = avaliar(limiteInferior);
+  let resultadoSuperior = avaliar(limiteSuperior);
+
+  // O limite de reagente totalmente consumido é matemático; aplica-se
+  // uma pequena fração positiva apenas para avaliar a função logarítmica.
+  if (!Number.isFinite(resultadoInferior.funcao)) {
+    limiteInferior = Math.max(
+      limiteSuperior * Number.EPSILON * 4,
+      Number.MIN_VALUE
     );
-
-  let fSuperior =
-    funcao(
-      superior
+    resultadoInferior = avaliar(limiteInferior);
+  }
+  if (!Number.isFinite(resultadoSuperior.funcao)) {
+    limiteSuperior = Math.max(
+      limiteSuperior - Math.max(limiteSuperior * Number.EPSILON * 4, Number.MIN_VALUE),
+      limiteInferior
     );
-
-  if (
-    !Number.isFinite(
-      fInferior
-    )
-  ) {
-    fInferior =
-      -Infinity;
+    resultadoSuperior = avaliar(limiteSuperior);
   }
 
-  if (
-    !Number.isFinite(
-      fSuperior
-    )
-  ) {
-    fSuperior =
-      Infinity;
+  if (resultadoInferior.funcao < 0 || resultadoSuperior.funcao > 0) {
+    throw new Error('Não foi possível delimitar o equilíbrio da titulação iodimétrica.');
   }
 
-  if (
-    fSuperior <
-    0
-  ) {
-    return superior;
-  }
+  for (let iteracao = 0; iteracao < 220; iteracao += 1) {
+    const meio = (limiteInferior + limiteSuperior) / 2;
+    const resultadoMeio = avaliar(meio);
 
-  for (
-    let iteracao = 0;
-    iteracao < 120;
-    iteracao += 1
-  ) {
-    const meio =
-      (
-        inferior +
-        superior
-      ) /
-      2;
-
-    const fMeio =
-      funcao(
-        meio
-      );
+    if (resultadoMeio.funcao > 0) {
+      limiteInferior = meio;
+    } else {
+      limiteSuperior = meio;
+    }
 
     if (
-      fMeio >
-      0
-    ) {
-      superior =
-        meio;
-    } else {
-      inferior =
-        meio;
-    }
+      limiteSuperior - limiteInferior <=
+      Math.max(limiteSuperior * 1e-14, Number.MIN_VALUE * 4)
+    ) break;
   }
 
-  return (
-    inferior +
-    superior
-  ) /
-    2;
+  const resultadoFinal = avaliar((limiteInferior + limiteSuperior) / 2);
+  return {
+    extentMol: resultadoFinal.extentMol,
+    molI2Remanescente: resultadoFinal.molI2Remanescente,
+    molTiossulfatoRemanescente: resultadoFinal.molTiossulfatoRemanescente,
+  };
 }
 
 export function calcularPontoIodometria({
@@ -941,7 +972,7 @@ export function calcularPontoIodometria({
       .concentracaoTiossulfatoMolL *
     volumeAdicionadoL;
 
-  const extentMol =
+  const equilibrioExtensao =
     resolverExtensaoEquilibrio({
       molI2Inicial:
         resumo
@@ -958,117 +989,55 @@ export function calcularPontoIodometria({
           .temperaturaC,
     });
 
-  const molI2 =
-    Math.max(
-      resumo
-        .molI2Gerado -
-        extentMol,
-      0
-    );
+  const extentMol = equilibrioExtensao.extentMol;
+  const molI2Total = equilibrioExtensao.molI2Remanescente;
+  const molIodetoTotal = molIodetoInicial + 2 * extentMol;
+  const molTiossulfato = equilibrioExtensao.molTiossulfatoRemanescente;
+  const molTetrationato = extentMol;
 
-  const molIodeto =
-    molIodetoInicial +
-    2 *
-      extentMol;
-
-  const molTiossulfato =
-    Math.max(
-      molTiossulfatoAdicionado -
-        2 *
-          extentMol,
-      0
-    );
-
-  const molTetrationato =
-    extentMol;
-
-  const concentracaoI2MolL =
-    molI2 /
-    volumeTotalL;
-
-  const concentracaoIodetoMolL =
-    molIodeto /
-    volumeTotalL;
+  const especiacaoIodo = calcularEspeciacaoIodo({
+    molI2Total,
+    molIodetoTotal,
+    volumeTotalL,
+    temperaturaC: entrada.temperaturaC,
+  });
 
   const concentracaoTiossulfatoMolL =
-    molTiossulfato /
-    volumeTotalL;
-
+    molTiossulfato / volumeTotalL;
   const concentracaoTetrationatoMolL =
-    molTetrationato /
-    volumeTotalL;
+    molTetrationato / volumeTotalL;
 
-  const T =
-    kelvin(
-      entrada
-        .temperaturaC
-    );
-
-  const termo =
-    R *
-    T /
-    (
-      2 *
-      F
-    );
-
-  const piso =
-    1e-300;
+  const T = kelvin(entrada.temperaturaC);
+  const termo = (R * T) / (2 * F);
+  const piso = 1e-300;
 
   const potencialIodo =
-    E0_I2_I +
+    E0_I2_AQ_I +
     termo *
       Math.log(
-        Math.max(
-          concentracaoI2MolL,
-          piso
-        ) /
+        Math.max(especiacaoIodo.concentracaoI2LivreMolL, piso) /
           Math.pow(
-            Math.max(
-              concentracaoIodetoMolL,
-              piso
-            ),
+            Math.max(especiacaoIodo.concentracaoIodetoLivreMolL, piso),
             2
           )
       );
 
-  let potencialV =
-    potencialIodo;
-
+  let potencialV = potencialIodo;
   if (
-    molTiossulfatoAdicionado >
-      0 &&
-    concentracaoTetrationatoMolL >
-      0
+    molTiossulfatoAdicionado > 0 &&
+    concentracaoTetrationatoMolL > 0 &&
+    concentracaoTiossulfatoMolL > 0
   ) {
     const potencialTios =
       E0_TETRATIONATO_TIOS +
       termo *
         Math.log(
-          Math.max(
-            concentracaoTetrationatoMolL,
-            piso
-          ) /
-            Math.pow(
-              Math.max(
-                concentracaoTiossulfatoMolL,
-                piso
-              ),
-              2
-            )
+          Math.max(concentracaoTetrationatoMolL, piso) /
+            Math.pow(Math.max(concentracaoTiossulfatoMolL, piso), 2)
         );
 
-    if (
-      Number.isFinite(
-        potencialTios
-      )
-    ) {
-      potencialV =
-        (
-          potencialIodo +
-          potencialTios
-        ) /
-        2;
+    if (Number.isFinite(potencialTios)) {
+      potencialV = (potencialIodo + potencialTios) / 2;
     }
   }
 
@@ -1101,12 +1070,16 @@ export function calcularPontoIodometria({
     volumeAdicionadoMl,
     potencialV,
     regiao,
-    molI2,
-    molIodeto,
+    molI2: molI2Total,
+    molIodeto: molIodetoTotal,
+    molI2Livre: especiacaoIodo.molI2Livre,
+    molI3: especiacaoIodo.molI3,
+    molIodetoLivre: especiacaoIodo.molIodetoLivre,
     molTiossulfato,
     molTetrationato,
-    concentracaoI2MolL,
-    concentracaoIodetoMolL,
+    concentracaoI2MolL: especiacaoIodo.concentracaoI2LivreMolL,
+    concentracaoIodetoMolL: especiacaoIodo.concentracaoIodetoLivreMolL,
+    concentracaoI3MolL: especiacaoIodo.concentracaoI3MolL,
     concentracaoTiossulfatoMolL,
     concentracaoTetrationatoMolL,
   };
@@ -1356,393 +1329,34 @@ export type ResultadoDerivadasIodometria = {
     number;
 
   volumePFSegundaDerivadaMl:
-    number;
+    number | null;
 };
 
 export function calcularDerivadasIodometria(
-  pontosEntrada:
-    PontoIodometria[]
+  pontosEntrada: PontoIodometria[]
 ): ResultadoDerivadasIodometria {
-  const pontos =
-    pontosEntrada
-      .filter(
-        (
-          ponto
-        ) =>
-          Number.isFinite(
-            ponto
-              .volumeAdicionadoMl
-          ) &&
-          Number.isFinite(
-            ponto
-              .potencialV
-          )
-      )
-      .sort(
-        (
-          a,
-          b
-        ) =>
-          a
-            .volumeAdicionadoMl -
-          b
-            .volumeAdicionadoMl
-      );
-
-  if (
-    pontos.length <
-    4
-  ) {
-    throw new Error(
-      "São necessários pelo menos quatro pontos para calcular as derivadas da iodometria."
-    );
-  }
-
-  const primeira:
-    PontoPrimeiraDerivadaIodometria[] =
-    [];
-
-  for (
-    let i = 0;
-    i <
-    pontos.length -
-      1;
-    i += 1
-  ) {
-    const a =
-      pontos[i];
-
-    const b =
-      pontos[
-        i + 1
-      ];
-
-    const dv =
-      b
-        .volumeAdicionadoMl -
-      a
-        .volumeAdicionadoMl;
-
-    if (
-      dv <= 0
-    ) {
-      continue;
-    }
-
-    primeira.push({
-      volumeMl:
-        (
-          a
-            .volumeAdicionadoMl +
-          b
-            .volumeAdicionadoMl
-        ) /
-        2,
-
-      primeiraDerivada:
-        (
-          b
-            .potencialV -
-          a
-            .potencialV
-        ) /
-        dv,
-    });
-  }
-
-  if (
-    primeira.length <
-    3
-  ) {
-    throw new Error(
-      "Não existem pontos suficientes para refinar a primeira derivada."
-    );
-  }
-
-  const segundaBase:
-    PontoSegundaDerivadaIodometria[] =
-    [];
-
-  for (
-    let i = 0;
-    i <
-    primeira.length -
-      1;
-    i += 1
-  ) {
-    const a =
-      primeira[i];
-
-    const b =
-      primeira[
-        i + 1
-      ];
-
-    const dv =
-      b
-        .volumeMl -
-      a
-        .volumeMl;
-
-    if (
-      dv <= 0
-    ) {
-      continue;
-    }
-
-    segundaBase.push({
-      volumeMl:
-        (
-          a
-            .volumeMl +
-          b
-            .volumeMl
-        ) /
-        2,
-
-      segundaDerivada:
-        (
-          b
-            .primeiraDerivada -
-          a
-            .primeiraDerivada
-        ) /
-        dv,
-    });
-  }
-
-  let indiceExtremo =
-    0;
-
-  for (
-    let i = 1;
-    i <
-    primeira.length;
-    i += 1
-  ) {
-    if (
-      Math.abs(
-        primeira[i]
-          .primeiraDerivada
-      ) >
-      Math.abs(
-        primeira[
-          indiceExtremo
-        ]
-          .primeiraDerivada
-      )
-    ) {
-      indiceExtremo =
-        i;
-    }
-  }
-
-  const central =
-    primeira[
-      indiceExtremo
-    ];
-
-  let volumePF =
-    central
-      .volumeMl;
-
-  let valorExtremo =
-    central
-      .primeiraDerivada;
-
-  if (
-    indiceExtremo >
-      0 &&
-    indiceExtremo <
-      primeira.length -
-        1
-  ) {
-    const anterior =
-      primeira[
-        indiceExtremo -
-          1
-      ];
-
-    const posterior =
-      primeira[
-        indiceExtremo +
-          1
-      ];
-
-    const u1 =
-      anterior
-        .volumeMl -
-      central
-        .volumeMl;
-
-    const u3 =
-      posterior
-        .volumeMl -
-      central
-        .volumeMl;
-
-    const s1 =
-      (
-        anterior
-          .primeiraDerivada -
-        central
-          .primeiraDerivada
-      ) /
-      u1;
-
-    const s3 =
-      (
-        posterior
-          .primeiraDerivada -
-        central
-          .primeiraDerivada
-      ) /
-      u3;
-
-    const a =
-      (
-        s1 -
-        s3
-      ) /
-      (
-        u1 -
-        u3
-      );
-
-    const b =
-      s1 -
-      a *
-        u1;
-
-    if (
-      Number.isFinite(
-        a
-      ) &&
-      Number.isFinite(
-        b
-      ) &&
-      Math.abs(
-        a
-      ) >
-        1e-18
-    ) {
-      const uVertice =
-        -b /
-        (
-          2 *
-          a
-        );
-
-      const candidato =
-        central
-          .volumeMl +
-        uVertice;
-
-      if (
-        Number.isFinite(
-          candidato
-        ) &&
-        candidato >=
-          anterior
-            .volumeMl &&
-        candidato <=
-          posterior
-            .volumeMl
-      ) {
-        volumePF =
-          candidato;
-
-        valorExtremo =
-          a *
-            uVertice *
-            uVertice +
-          b *
-            uVertice +
-          central
-            .primeiraDerivada;
-      }
-    }
-  }
-
-  const tolerancia =
-    1e-12;
-
-  const primeiraDerivada =
-    [
-      ...primeira.filter(
-        (
-          ponto
-        ) =>
-          Math.abs(
-            ponto
-              .volumeMl -
-            volumePF
-          ) >
-          tolerancia
-      ),
-
-      {
-        volumeMl:
-          volumePF,
-
-        primeiraDerivada:
-          valorExtremo,
-      },
-    ].sort(
-      (
-        a,
-        b
-      ) =>
-        a
-          .volumeMl -
-        b
-          .volumeMl
-    );
-
-  const segundaDerivada =
-    [
-      ...segundaBase.filter(
-        (
-          ponto
-        ) =>
-          Math.abs(
-            ponto
-              .volumeMl -
-            volumePF
-          ) >
-          tolerancia
-      ),
-
-      {
-        volumeMl:
-          volumePF,
-
-        segundaDerivada:
-          0,
-      },
-    ].sort(
-      (
-        a,
-        b
-      ) =>
-        a
-          .volumeMl -
-        b
-          .volumeMl
-    );
+  // O potencial cai durante a titulação iodimétrica; por isso localizamos
+  // o extremo de maior magnitude de dE/dV (o vale), não o maior valor algébrico.
+  const resultado = calcularDerivadasRedox(
+    pontosEntrada.map((ponto) => ({
+      volumeAdicionadoMl: ponto.volumeAdicionadoMl,
+      potencialV: ponto.potencialV,
+    })),
+    true
+  );
 
   return {
-    primeiraDerivada,
-    segundaDerivada,
-
-    volumePFPrimeiraDerivadaMl:
-      volumePF,
-
-    valorExtremoPrimeiraDerivada:
-      valorExtremo,
-
-    volumePFSegundaDerivadaMl:
-      volumePF,
+    primeiraDerivada: resultado.primeiraDerivada.map((ponto) => ({
+      volumeMl: ponto.volumeMl,
+      primeiraDerivada: ponto.primeiraDerivada,
+    })),
+    segundaDerivada: resultado.segundaDerivada.map((ponto) => ({
+      volumeMl: ponto.volumeMl,
+      segundaDerivada: ponto.segundaDerivada,
+    })),
+    volumePFPrimeiraDerivadaMl: resultado.volumePFPrimeiraDerivadaMl,
+    valorExtremoPrimeiraDerivada: resultado.valorMaximoPrimeiraDerivada,
+    volumePFSegundaDerivadaMl: resultado.volumePFSegundaDerivadaMl,
   };
 }
 

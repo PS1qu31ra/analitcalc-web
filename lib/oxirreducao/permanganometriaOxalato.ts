@@ -367,49 +367,56 @@ export function calcularPotencialFormalPermanganatoOxalato({
 }
 
 
+/**
+ * Aproximação assintótica do potencial no PE.
+ * Considera [Mn²⁺] ≈ concentração analítica total de Mn e c° = 1 mol/L.
+ * O resultado principal do sistema usa o resolvedor completo de equilíbrio.
+ */
 export function calcularPotencialEquivalenciaOxalato({
   concentracaoHPlusMolL,
+  concentracaoMnTotalMolL,
   atividadeCO2 = 1,
   temperaturaC = 25,
 }: {
-  concentracaoHPlusMolL:
-    number;
-
-  atividadeCO2?:
-    number;
-
-  temperaturaC?:
-    number;
+  concentracaoHPlusMolL: number;
+  concentracaoMnTotalMolL: number;
+  atividadeCO2?: number;
+  temperaturaC?: number;
 }) {
-  const potencialFormalOxalatoV =
-    calcularPotencialFormalOxalato({
-      concentracaoHPlusMolL,
+  if (
+    !Number.isFinite(concentracaoMnTotalMolL) ||
+    concentracaoMnTotalMolL <= 0
+  ) return NaN;
 
-      atividadeCO2,
+  const potencialFormalOxalatoV = calcularPotencialFormalOxalato({
+    concentracaoHPlusMolL,
+    atividadeCO2,
+    temperaturaC,
+  });
+  const potencialFormalPermanganatoV = calcularPotencialFormalPermanganatoOxalato({
+    concentracaoHPlusMolL,
+    temperaturaC,
+  });
+  const fatorUmEletron = calcularFatorNernst({
+    temperaturaC,
+    numeroEletrons: 1,
+  });
 
-      temperaturaC,
-    });
+  if (
+    !Number.isFinite(potencialFormalOxalatoV) ||
+    !Number.isFinite(potencialFormalPermanganatoV) ||
+    !Number.isFinite(fatorUmEletron)
+  ) return NaN;
 
-
-  const potencialFormalPermanganatoV =
-    calcularPotencialFormalPermanganatoOxalato({
-      concentracaoHPlusMolL,
-
-      temperaturaC,
-    });
-
+  const correcaoConcentracao =
+    (fatorUmEletron / 7) *
+    Math.log10((5 / 2) * concentracaoMnTotalMolL);
 
   return (
-    (
-      2 *
-        potencialFormalOxalatoV +
-      5 *
-        potencialFormalPermanganatoV
-    ) /
-    7
+    (2 * potencialFormalOxalatoV + 5 * potencialFormalPermanganatoV) / 7 -
+    correcaoConcentracao
   );
 }
-
 
 export function calcularSistemaPermanganometriaOxalato(
   entrada:
@@ -528,16 +535,27 @@ export function calcularSistemaPermanganometriaOxalato(
     });
 
 
-  const potencialEquivalenciaV =
-    calcularPotencialEquivalenciaOxalato({
-      concentracaoHPlusMolL:
-        entrada
-          .concentracaoHPlusMolL,
+  const volumeTotalNoPEMl =
+    entrada.volumeAnalitoMl + estequiometria.volumeEquivalenciaMl;
 
-      atividadeCO2,
+  const equilibrioNoPE = resolverEquilibrioPermanganometriaOxalato({
+    molOxalatoTotalInicial: molOxalatoInicial,
+    molMnTotal: molMnO4Equivalencia,
+    volumeTotalMl: volumeTotalNoPEMl,
+    concentracaoHPlusMolL: entrada.concentracaoHPlusMolL,
+    atividadeCO2,
+    temperaturaC,
+  });
 
-      temperaturaC,
-    });
+  const potencialEquivalenciaV = equilibrioNoPE.potencialV;
+  if (
+    potencialEquivalenciaV === null ||
+    !Number.isFinite(potencialEquivalenciaV)
+  ) {
+    throw new Error(
+      'Não foi possível resolver o potencial de equilíbrio no PE do sistema oxalato/MnO₄⁻.'
+    );
+  }
 
 
   const observacoes:
@@ -766,7 +784,7 @@ export function calcularPontoPermanganometriaOxalato({
 
 
     descricao =
-      "No ponto de equivalência, o potencial é determinado pela média ponderada dos potenciais formais dos pares CO₂/H₂C₂O₄ e MnO₄⁻/Mn²⁺, com pesos 2 e 5.";
+      "No ponto de equivalência, o potencial é obtido pela solução simultânea das equações de Nernst e do balanço estequiométrico, incluindo a concentração residual de MnO₄⁻/Mn²⁺.";
   } else {
     parControlador =
       "MnO4-/Mn2+";

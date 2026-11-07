@@ -493,26 +493,18 @@ import {
       );
   
   
-    const molOxalatoConsumido =
-      entrada
-        .molOxalatoTotalInicial -
-      distribuicao
-        .molOxalatoTotalRemanescente;
-  
-  
     /*
-     * 5 oxalato : 2 MnO₄⁻
-     *
-     * n(oxalato consumido)
-     * =
-     * 5/2 × n(Mn²⁺ formado)
+     * Balanço rearranjado para evitar subtrair duas quantidades grandes
+     * e quase iguais no ponto de equivalência:
+     * nOx,0 - (5/2)nMn,total - nOx,remanescente + (5/2)nMnO4 = 0.
      */
-  
     return (
-      molOxalatoConsumido -
-      OXALATO_POR_MNO4 *
-        distribuicao
-          .molMn2
+      (
+        entrada.molOxalatoTotalInicial -
+        OXALATO_POR_MNO4 * entrada.molMnTotal
+      ) -
+      distribuicao.molOxalatoTotalRemanescente +
+      OXALATO_POR_MNO4 * distribuicao.molMnO4
     );
   }
   
@@ -682,216 +674,77 @@ import {
       });
   
   
-    const diferencaEstequiometrica =
-      entrada
-        .molOxalatoTotalInicial -
-      OXALATO_POR_MNO4 *
-        entrada
-          .molMnTotal;
-  
-  
-    let potencialV:
-      number;
-  
-  
-    /*
-     * No PE, o balanço torna-se
-     * numericamente degenerado porque
-     * reagente e titulante residuais
-     * tendem simultaneamente a zero.
-     *
-     * Usamos então o potencial formal
-     * ponderado pelos números de elétrons.
-     */
-  
-    if (
-      Math.abs(
-        diferencaEstequiometrica
-      ) <=
-      1e-14
+    let limiteInferior =
+      Math.min(
+        potenciaisFormais.potencialFormalOxalatoV,
+        potenciaisFormais.potencialFormalPermanganatoV
+      ) - 2;
+
+    let limiteSuperior =
+      Math.max(
+        potenciaisFormais.potencialFormalOxalatoV,
+        potenciaisFormais.potencialFormalPermanganatoV
+      ) + 2;
+
+    let residuoInferior = calcularResiduo({
+      ...entrada,
+      temperaturaC,
+      potencialV: limiteInferior,
+    });
+    let residuoSuperior = calcularResiduo({
+      ...entrada,
+      temperaturaC,
+      potencialV: limiteSuperior,
+    });
+
+    for (
+      let tentativa = 0;
+      tentativa < 20 && (residuoInferior > 0 || residuoSuperior < 0);
+      tentativa += 1
     ) {
-      potencialV =
-        (
-          2 *
-            potenciaisFormais
-              .potencialFormalOxalatoV +
-          5 *
-            potenciaisFormais
-              .potencialFormalPermanganatoV
-        ) /
-        7;
-    } else {
-      let limiteInferior =
-        Math.min(
-          potenciaisFormais
-            .potencialFormalOxalatoV,
-  
-          potenciaisFormais
-            .potencialFormalPermanganatoV
-        ) -
-        2;
-  
-  
-      let limiteSuperior =
-        Math.max(
-          potenciaisFormais
-            .potencialFormalOxalatoV,
-  
-          potenciaisFormais
-            .potencialFormalPermanganatoV
-        ) +
-        2;
-  
-  
-      let residuoInferior =
-        calcularResiduo({
+      if (residuoInferior > 0) {
+        limiteInferior -= 2;
+        residuoInferior = calcularResiduo({
           ...entrada,
-  
           temperaturaC,
-  
-          potencialV:
-            limiteInferior,
+          potencialV: limiteInferior,
         });
-  
-  
-      let residuoSuperior =
-        calcularResiduo({
+      }
+      if (residuoSuperior < 0) {
+        limiteSuperior += 2;
+        residuoSuperior = calcularResiduo({
           ...entrada,
-  
           temperaturaC,
-  
-          potencialV:
-            limiteSuperior,
+          potencialV: limiteSuperior,
         });
-  
-  
-      for (
-        let tentativa = 0;
-  
-        tentativa <
-          20 &&
-        (
-          residuoInferior >
-            0 ||
-          residuoSuperior <
-            0
-        );
-  
-        tentativa +=
-          1
-      ) {
-        if (
-          residuoInferior >
-          0
-        ) {
-          limiteInferior -=
-            2;
-  
-  
-          residuoInferior =
-            calcularResiduo({
-              ...entrada,
-  
-              temperaturaC,
-  
-              potencialV:
-                limiteInferior,
-            });
-        }
-  
-  
-        if (
-          residuoSuperior <
-          0
-        ) {
-          limiteSuperior +=
-            2;
-  
-  
-          residuoSuperior =
-            calcularResiduo({
-              ...entrada,
-  
-              temperaturaC,
-  
-              potencialV:
-                limiteSuperior,
-            });
-        }
       }
-  
-  
-      if (
-        residuoInferior >
-          0 ||
-        residuoSuperior <
-          0
-      ) {
-        throw new Error(
-          "Não foi possível localizar o equilíbrio eletroquímico do sistema oxalato/MnO₄⁻."
-        );
-      }
-  
-  
-      for (
-        let iteracao = 0;
-        iteracao <
-          200;
-        iteracao +=
-          1
-      ) {
-        const meio =
-          (
-            limiteInferior +
-            limiteSuperior
-          ) /
-          2;
-  
-  
-        const residuoMeio =
-          calcularResiduo({
-            ...entrada,
-  
-            temperaturaC,
-  
-            potencialV:
-              meio,
-          });
-  
-  
-        if (
-          residuoMeio <
-          0
-        ) {
-          limiteInferior =
-            meio;
-        } else {
-          limiteSuperior =
-            meio;
-        }
-  
-  
-        if (
-          Math.abs(
-            limiteSuperior -
-            limiteInferior
-          ) <
-          1e-12
-        ) {
-          break;
-        }
-      }
-  
-  
-      potencialV =
-        (
-          limiteInferior +
-          limiteSuperior
-        ) /
-        2;
     }
-  
-  
+
+    if (residuoInferior > 0 || residuoSuperior < 0) {
+      throw new Error(
+        'Não foi possível localizar o equilíbrio eletroquímico do sistema oxalato/MnO₄⁻.'
+      );
+    }
+
+    for (let iteracao = 0; iteracao < 200; iteracao += 1) {
+      const meio = (limiteInferior + limiteSuperior) / 2;
+      const residuoMeio = calcularResiduo({
+        ...entrada,
+        temperaturaC,
+        potencialV: meio,
+      });
+
+      if (residuoMeio < 0) {
+        limiteInferior = meio;
+      } else {
+        limiteSuperior = meio;
+      }
+
+      if (Math.abs(limiteSuperior - limiteInferior) < 1e-12) break;
+    }
+
+    const potencialV = (limiteInferior + limiteSuperior) / 2;
+
     const distribuicao =
       calcularDistribuicao({
         ...entrada,

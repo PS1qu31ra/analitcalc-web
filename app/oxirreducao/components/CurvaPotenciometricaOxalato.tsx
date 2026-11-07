@@ -133,9 +133,9 @@ import type {
             </strong>
   
             <p>
-              Potencial ponderado pelos 2 elétrons do par
-              CO₂/H₂C₂O₄ e pelos 5 elétrons do par
-              MnO₄⁻/Mn²⁺.
+              Potencial obtido pela solução simultânea das
+              equações de Nernst e do balanço estequiométrico,
+              incluindo as concentrações residuais no PE.
             </p>
           </article>
   

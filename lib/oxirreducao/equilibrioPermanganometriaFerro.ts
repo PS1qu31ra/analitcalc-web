@@ -389,12 +389,18 @@ import {
       });
   
   
+    /*
+     * Balanço rearranjado para evitar cancelamento de números grandes
+     * e quase iguais no ponto de equivalência:
+     * nFe,0 - 5 nMn,total - nFe²⁺ + 5 nMnO₄⁻ = 0.
+     */
     return (
-      distribuicao
-        .molFe3 -
-      COEFICIENTE_FE *
-        distribuicao
-          .molMn2
+      (
+        molFeTotal -
+        COEFICIENTE_FE * molMnTotal
+      ) -
+      distribuicao.molFe2 +
+      COEFICIENTE_FE * distribuicao.molMnO4
     );
   }
   

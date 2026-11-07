@@ -266,6 +266,9 @@ export type ResultadoCalculoNernst = {
    */
   quocienteReacao: number;
 
+  /** Logaritmo decimal de Q, usado para preservar estabilidade numérica. */
+  log10QuocienteReacao: number;
+
   /**
    * 2,303 RT / nF
    *

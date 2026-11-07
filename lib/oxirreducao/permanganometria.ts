@@ -386,15 +386,27 @@ import {
           COEFICIENTE_MNO4,
       });
   
-    const potencialEquivalenciaV =
-      calcularPotencialEquivalenciaPermanganometria({
-        concentracaoHPlusMolL:
-          entrada
-            .concentracaoHPlusMolL,
-  
-        temperaturaC,
-      });
-  
+    const volumeTotalNoPEMl =
+      entrada.volumeAnalitoMl + estequiometria.volumeEquivalenciaMl;
+
+    const equilibrioNoPE = resolverEquilibrioPermanganometriaFerro({
+      molFeTotal: estequiometria.molAnalitoInicial,
+      molMnTotal: estequiometria.molTitulanteEquivalencia,
+      volumeTotalMl: volumeTotalNoPEMl,
+      concentracaoHPlusMolL: entrada.concentracaoHPlusMolL,
+      temperaturaC,
+    });
+
+    const potencialEquivalenciaV = equilibrioNoPE.potencialV;
+    if (
+      potencialEquivalenciaV === null ||
+      !Number.isFinite(potencialEquivalenciaV)
+    ) {
+      throw new Error(
+        'Não foi possível resolver o potencial de equilíbrio no PE do sistema Fe²⁺/MnO₄⁻.'
+      );
+    }
+
     return {
       reacaoGlobal:
         REACAO_PERMANGANATO_FERRO,
@@ -581,7 +593,7 @@ import {
       
       
         descricao =
-          "No ponto de equivalência, o potencial é determinado pela média ponderada dos potenciais dos pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺, considerando os respectivos números de elétrons das semirreações.";
+          "No ponto de equivalência, o potencial é obtido pela solução simultânea das equações de Nernst e do balanço de elétrons dos pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺.";
     } else {
       parControlador =
         "MnO4-/Mn2+";

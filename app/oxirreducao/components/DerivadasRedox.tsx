@@ -1134,12 +1134,12 @@ import {
     </h4>
 
     <p>
-  A segunda derivada é vinculada ao mesmo ajuste
-  local utilizado para refinar a primeira derivada.
-  O zero de Δ²E/ΔV² ocorre exatamente no mesmo
-  volume em que ΔE/ΔV apresenta seu máximo.
-  Portanto, as duas derivadas representam o mesmo
-  ponto de inflexão e o mesmo PF teórico.
+  A segunda derivada é calculada independentemente
+  a partir dos potenciais da curva E × V, usando
+  diferenças finitas de três pontos. O PF por esse
+  método só é informado quando a segunda derivada
+  apresenta um cruzamento real por zero; caso contrário,
+  o sistema informa que o ponto não foi localizado.
 </p>
   </header>
 
@@ -1177,12 +1177,14 @@ import {
   <p>
     A linha vertical tracejada representa o PE
     estequiométrico. O máximo da primeira derivada
-    e o zero da segunda derivada representam o mesmo
-    ponto de inflexão e, portanto, devem fornecer
-    exatamente o mesmo PF teórico. PE e PF podem,
-    entretanto, ocorrer em volumes diferentes. O erro
-    absoluto é VPF − VPE e o erro relativo é calculado
-    por ((VPF − VPE) / VPE) × 100, preservando o sinal.
+    e o cruzamento
+    da segunda derivada são estimativas independentes
+    do ponto de inflexão. Elas podem apresentar pequena
+    diferença por discretização e ruído. A ausência de
+    cruzamento na segunda derivada não é substituída por
+    um zero artificial. PE e PF também podem ocorrer em
+    volumes diferentes. O erro absoluto é VPF − VPE e o
+    erro relativo é ((VPF − VPE) / VPE) × 100.
   </p>
 </div>
       </section>

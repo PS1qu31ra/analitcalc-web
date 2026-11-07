@@ -231,14 +231,15 @@ export const sistemasIodometria:
  * ======================================================= */
 
 export function buscarSistemaIodometria(
-  id:
-    SistemaIodometriaId
+  id: SistemaIodometriaId | string
 ) {
-  return (
-    sistemasIodometria.find(
-      (sistema) =>
-        sistema.id === id
-    ) ??
-    SISTEMA_CLORO_ATIVO
+  const sistema = sistemasIodometria.find(
+    (item) => item.id === id
   );
+
+  if (!sistema) {
+    throw new RangeError(`Sistema iodimétrico desconhecido: ${String(id)}.`);
+  }
+
+  return sistema;
 }
