@@ -1,0 +1,318 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.calcularPontoPermanganometriaPeroxido = exports.calcularSistemaPermanganometriaPeroxido = exports.calcularPotencialEquivalenciaPeroxido = exports.calcularPotencialFormalPeroxido = exports.REACAO_PERMANGANATO_PEROXIDO = void 0;
+const dadosRedox_1 = require("./dadosRedox");
+const nernst_1 = require("./nernst");
+const estequiometria_1 = require("./estequiometria");
+const permanganometria_1 = require("./permanganometria");
+const equilibrioPermanganometriaPeroxido_1 = require("./equilibrioPermanganometriaPeroxido");
+/* =========================================================
+ * REAÇÃO GLOBAL
+ * ======================================================= */
+/**
+ * Em meio ácido:
+ *
+ * 2 MnO₄⁻ +
+ * 5 H₂O₂ +
+ * 6 H⁺
+ *
+ * →
+ *
+ * 2 Mn²⁺ +
+ * 5 O₂ +
+ * 8 H₂O
+ */
+exports.REACAO_PERMANGANATO_PEROXIDO = "2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O";
+const COEFICIENTE_H2O2 = 5;
+const COEFICIENTE_MNO4 = 2;
+/* =========================================================
+ * VALIDAÇÃO
+ * ======================================================= */
+function validarEntrada(entrada) {
+    const valoresPositivos = [
+        entrada
+            .concentracaoAnalitoMolL,
+        entrada
+            .volumeAnalitoMl,
+        entrada
+            .concentracaoTitulanteMolL,
+        entrada
+            .concentracaoHPlusMolL,
+        entrada
+            .atividadeOxigenio ??
+            1,
+    ];
+    const valido = valoresPositivos.every((valor) => Number.isFinite(valor) &&
+        valor > 0);
+    if (!valido) {
+        throw new Error("Concentrações, volumes e atividades devem ser positivos e finitos.");
+    }
+    const temperaturaC = entrada.temperaturaC ??
+        25;
+    if (!Number.isFinite(temperaturaC) ||
+        temperaturaC <=
+            -273.15) {
+        throw new Error("A temperatura informada é fisicamente inválida.");
+    }
+}
+/* =========================================================
+ * POTENCIAL FORMAL O₂ / H₂O₂
+ * ======================================================= */
+/**
+ * O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂
+ *
+ * E =
+ * E° -
+ * (2,303 RT / 2F)
+ * log(
+ *   a(H₂O₂) /
+ *   [a(O₂) a(H⁺)²]
+ * )
+ *
+ * Aqui isolamos as condições
+ * de H⁺ e O₂ no potencial formal.
+ */
+function calcularPotencialFormalPeroxido({ concentracaoHPlusMolL, atividadeOxigenio = 1, temperaturaC = 25, }) {
+    if (!Number.isFinite(concentracaoHPlusMolL) ||
+        concentracaoHPlusMolL <= 0 ||
+        !Number.isFinite(atividadeOxigenio) ||
+        atividadeOxigenio <= 0) {
+        return NaN;
+    }
+    const fatorDoisEletrons = (0, nernst_1.calcularFatorNernst)({
+        temperaturaC,
+        numeroEletrons: 2,
+    });
+    if (!Number.isFinite(fatorDoisEletrons)) {
+        return NaN;
+    }
+    return (dadosRedox_1.PAR_OXIGENIO_PEROXIDO
+        .potencialPadraoReducao +
+        fatorDoisEletrons *
+            Math.log10(atividadeOxigenio) +
+        (2 *
+            fatorDoisEletrons) *
+            Math.log10(concentracaoHPlusMolL));
+}
+exports.calcularPotencialFormalPeroxido = calcularPotencialFormalPeroxido;
+/* =========================================================
+ * POTENCIAL NO PE
+ * ======================================================= */
+/**
+ * Aproximação assintótica do potencial no PE.
+ * Considera [Mn²⁺] ≈ concentração analítica total de Mn e estado padrão
+ * c° = 1 mol/L. Para os resultados do sistema, utiliza-se o resolvedor
+ * completo de equilíbrio, que não depende dessa aproximação.
+ */
+function calcularPotencialEquivalenciaPeroxido({ concentracaoHPlusMolL, concentracaoMnTotalMolL, atividadeOxigenio = 1, temperaturaC = 25, }) {
+    if (!Number.isFinite(concentracaoMnTotalMolL) ||
+        concentracaoMnTotalMolL <= 0)
+        return NaN;
+    const potencialFormalPeroxido = calcularPotencialFormalPeroxido({
+        concentracaoHPlusMolL,
+        atividadeOxigenio,
+        temperaturaC,
+    });
+    const potencialFormalMn = (0, permanganometria_1.calcularPotencialFormalPermanganato)({
+        concentracaoHPlusMolL,
+        temperaturaC,
+    });
+    const fatorUmEletron = (0, nernst_1.calcularFatorNernst)({
+        temperaturaC,
+        numeroEletrons: 1,
+    });
+    if (!Number.isFinite(potencialFormalPeroxido) ||
+        !Number.isFinite(potencialFormalMn) ||
+        !Number.isFinite(fatorUmEletron))
+        return NaN;
+    const correcaoConcentracao = (fatorUmEletron / 7) *
+        Math.log10((5 / 2) * concentracaoMnTotalMolL);
+    return ((2 * potencialFormalPeroxido + 5 * potencialFormalMn) / 7 -
+        correcaoConcentracao);
+}
+exports.calcularPotencialEquivalenciaPeroxido = calcularPotencialEquivalenciaPeroxido;
+/* =========================================================
+ * SISTEMA
+ * ======================================================= */
+function calcularSistemaPermanganometriaPeroxido(entrada) {
+    validarEntrada(entrada);
+    const temperaturaC = entrada.temperaturaC ??
+        25;
+    const atividadeOxigenio = entrada.atividadeOxigenio ??
+        1;
+    const estequiometria = (0, estequiometria_1.calcularVolumeEquivalencia)({
+        concentracaoAnalitoMolL: entrada
+            .concentracaoAnalitoMolL,
+        volumeAnalitoMl: entrada
+            .volumeAnalitoMl,
+        concentracaoTitulanteMolL: entrada
+            .concentracaoTitulanteMolL,
+        coeficienteAnalito: COEFICIENTE_H2O2,
+        coeficienteTitulante: COEFICIENTE_MNO4,
+    });
+    const volumeTotalNoPEMl = entrada.volumeAnalitoMl + estequiometria.volumeEquivalenciaMl;
+    const equilibrioNoPE = (0, equilibrioPermanganometriaPeroxido_1.resolverEquilibrioPermanganometriaPeroxido)({
+        molH2O2Total: estequiometria.molAnalitoInicial,
+        molMnTotal: estequiometria.molTitulanteEquivalencia,
+        volumeTotalMl: volumeTotalNoPEMl,
+        concentracaoHPlusMolL: entrada.concentracaoHPlusMolL,
+        atividadeOxigenio,
+        temperaturaC,
+    });
+    const potencialEquivalenciaV = equilibrioNoPE.potencialV;
+    if (potencialEquivalenciaV === null ||
+        !Number.isFinite(potencialEquivalenciaV)) {
+        throw new Error('Não foi possível resolver o potencial de equilíbrio no PE do sistema H₂O₂/MnO₄⁻.');
+    }
+    return {
+        reacaoGlobal: exports.REACAO_PERMANGANATO_PEROXIDO,
+        coeficienteAnalito: COEFICIENTE_H2O2,
+        coeficienteTitulante: COEFICIENTE_MNO4,
+        razaoH2O2PorMnO4: COEFICIENTE_H2O2 /
+            COEFICIENTE_MNO4,
+        molH2O2Inicial: estequiometria
+            .molAnalitoInicial,
+        molMnO4Equivalencia: estequiometria
+            .molTitulanteEquivalencia,
+        volumeEquivalenciaMl: estequiometria
+            .volumeEquivalenciaMl,
+        potencialPadraoPeroxido: dadosRedox_1.PAR_OXIGENIO_PEROXIDO
+            .potencialPadraoReducao,
+        potencialPadraoMn: dadosRedox_1.PAR_PERMANGANATO_MANGANES
+            .potencialPadraoReducao,
+        concentracaoHPlusMolL: entrada
+            .concentracaoHPlusMolL,
+        atividadeOxigenio,
+        temperaturaC,
+        potencialEquivalenciaV,
+    };
+}
+exports.calcularSistemaPermanganometriaPeroxido = calcularSistemaPermanganometriaPeroxido;
+/* =========================================================
+ * PONTO DA TITULAÇÃO
+ * ======================================================= */
+function calcularPontoPermanganometriaPeroxido({ entrada, volumeAdicionadoMl, }) {
+    validarEntrada(entrada);
+    if (!Number.isFinite(volumeAdicionadoMl) ||
+        volumeAdicionadoMl < 0) {
+        throw new Error("O volume de titulante adicionado deve ser maior ou igual a zero.");
+    }
+    const sistema = calcularSistemaPermanganometriaPeroxido(entrada);
+    const temperaturaC = entrada.temperaturaC ??
+        25;
+    const atividadeOxigenio = entrada.atividadeOxigenio ??
+        1;
+    const volumeTotalMl = entrada.volumeAnalitoMl +
+        volumeAdicionadoMl;
+    const regiao = (0, estequiometria_1.determinarRegiaoTitulacao)({
+        volumeAdicionadoMl,
+        volumeEquivalenciaMl: sistema
+            .volumeEquivalenciaMl,
+        toleranciaMl: 1e-9,
+    });
+    const molMnO4Adicionado = (0, estequiometria_1.calcularMols)({
+        concentracaoMolL: entrada
+            .concentracaoTitulanteMolL,
+        volumeMl: volumeAdicionadoMl,
+    });
+    /*
+     * No PE usamos exatamente a quantidade
+     * estequiométrica já calculada pelo sistema.
+     *
+     * Isso evita que pequenas diferenças de
+     * ponto flutuante como:
+     *
+     * 50
+     * versus
+     * 50.00000000000001
+     *
+     * alterem artificialmente o potencial
+     * em uma região extremamente sensível.
+     */
+    const molMnTotalEquilibrio = regiao ===
+        "pe"
+        ? sistema
+            .molMnO4Equivalencia
+        : molMnO4Adicionado;
+    /* =======================================================
+     * EQUILÍBRIO CONTÍNUO
+     * =======================================================
+     *
+     * O potencial é obtido impondo:
+     *
+     * E(O₂/H₂O₂)
+     * =
+     * E(MnO₄⁻/Mn²⁺)
+     *
+     * simultaneamente ao balanço:
+     *
+     * n(H₂O₂ consumido)
+     * =
+     * (5/2) n(Mn²⁺)
+     *
+     * A atividade de O₂ permanece uma condição externa
+     * do modelo porque O₂ é uma espécie gasosa.
+     */
+    const equilibrio = (0, equilibrioPermanganometriaPeroxido_1.resolverEquilibrioPermanganometriaPeroxido)({
+        molH2O2Total: sistema
+            .molH2O2Inicial,
+        molMnTotal: molMnTotalEquilibrio,
+        volumeTotalMl,
+        concentracaoHPlusMolL: entrada
+            .concentracaoHPlusMolL,
+        atividadeOxigenio,
+        temperaturaC,
+    });
+    let parControlador;
+    let descricao;
+    if (regiao ===
+        "antes_pe") {
+        parControlador =
+            "O2/H2O2";
+        descricao =
+            "Antes do ponto de equivalência, o par O₂/H₂O₂ é predominante, mas o potencial é obtido pelo equilíbrio simultâneo com MnO₄⁻/Mn²⁺.";
+    }
+    else if (regiao ===
+        "pe") {
+        parControlador =
+            "equivalencia";
+        descricao =
+            "No ponto de equivalência, o potencial é obtido pela solução simultânea das equações de Nernst e do balanço estequiométrico, incluindo a concentração residual de MnO₄⁻/Mn²⁺.";
+    }
+    else {
+        parControlador =
+            "MnO4-/Mn2+";
+        descricao =
+            "Após o ponto de equivalência, o par MnO₄⁻/Mn²⁺ é predominante, mas o potencial continua sendo obtido pelo equilíbrio simultâneo dos dois pares.";
+    }
+    return {
+        volumeAdicionadoMl,
+        volumeTotalMl,
+        volumeEquivalenciaMl: sistema
+            .volumeEquivalenciaMl,
+        regiao,
+        potencialV: regiao ===
+            "pe"
+            ? sistema
+                .potencialEquivalenciaV
+            : equilibrio
+                .potencialV,
+        parControlador,
+        molH2O2: equilibrio
+            .molH2O2,
+        molO2: equilibrio
+            .molO2,
+        molMnO4: equilibrio
+            .molMnO4,
+        molMn2: equilibrio
+            .molMn2,
+        concentracaoH2O2MolL: equilibrio
+            .concentracaoH2O2MolL,
+        concentracaoMnO4MolL: equilibrio
+            .concentracaoMnO4MolL,
+        concentracaoMn2MolL: equilibrio
+            .concentracaoMn2MolL,
+        descricao,
+    };
+}
+exports.calcularPontoPermanganometriaPeroxido = calcularPontoPermanganometriaPeroxido;

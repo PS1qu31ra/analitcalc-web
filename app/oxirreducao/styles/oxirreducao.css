@@ -3775,3 +3775,10 @@
       min-height: auto;
     }
   }
+/* Ajuste de legibilidade das quantidades e controles da iodometria/redox. */
+.oxirreducaoPage .oxirreducaoForm label { font-size: 0.95rem; line-height: 1.45; }
+.oxirreducaoPage .oxirreducaoForm label small { font-size: 0.82rem; line-height: 1.55; }
+.oxirreducaoPage .oxirreducaoInputUnit input { font-size: 1rem; }
+.oxirreducaoPage .resultCard strong { font-size: clamp(1.1rem, 1.6vw, 1.35rem); overflow-wrap: anywhere; }
+.oxirreducaoPage .curve-table td, .oxirreducaoPage .curve-table th { font-size: 0.9rem; }
+.oxirreducaoPage .oxirreducaoChartTick { font-size: 13px; }

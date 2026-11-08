@@ -28,6 +28,7 @@ const {
   calcularPontoIodometria,
   buscarSistemaIodometria: buscarSistemaIodometriaCore,
   E0_I2_AQ_I,
+  E0_I3_I_25C,
   E0_TETRATIONATO_TIOS,
   K_FORMACAO_I3_25C,
 } = require('../.redox-build/iodometria.js');
@@ -281,6 +282,58 @@ teste('A busca do motor iodimétrico rejeita identificador desconhecido', () => 
 // 5 — Não mascarar sistema iodimétrico inválido.
 teste('Identificador iodimétrico desconhecido gera erro explícito', () => {
   assert.throws(() => buscarSistemaIodometria('sistema-inexistente'), /desconhecido/);
+});
+
+// 6 — Correções solicitadas na validação: iodeto inicial, I₃⁻ e apresentação.
+teste('Iodeto inicial é descontado pelo consumo de Cl₂ antes da especiação', () => {
+  const e = entradaPadraoIodometria('cloro-ativo');
+  const resumo = require('../.redox-build/iodometria.js').calcularResumoEstequiometricoIodometria(e);
+  proximoDe(e.concentracaoIodetoInicialMolL, 0.1, 1e-15, 'I- inicial');
+  proximoDe(resumo.molIodetoInicial, 0.0025, 1e-15, 'mol I- inicial');
+  proximoDe(resumo.molIodetoConsumido, 0.0005, 1e-15, 'mol I- consumido');
+  proximoDe(resumo.molIodetoDisponivelAposGeracao, 0.002, 1e-15, 'mol I- após etapa redox');
+});
+teste('Iodeto de 0,010 M é insuficiente para Cl₂ 0,010 M na mesma mistura', () => {
+  const e = {...entradaPadraoIodometria('cloro-ativo'), concentracaoIodetoInicialMolL: 0.01};
+  assert.throws(() => gerarCurvaIodometria({entrada:e}), /KI insuficiente/);
+});
+teste('Consumo de iodeto inclui CuI(s) na iodometria de Cu²⁺', () => {
+  const e = entradaPadraoIodometria('cobre-ii');
+  const r = require('../.redox-build/iodometria.js').calcularResumoEstequiometricoIodometria(e);
+  proximoDe(r.molIodetoConsumido, 2 * r.molAnalitoInicial, 1e-15, 'consumo Cu²⁺');
+  const p = calcularPontoIodometria({entrada:e,volumeAdicionadoMl:0});
+  proximoDe(p.molIodeto, r.molIodetoDisponivelAposGeracao, 1e-14, 'I- disponível Cu²⁺');
+});
+teste('Consumo de iodeto do iodato usa 5 I⁻ por IO₃⁻, não 6', () => {
+  const e = entradaPadraoIodometria('iodato');
+  const r = require('../.redox-build/iodometria.js').calcularResumoEstequiometricoIodometria(e);
+  proximoDe(r.molIodetoConsumido, 5 * r.molAnalitoInicial, 1e-14, 'iodeto consumido IO₃⁻');
+});
+teste('Potenciais I₂(aq)/I⁻ e I₃⁻/I⁻ são equivalentes com Kf consistente', () => {
+  const e = entradaPadraoIodometria('cloro-ativo');
+  const p = calcularPontoIodometria({entrada:e, volumeAdicionadoMl: 5});
+  const term = (8.31446261815324 * 298.15) / (2 * 96485.33212);
+  const eI2 = E0_I2_AQ_I + term * Math.log(p.concentracaoI2MolL / p.concentracaoIodetoMolL ** 2);
+  const eI3 = E0_I3_I_25C + term * Math.log(p.concentracaoI3MolL / p.concentracaoIodetoMolL ** 3);
+  proximoDe(eI2, eI3, 1e-12, 'equivalência dos dois pares');
+  assert.ok(E0_I3_I_25C > 0.535 && E0_I3_I_25C < 0.538);
+});
+teste('O triiodeto predomina sobre I₂ livre na condição padrão de KI em excesso', () => {
+  const p = calcularPontoIodometria({entrada:entradaPadraoIodometria('cloro-ativo'),volumeAdicionadoMl:0});
+  assert.ok(p.concentracaoI3MolL > p.concentracaoI2MolL * 10);
+});
+teste('Equilíbrio iodeto/triiodeto preserva balanço antes, no e após o PE', () => {
+  const e = entradaPadraoIodometria('cloro-ativo');
+  for (const v of [0,10,25,30]) {
+    const p = calcularPontoIodometria({entrada:e,volumeAdicionadoMl:v});
+    proximoDe(p.molIodeto, p.molIodetoLivre + p.molI3, 1e-14, `I- total ${v}`);
+    proximoDe(p.molI2, p.molI2Livre + p.molI3, 1e-14, `I2 total ${v}`);
+  }
+});
+teste('Notação científica apresentada sem e de programação', () => {
+  const {formatarCientificoPtBr} = require('../.redox-build/formatacao.js');
+  assert.equal(formatarCientificoPtBr(1.234e-8, 3), '1,234 × 10⁻⁸');
+  assert.equal(formatarCientificoPtBr(1.2e6, 2), '1,20 × 10⁶');
 });
 
 process.stdout.write(`\n${aprovados} testes aprovados.\n`);

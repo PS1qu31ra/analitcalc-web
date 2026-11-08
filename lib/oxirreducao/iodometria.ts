@@ -1,5 +1,8 @@
 import { calcularDerivadasRedox } from "./derivadas";
 
+const R = 8.31446261815324;
+const F = 96485.33212;
+
 /* =========================================================
  * IODOMETRIA — DADOS, ESTEQUIOMETRIA E MOTOR POTENCIOMÉTRICO
  * ======================================================= */
@@ -34,6 +37,8 @@ export type SistemaIodometria = {
   eletronsGeracaoIodo: number;
   molI2PorMolAnalito: number;
   molTiossulfatoPorMolAnalito: number;
+  /** Mol de I⁻ consumido na etapa de geração, antes da complexação I₂/I₃⁻. */
+  molIodetoConsumidoPorMolAnalito: number;
   relacaoPrimeiraEtapa: string;
   relacaoSegundaEtapa: string;
   relacaoGlobal: string;
@@ -55,6 +60,12 @@ export const E0_TETRATIONATO_TIOS = 0.080;
 
 /** Constante molal de formação I₂(aq) + I⁻ ⇌ I₃⁻ a 25 °C (tratada como concentração em solução diluída). */
 export const K_FORMACAO_I3_25C = 698;
+/** E° de I₃⁻ + 2e⁻ ⇌ 3I⁻ na convenção de atividades aproximadas por concentrações.
+ * Derivado de E°(I₂(aq)/I⁻) e Kf para que ambas as equações de Nernst sejam coerentes.
+ * Resulta em aproximadamente +0,53688 V a 25 °C (valor tabelado ~ +0,536 V).
+ */
+export const E0_I3_I_25C =
+  E0_I2_AQ_I - (R * 298.15) / (2 * F) * Math.log(K_FORMACAO_I3_25C);
 const DELTA_H_FORMACAO_I3_J_MOL = -17000;
 const DELTA_CP_FORMACAO_I3_J_MOL_K = -21;
 const TEMPERATURA_REFERENCIA_K = 298.15;
@@ -63,10 +74,10 @@ export const REACAO_TIOS =
   "I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻";
 
 export const EQUILIBRIO_TRIIODeto =
-  "I₂(aq) + I⁻ ⇌ I₃⁻";
+  "I₂ + I⁻ ⇌ I₃⁻";
 
 export const SEMIRREACAO_IODO =
-  "I₂(aq) + 2 e⁻ ⇌ 2 I⁻";
+  "I₃⁻ + 2 e⁻ ⇌ 3 I⁻";
 
 export const SEMIRREACAO_TIOS =
   "S₄O₆²⁻ + 2 e⁻ ⇌ 2 S₂O₃²⁻";
@@ -81,7 +92,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
     formulaAnalito: "Cl₂",
     nomeCompleto: "Cloro ativo — expresso como Cl₂",
     descricao:
-      "O cloro oxida I⁻ a I₂; o iodo liberado é titulado com tiossulfato.",
+      "O cloro oxida iodeto; em KI em excesso, o iodo gerado aparece predominantemente como I₃⁻ e é titulado com tiossulfato.",
     titulante: "Na₂S₂O₃",
     indicador: "Amido",
     semirreacoes: [
@@ -93,21 +104,22 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "2 I⁻ ⇌ I₂(aq) + 2 e⁻",
+        equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
         eletrons: 2,
-        potencialPadraoV: E0_I2_AQ_I,
+        potencialPadraoV: E0_I3_I_25C,
         observacao:
-          "O valor exibido é o E° de redução do par I₂/I⁻; a semirreação está escrita no sentido de oxidação para compor a reação global.",
+          "O valor exibido é o E° de redução do par I₃⁻/I⁻; a semirreação está escrita no sentido de oxidação para compor a reação global.",
       },
     ],
     etapasPreTitulacao: [
-      "Cl₂ + 2 I⁻ → 2 Cl⁻ + I₂",
+      "Cl₂ + 3 I⁻ → 2 Cl⁻ + I₃⁻",
     ],
     reacaoGlobalGeracaoIodo:
-      "Cl₂ + 2 I⁻ → 2 Cl⁻ + I₂",
+      "Cl₂ + 3 I⁻ → 2 Cl⁻ + I₃⁻",
     eletronsGeracaoIodo: 2,
     molI2PorMolAnalito: 1,
     molTiossulfatoPorMolAnalito: 2,
+    molIodetoConsumidoPorMolAnalito: 2,
     relacaoPrimeiraEtapa: "1 Cl₂ : 1 I₂",
     relacaoSegundaEtapa: "1 I₂ : 2 S₂O₃²⁻",
     relacaoGlobal: "1 Cl₂ : 1 I₂ : 2 S₂O₃²⁻",
@@ -127,7 +139,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
     formulaAnalito: "Cu²⁺",
     nomeCompleto: "Cobre(II) — Cu²⁺",
     descricao:
-      "Cu²⁺ reage com iodeto, formando CuI(s) e liberando I₂ para titulação com tiossulfato.",
+      "Cu²⁺ reage com iodeto e forma CuI(s); o iodo oxidado permanece predominantemente como I₃⁻ em excesso de KI.",
     titulante: "Na₂S₂O₃",
     indicador: "Amido",
     semirreacoes: [
@@ -141,19 +153,20 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "2 I⁻ ⇌ I₂(aq) + 2 e⁻",
+        equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
         eletrons: 2,
-        potencialPadraoV: E0_I2_AQ_I,
+        potencialPadraoV: E0_I3_I_25C,
       },
     ],
     etapasPreTitulacao: [
-      "2 Cu²⁺ + 4 I⁻ → 2 CuI(s) + I₂",
+      "2 Cu²⁺ + 5 I⁻ → 2 CuI(s) + I₃⁻",
     ],
     reacaoGlobalGeracaoIodo:
-      "2 Cu²⁺ + 4 I⁻ → 2 CuI(s) + I₂",
+      "2 Cu²⁺ + 5 I⁻ → 2 CuI(s) + I₃⁻",
     eletronsGeracaoIodo: 2,
     molI2PorMolAnalito: 0.5,
     molTiossulfatoPorMolAnalito: 1,
+    molIodetoConsumidoPorMolAnalito: 2,
     relacaoPrimeiraEtapa: "2 Cu²⁺ : 1 I₂",
     relacaoSegundaEtapa: "1 I₂ : 2 S₂O₃²⁻",
     relacaoGlobal: "2 Cu²⁺ : 1 I₂ : 2 S₂O₃²⁻",
@@ -187,9 +200,9 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto equivalente",
-        equacao: "4 I⁻ ⇌ 2 I₂ + 4 e⁻",
+        equacao: "6 I⁻ ⇌ 2 I₃⁻ + 4 e⁻",
         eletrons: 4,
-        potencialPadraoV: E0_I2_AQ_I,
+        potencialPadraoV: E0_I3_I_25C,
       },
     ],
     etapasPreTitulacao: [
@@ -197,13 +210,14 @@ export const sistemasIodometria: SistemaIodometria[] = [
       "2 Mn(OH)₂ + ½ O₂ + H₂O → 2 Mn(OH)₃(s)",
       "2 Mn(OH)₃ + 6 H⁺ + 3 I⁻ → 2 Mn²⁺ + I₃⁻ + 6 H₂O",
       "I₃⁻ ⇌ I₂ + I⁻",
-      "Equivalente global: O₂ + 4 I⁻ + 4 H⁺ → 2 I₂ + 2 H₂O",
+      "Equivalente global em KI em excesso: O₂ + 6 I⁻ + 4 H⁺ → 2 I₃⁻ + 2 H₂O",
     ],
     reacaoGlobalGeracaoIodo:
-      "O₂ + 4 I⁻ + 4 H⁺ → 2 I₂ + 2 H₂O (equivalente global do Winkler)",
+      "O₂ + 6 I⁻ + 4 H⁺ → 2 I₃⁻ + 2 H₂O (equivalente global do Winkler em KI em excesso)",
     eletronsGeracaoIodo: 4,
     molI2PorMolAnalito: 2,
     molTiossulfatoPorMolAnalito: 4,
+    molIodetoConsumidoPorMolAnalito: 4,
     relacaoPrimeiraEtapa: "1 O₂ : 2 I₂",
     relacaoSegundaEtapa: "1 I₂ : 2 S₂O₃²⁻",
     relacaoGlobal: "1 O₂ : 2 I₂ : 4 S₂O₃²⁻",
@@ -225,7 +239,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
     formulaAnalito: "H₂O₂",
     nomeCompleto: "Peróxido de hidrogênio — H₂O₂",
     descricao:
-      "H₂O₂ oxida iodeto em meio ácido, liberando I₂ que é titulado com tiossulfato.",
+      "H₂O₂ oxida iodeto em meio ácido, gerando iodo que aparece predominantemente como I₃⁻ em KI em excesso.",
     titulante: "Na₂S₂O₃",
     indicador: "Amido",
     semirreacoes: [
@@ -237,19 +251,20 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "2 I⁻ ⇌ I₂(aq) + 2 e⁻",
+        equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
         eletrons: 2,
-        potencialPadraoV: E0_I2_AQ_I,
+        potencialPadraoV: E0_I3_I_25C,
       },
     ],
     etapasPreTitulacao: [
-      "H₂O₂ + 2 I⁻ + 2 H⁺ → I₂ + 2 H₂O",
+      "H₂O₂ + 3 I⁻ + 2 H⁺ → I₃⁻ + 2 H₂O",
     ],
     reacaoGlobalGeracaoIodo:
-      "H₂O₂ + 2 I⁻ + 2 H⁺ → I₂ + 2 H₂O",
+      "H₂O₂ + 3 I⁻ + 2 H⁺ → I₃⁻ + 2 H₂O",
     eletronsGeracaoIodo: 2,
     molI2PorMolAnalito: 1,
     molTiossulfatoPorMolAnalito: 2,
+    molIodetoConsumidoPorMolAnalito: 2,
     relacaoPrimeiraEtapa: "1 H₂O₂ : 1 I₂",
     relacaoSegundaEtapa: "1 I₂ : 2 S₂O₃²⁻",
     relacaoGlobal: "1 H₂O₂ : 1 I₂ : 2 S₂O₃²⁻",
@@ -276,7 +291,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
       "Hipoclorito — ClO⁻",
   
     descricao:
-      "Em meio ácido, o hipoclorito é protonado a HClO, que oxida iodeto a I₂; o iodo formado é quantificado com tiossulfato.",
+      "Em meio ácido, o hipoclorito é protonado a HClO, que oxida iodeto; o iodo aparece predominantemente como I₃⁻ quando há KI em excesso.",
   
     titulante:
       "Na₂S₂O₃",
@@ -307,22 +322,22 @@ export const sistemasIodometria: SistemaIodometria[] = [
           "Oxidação do iodeto",
   
         equacao:
-          "2 I⁻ ⇌ I₂ + 2 e⁻",
+          "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
   
         eletrons:
           2,
   
         potencialPadraoV:
-          E0_I2_AQ_I,
+          E0_I3_I_25C,
       },
     ],
   
     etapasPreTitulacao: [
-      "ClO⁻ + 2 I⁻ + 2 H⁺ → Cl⁻ + I₂ + H₂O",
+      "ClO⁻ + 3 I⁻ + 2 H⁺ → Cl⁻ + I₃⁻ + H₂O",
     ],
   
     reacaoGlobalGeracaoIodo:
-      "ClO⁻ + 2 I⁻ + 2 H⁺ → Cl⁻ + I₂ + H₂O",
+      "ClO⁻ + 3 I⁻ + 2 H⁺ → Cl⁻ + I₃⁻ + H₂O",
   
     eletronsGeracaoIodo:
       2,
@@ -332,6 +347,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
   
     molTiossulfatoPorMolAnalito:
       2,
+    molIodetoConsumidoPorMolAnalito: 2,
   
     relacaoPrimeiraEtapa:
       "1 ClO⁻ : 1 I₂",
@@ -372,7 +388,7 @@ export const sistemasIodometria: SistemaIodometria[] = [
     formulaAnalito: "IO₃⁻",
     nomeCompleto: "Iodato — IO₃⁻",
     descricao:
-      "IO₃⁻ reage com iodeto em meio ácido formando três mols de I₂ por mol de iodato.",
+      "IO₃⁻ reage com iodeto em meio ácido, gerando três equivalentes de iodo (predominantemente I₃⁻ em KI em excesso) por mol de iodato.",
     titulante: "Na₂S₂O₃",
     indicador: "Amido",
     semirreacoes: [
@@ -387,19 +403,20 @@ export const sistemasIodometria: SistemaIodometria[] = [
       },
       {
         titulo: "Oxidação do iodeto",
-        equacao: "6 I⁻ ⇌ 3 I₂ + 6 e⁻",
+        equacao: "9 I⁻ ⇌ 3 I₃⁻ + 6 e⁻",
         eletrons: 6,
-        potencialPadraoV: E0_I2_AQ_I,
+        potencialPadraoV: E0_I3_I_25C,
       },
     ],
     etapasPreTitulacao: [
-      "IO₃⁻ + 5 I⁻ + 6 H⁺ → 3 I₂ + 3 H₂O",
+      "IO₃⁻ + 8 I⁻ + 6 H⁺ → 3 I₃⁻ + 3 H₂O",
     ],
     reacaoGlobalGeracaoIodo:
-      "IO₃⁻ + 5 I⁻ + 6 H⁺ → 3 I₂ + 3 H₂O",
+      "IO₃⁻ + 8 I⁻ + 6 H⁺ → 3 I₃⁻ + 3 H₂O",
     eletronsGeracaoIodo: 6,
     molI2PorMolAnalito: 3,
     molTiossulfatoPorMolAnalito: 6,
+    molIodetoConsumidoPorMolAnalito: 5,
     relacaoPrimeiraEtapa: "1 IO₃⁻ : 3 I₂",
     relacaoSegundaEtapa: "1 I₂ : 2 S₂O₃²⁻",
     relacaoGlobal: "1 IO₃⁻ : 3 I₂ : 6 S₂O₃²⁻",
@@ -444,11 +461,12 @@ export type EntradaIodometria = {
     number;
 
   /**
-   * Concentração efetiva de iodeto remanescente após a geração de I₂,
-   * antes do equilíbrio de complexação I₂(aq) + I⁻ ⇌ I₃⁻.
+   * Concentração inicial analítica de I⁻ na MISTURA REACIONAL antes da geração de iodo.
+   * Multiplicada pelo volume inicial da mistura (volumeAmostraMl). NÃO é
+   * a concentração do frasco de KI se ele foi adicionado com outro volume.
+   * O motor desconta o I⁻ consumido na reação redox e resolve I₂/I₃⁻/I⁻.
    */
-  /** Iodeto efetivo remanescente após a etapa de geração de iodo, antes da complexação. */
-  concentracaoIodetoLivreMolL:
+  concentracaoIodetoInicialMolL:
     number;
 
   temperaturaC:
@@ -532,6 +550,10 @@ export type ResultadoCurvaIodometria = {
   molI2Gerado:
     number;
 
+  // Iodeto remanescente após a reação geradora de iodo, antes de formar I3-.
+  molIodetoDisponivelAposGeracao:
+    number;
+
   molTiossulfatoEquivalencia:
     number;
 
@@ -550,12 +572,6 @@ export type ResultadoCurvaIodometria = {
   pontosValidos:
     PontoIodometria[];
 };
-
-const R =
-  8.31446261815324;
-
-const F =
-  96485.33212;
 
 function kelvin(
   temperaturaC:
@@ -582,7 +598,7 @@ function validarEntrada(
       .concentracaoTiossulfatoMolL,
 
     entrada
-      .concentracaoIodetoLivreMolL,
+      .concentracaoIodetoInicialMolL,
   ];
 
   if (
@@ -641,6 +657,21 @@ export function calcularResumoEstequiometricoIodometria(
     sistema
       .molI2PorMolAnalito;
 
+  const molIodetoInicial = entrada.concentracaoIodetoInicialMolL *
+    (entrada.volumeAmostraMl / 1000);
+  const molIodetoConsumido = molAnalitoInicial *
+    sistema.molIodetoConsumidoPorMolAnalito;
+  const molIodetoDisponivelAposGeracao = molIodetoInicial - molIodetoConsumido;
+  if (molIodetoDisponivelAposGeracao <= 0 ||
+      molIodetoDisponivelAposGeracao <= molIodetoInicial * 1e-13) {
+    throw new RangeError(
+      `KI insuficiente para gerar quantitativamente o iodo no sistema ${sistema.nome}. ` +
+      `A concentração inicial de I⁻ na mistura deve superar ` +
+      `${(molIodetoConsumido / (entrada.volumeAmostraMl / 1000)).toLocaleString('pt-BR', { maximumFractionDigits: 10 })} mol/L. ` +
+      `É necessário excesso de iodeto para formar I₃⁻.`
+    );
+  }
+
   const molTiossulfatoEquivalencia =
     molAnalitoInicial *
     sistema
@@ -658,6 +689,9 @@ export function calcularResumoEstequiometricoIodometria(
     sistema,
     molAnalitoInicial,
     molI2Gerado,
+    molIodetoInicial,
+    molIodetoConsumido,
+    molIodetoDisponivelAposGeracao,
     molTiossulfatoEquivalencia,
     volumeEquivalenciaMl,
   };
@@ -744,6 +778,14 @@ function calcularEspeciacaoIodo({
     molI3: concentracaoI3MolL * volumeTotalL,
     molIodetoLivre: concentracaoIodetoLivreMolL * volumeTotalL,
   };
+}
+
+/** Potencial padrão efetivo I₃⁻/I⁻ a T, calculado com o mesmo Kf(T) do motor.
+ * Não inclui a dependência térmica intrínseca do E°(I₂(aq)/I⁻).
+ */
+function calcularE0Triiodeto(temperaturaC: number) {
+  const termo = R * kelvin(temperaturaC) / (2 * F);
+  return E0_I2_AQ_I - termo * Math.log(calcularConstanteFormacaoTriiodeto(temperaturaC));
 }
 
 function logQuocienteReacao({
@@ -962,10 +1004,9 @@ export function calcularPontoIodometria({
     volumeAmostraL +
     volumeAdicionadoL;
 
-  const molIodetoInicial =
-    entrada
-      .concentracaoIodetoLivreMolL *
-    volumeAmostraL;
+  // O I⁻ conhecido experimentalmente é o inicial na mistura. A etapa de
+  // geração já consumiu a quantidade imposta pela estequiometria de cada analito.
+  const molIodetoInicial = resumo.molIodetoDisponivelAposGeracao;
 
   const molTiossulfatoAdicionado =
     entrada
@@ -1011,15 +1052,17 @@ export function calcularPontoIodometria({
   const termo = (R * T) / (2 * F);
   const piso = 1e-300;
 
-  const potencialIodo =
-    E0_I2_AQ_I +
-    termo *
-      Math.log(
-        Math.max(especiacaoIodo.concentracaoI2LivreMolL, piso) /
-          Math.pow(
-            Math.max(especiacaoIodo.concentracaoIodetoLivreMolL, piso),
-            2
-          )
+  // Referência principal: I₃⁻ + 2 e⁻ ⇌ 3 I⁻.
+  // E°(I₃⁻/I⁻) é derivado de E°(I₂(aq)/I⁻) e Kf(T), evitando divergência
+  // de modelo. A forma I₂(aq)/I⁻ continua disponível como alternativa numérica.
+  const cIodeto = Math.max(especiacaoIodo.concentracaoIodetoLivreMolL, piso);
+  const potencialIodo = especiacaoIodo.concentracaoI3MolL > piso
+    ? calcularE0Triiodeto(entrada.temperaturaC) + termo * (
+        Math.log(especiacaoIodo.concentracaoI3MolL) - 3 * Math.log(cIodeto)
+      )
+    : E0_I2_AQ_I + termo * (
+        Math.log(Math.max(especiacaoIodo.concentracaoI2LivreMolL, piso)) -
+        2 * Math.log(cIodeto)
       );
 
   let potencialV = potencialIodo;
@@ -1271,6 +1314,10 @@ export function gerarCurvaIodometria({
       resumo
         .molI2Gerado,
 
+    molIodetoDisponivelAposGeracao:
+      resumo
+        .molIodetoDisponivelAposGeracao,
+
     molTiossulfatoEquivalencia:
       resumo
         .molTiossulfatoEquivalencia,
@@ -1383,7 +1430,7 @@ export function entradaPadraoIodometria(
       sistema
         .concentracaoTiossulfatoPadraoMolL,
 
-    concentracaoIodetoLivreMolL:
+    concentracaoIodetoInicialMolL:
       0.1,
 
     temperaturaC:

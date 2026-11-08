@@ -9,6 +9,7 @@ import {
 
 import {
   E0_I2_AQ_I,
+  E0_I3_I_25C,
   E0_TETRATIONATO_TIOS,
   REACAO_TIOS,
   EQUILIBRIO_TRIIODeto,
@@ -26,6 +27,8 @@ import {
   type ResultadoCurvaIodometria,
   type SistemaIodometriaId,
 } from "@/lib/oxirreducao/iodometria";
+
+import { formatarCientificoPtBr } from "@/lib/oxirreducao/formatacao";
 
 import IodometriaTabs, {
   type AbaIodometria,
@@ -53,22 +56,9 @@ function formatarNumero(
 }
 
 
-function formatarCientifico(
-  valor: number
-) {
-  if (!Number.isFinite(valor)) {
-    return "-";
-  }
-
-  if (valor === 0) {
-    return "0";
-  }
-
-  return valor
-    .toExponential(3)
-    .replace(".", ",");
+function formatarCientifico(valor: number) {
+  return formatarCientificoPtBr(valor, 3);
 }
-
 
 function converterNumero(
   valor: string
@@ -81,21 +71,13 @@ function converterNumero(
 }
 
 
-function numeroParaCampo(
-  valor: number
-) {
-  if (
-    Math.abs(valor) > 0 &&
-    Math.abs(valor) < 0.001
-  ) {
-    return valor
-      .toExponential(4)
-      .replace(".", ",");
-  }
-
-  return String(valor).replace(".", ",");
+function numeroParaCampo(valor: number) {
+  if (!Number.isFinite(valor)) return "";
+  if (valor === 0) return "0";
+  // Valores de entrada decimais, evitando a letra "e" na apresentação.
+  const casas = Math.min(18, Math.max(4, 5 - Math.floor(Math.log10(Math.abs(valor)))));
+  return valor.toFixed(casas).replace(/0+$/, "").replace(/\.$/, "").replace(".", ",");
 }
-
 
 function nomeRegiao(
   ponto: PontoIodometria
@@ -131,7 +113,7 @@ function VisaoGeralIodometria({
         </h3>
 
         <p>
-          Método indireto no qual o iodo é gerado in situ pela reação do analito com iodeto proveniente de KI. O iodo formado é titulado com solução padrão de tiossulfato de sódio.
+          Método indireto: o analito oxida I⁻ de KI, e o iodo produzido permanece predominantemente como triiodeto (I₃⁻) quando há excesso de iodeto. O I₃⁻ é titulado com tiossulfato de sódio.
         </p>
       </header>
 
@@ -154,7 +136,7 @@ function VisaoGeralIodometria({
           <span>Titulante</span>
           <strong>Na₂S₂O₃</strong>
           <p>
-            O tiossulfato reduz I₂ a I⁻ e é oxidado a tetrationato, S₄O₆²⁻.
+            O tiossulfato reduz I₃⁻ a I⁻ e é oxidado a tetrationato, S₄O₆²⁻.
           </p>
         </article>
 
@@ -168,12 +150,12 @@ function VisaoGeralIodometria({
       </div>
 
       <div className="oxirreducaoOverviewReaction">
-        <span>Geração de iodo antes da titulação</span>
+        <span>Geração do triiodeto (predominante em KI em excesso)</span>
         <strong>{sistema.reacaoGlobalGeracaoIodo}</strong>
       </div>
 
       <div className="oxirreducaoOverviewReaction">
-        <span>Reação entre iodo e titulante</span>
+        <span>Reação entre triiodeto e titulante</span>
         <strong>{REACAO_TIOS}</strong>
       </div>
 
@@ -259,14 +241,15 @@ function SemirreacoesIodometria({
           Etapa titulométrica comum
         </span>
 
-        <h2>I₂ × tiossulfato</h2>
+        <h2>I₃⁻ × tiossulfato</h2>
 
         <div className="reactionDetailsStack">
           <div className="reactionWideCard">
-            <span>Par I₂/I⁻</span>
+            <span>Par I₃⁻/I⁻ (predominante na solução com KI)</span>
             <strong>{SEMIRREACAO_IODO}</strong>
             <small>
-              I₂(aq)/I⁻ • E° = {formatarNumero(E0_I2_AQ_I, 4)} V
+              I₃⁻/I⁻ • E° ≈ {formatarNumero(E0_I3_I_25C, 4)} V a 25 °C
+              (referência tabelada ≈ 0,536 V).
             </small>
           </div>
 
@@ -274,7 +257,7 @@ function SemirreacoesIodometria({
             <span>Complexação do iodo em excesso de iodeto</span>
             <strong>{EQUILIBRIO_TRIIODeto}</strong>
             <small>
-              Kf ≈ {formatarNumero(K_FORMACAO_I3_25C, 0)} (escala molal) a 25 °C; usado como aproximação em solução diluída. Kf varia com a temperatura por van&apos;t Hoff; atividades são aproximadas por concentrações.
+              Kf ≈ {formatarNumero(K_FORMACAO_I3_25C, 0)} a 25 °C (referência em escala molal, aproximada por concentrações). O modelo calcula também I₂ livre em equilíbrio; E°(I₂ aquoso/I⁻) = {formatarNumero(E0_I2_AQ_I, 3)} V é uma referência termodinâmica interna equivalente, não o potencial exibido como principal. A correção térmica do equilíbrio usa a equação de van&apos;t Hoff.
             </small>
           </div>
 
@@ -317,7 +300,7 @@ function EstequiometriaIodometria({
         </h2>
 
         <p>
-          O cálculo separa a formação de I₂ da titulação
+          O cálculo separa a formação de iodo oxidado (contabilizado como equivalentes de I₂) da titulação
           do I₂ com tiossulfato e, em seguida, combina as
           duas relações para obter a igualdade geral entre
           analito e titulante.
@@ -457,7 +440,7 @@ function EstequiometriaIodometria({
             </span>
 
             <strong>
-              Oxidante: I₂ • Redutor: S₂O₃²⁻
+              Oxidante: I₃⁻ • Redutor: S₂O₃²⁻
             </strong>
           </div>
         </div>
@@ -479,7 +462,7 @@ function CurvaIodometria({
         <h2>Curva potenciométrica da iodometria</h2>
 
         <p>
-          O motor resolve simultaneamente o equilíbrio entre os pares I₂/I⁻ e S₄O₆²⁻/S₂O₃²⁻. Assim, a transição ao redor do ponto de equivalência é calculada por equilíbrio químico, sem impor uma troca descontínua de equação.
+          O motor resolve simultaneamente o equilíbrio entre os pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, considerando I₂ livre em equilíbrio com I₃⁻. A transição ao redor do ponto de equivalência é calculada sem troca descontínua de equação.
         </p>
 
         <div className="resultGrid">
@@ -494,7 +477,7 @@ function CurvaIodometria({
           </div>
 
           <div className="resultCard">
-            <span>I₂ gerado</span>
+            <span>Iodo gerado (equiv. I₂)</span>
             <strong>{formatarCientifico(resultado.molI2Gerado)} mol</strong>
           </div>
 
@@ -514,7 +497,7 @@ function CurvaIodometria({
 
       <div className="explanationBox">
         <p>
-          O modelo considera o equilíbrio I₂(aq) + I⁻ ⇌ I₃⁻. As concentrações livres de I₂ e I⁻, após a especiação, entram na equação de Nernst; o I₃⁻ é apresentado separadamente. Após o PE, o excesso de tiossulfato e o tetrationato formado passam a controlar o potencial. Os potenciais padrão exibidos são referências a 25 °C; a correção térmica completa dos potenciais padrão e dos coeficientes de atividade ainda não está incluída.
+          O modelo considera I₂ + I⁻ ⇌ I₃⁻ em solução aquosa e aplica Nernst ao par I₃⁻/I⁻, coerente com o equilíbrio de formação. O iodeto inicial é informado na mistura antes da geração de iodo: o motor desconta o consumo estequiométrico e recalcula I⁻ livre, I₃⁻ e I₂ em cada volume. Após o PE, o tiossulfato e o tetrationato passam a controlar o potencial. As atividades são aproximadas por concentrações e os potenciais padrão intrínsecos ainda são tomados a 25 °C.
         </p>
       </div>
     </section>
@@ -612,7 +595,7 @@ function EfeitoConcentracaoIodometria({
         </span>
         <h2>Efeito da concentração</h2>
         <p>
-          Altere a concentração do analito e do Na₂S₂O₃. O volume da amostra, o iodeto livre efetivo e a temperatura permanecem iguais à condição principal.
+          Altere a concentração do analito e do Na₂S₂O₃. O volume da amostra, a concentração inicial de iodeto e a temperatura permanecem iguais à condição principal. O excesso de I⁻ é recalculado e verificado automaticamente.
         </p>
 
         <div className="oxirreducaoMainGrid">
@@ -897,7 +880,7 @@ function TempoRealIodometria({
             <strong>{pontoAtual ? `${formatarNumero(pontoAtual.potencialV, 4)} V` : "-"}</strong>
           </div>
           <div className="resultCard">
-            <span>[I₂(aq)] livre</span>
+            <span>[I₂] livre (minoritário)</span>
             <strong>{pontoAtual ? formatarCientifico(pontoAtual.concentracaoI2MolL) : "-"}</strong>
           </div>
           <div className="resultCard">
@@ -937,7 +920,7 @@ function TempoRealIodometria({
                   <th>#</th>
                   <th>Volume</th>
                   <th>E (V)</th>
-                  <th>[I₂(aq)] livre</th>
+                  <th>[I₂] livre</th>
                   <th>[I⁻] livre</th>
                   <th>[I₃⁻]</th>
                   <th>[S₂O₃²⁻]</th>
@@ -2733,7 +2716,7 @@ export default function Iodometria() {
   const [concentracaoIodeto, setConcentracaoIodeto] =
     useState(
       numeroParaCampo(
-        entradaInicial.concentracaoIodetoLivreMolL
+        entradaInicial.concentracaoIodetoInicialMolL
       )
     );
 
@@ -2779,7 +2762,7 @@ export default function Iodometria() {
     );
     setConcentracaoIodeto(
       numeroParaCampo(
-        entrada.concentracaoIodetoLivreMolL
+        entrada.concentracaoIodetoInicialMolL
       )
     );
     setTemperatura(
@@ -2824,7 +2807,7 @@ export default function Iodometria() {
         converterNumero(
           concentracaoTios
         ),
-      concentracaoIodetoLivreMolL:
+      concentracaoIodetoInicialMolL:
         converterNumero(
           concentracaoIodeto
         ),
@@ -2977,7 +2960,7 @@ export default function Iodometria() {
             </label>
 
             <label>
-              I⁻ livre efetivo após gerar I₂
+              Concentração inicial de I⁻ (KI)
               <div className="oxirreducaoInputUnit">
                 <input
                   type="text"
@@ -2989,6 +2972,11 @@ export default function Iodometria() {
                 />
                 <span>mol/L</span>
               </div>
+              <small>
+                Concentração de iodeto na mistura inicial, antes de reagir com o analito.
+                O cálculo desconta o I⁻ consumido e determina o excesso e o I₃⁻.
+                O volume da amostra representa o volume total inicial da mistura, inclusive KI adicionado.
+              </small>
             </label>
 
             <label>
@@ -3038,7 +3026,7 @@ export default function Iodometria() {
               </div>
 
               <div className="resultCard">
-                <span>I₂ gerado</span>
+                <span>Iodo gerado (equiv. I₂)</span>
                 <strong>{formatarCientifico(resultado.molI2Gerado)}</strong>
                 <small>mol</small>
               </div>
@@ -3072,8 +3060,18 @@ export default function Iodometria() {
               )}
             </div>
 
+            <div className="resultGrid">
+              <div className="resultCard">
+                <span>[I⁻] inicial na mistura</span>
+                <strong>{formatarNumero(resultado.entrada.concentracaoIodetoInicialMolL, 4)} mol/L</strong>
+              </div>
+              <div className="resultCard">
+                <span>[I⁻] após geração, antes da complexação</span>
+                <strong>{formatarCientifico(resultado.molIodetoDisponivelAposGeracao / (resultado.entrada.volumeAmostraMl / 1000))} mol/L</strong>
+              </div>
+            </div>
             <div className="explanationBox">
-              <p>{sistema.observacao}</p>
+              <p>{sistema.observacao} O I⁻ efetivamente livre durante a titulação depende também do equilíbrio I₂/I₃⁻ e da diluição.</p>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { formatarCientificoPtBr } from "@/lib/oxirreducao/formatacao";
 import {
     calcularDerivadasRedox,
   } from "@/lib/oxirreducao/derivadas";
@@ -70,9 +71,7 @@ import {
           0.001
       )
     ) {
-      return valor.toExponential(
-        2
-      );
+      return formatarCientificoPtBr(valor, 2);
     }
   
   

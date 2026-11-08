@@ -1,4 +1,5 @@
 "use client";
+import { formatarCientificoPtBr } from "@/lib/oxirreducao/formatacao";
 
 import {
   useEffect,
@@ -98,36 +99,9 @@ function formatarNumero(
 }
 
 
-function formatarCientifico(
-  valor: number
-) {
-  if (
-    !Number.isFinite(
-      valor
-    )
-  ) {
-    return "-";
-  }
-
-
-  if (
-    valor ===
-    0
-  ) {
-    return "0";
-  }
-
-
-  return valor
-    .toExponential(
-      3
-    )
-    .replace(
-      ".",
-      ","
-    );
+function formatarCientifico(valor: number) {
+  return formatarCientificoPtBr(valor, 3);
 }
-
 
 function nomeRegiao(
   ponto:

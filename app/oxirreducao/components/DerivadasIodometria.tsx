@@ -1,3 +1,4 @@
+import { formatarCientificoPtBr } from "@/lib/oxirreducao/formatacao";
 import type {
     ResultadoDerivadasIodometria,
   } from "@/lib/oxirreducao/iodometria";
@@ -178,7 +179,7 @@ import type {
               >
                 {Math.abs(valor) >= 1000 ||
                 (Math.abs(valor) > 0 && Math.abs(valor) < 0.001)
-                  ? valor.toExponential(2)
+                  ? formatarCientificoPtBr(valor, 2)
                   : formatarNumero(valor, 3)}
               </text>
             </g>
