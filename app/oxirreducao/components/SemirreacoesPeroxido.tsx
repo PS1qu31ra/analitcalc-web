@@ -60,7 +60,10 @@ import {
             </h4>
   
             <strong>
-              O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂
+              {
+                PAR_OXIGENIO_PEROXIDO
+                  .semirreacaoReducao
+              }
             </strong>
   
             <div>
@@ -101,7 +104,7 @@ import {
               {formatarNumero(
                 PAR_PERMANGANATO_MANGANES
                   .potencialPadraoReducao,
-                2
+                3
               )}{" "}
               V
             </div>

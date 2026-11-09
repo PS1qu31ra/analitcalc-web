@@ -149,7 +149,7 @@ import type {
               {formatarNumero(
                 resultado
                   .potencialEquivalenciaV,
-                3
+                4
               )}{" "}
               V
             </strong>

@@ -166,7 +166,7 @@ export const especiesRedox:
  * ⇌
  * Mn²⁺ + 4 H₂O
  *
- * E° ≈ +1,51 V
+ * E° = +1,510 V
  *
  * Q =
  *
@@ -192,7 +192,7 @@ export const PAR_PERMANGANATO_MANGANES:
     5,
 
   potencialPadraoReducao:
-    1.51,
+    1.510,
 
   semirreacaoReducao:
     "MnO₄⁻ + 8 H⁺ + 5 e⁻ ⇌ Mn²⁺ + 4 H₂O",
@@ -235,7 +235,7 @@ export const PAR_PERMANGANATO_MANGANES:
     "Em meio fortemente ácido, o permanganato é reduzido predominantemente a Mn²⁺.",
 
   referencia:
-    "E° adotado a 25 °C: aproximadamente +1,51 V.",
+    "E° adotado a 25 °C conforme validação acadêmica: +1,510 V.",
 };
 
 
@@ -296,7 +296,7 @@ export const PAR_FERRO_III_FERRO_II:
     "Par utilizado na titulação clássica de Fe²⁺ com permanganato.",
 
   referencia:
-    "E° adotado a 25 °C: aproximadamente +0,771 V.",
+    "E° adotado a 25 °C conforme validação acadêmica: +0,771 V.",
 };
 
 
@@ -312,7 +312,7 @@ export const PAR_FERRO_III_FERRO_II:
  * ⇌
  * H₂O₂
  *
- * E° ≈ +0,695 V
+ * E° = +0,682 V
  *
  * Durante a permanganometria,
  * a reação ocorre no sentido
@@ -347,7 +347,7 @@ export const PAR_OXIGENIO_PEROXIDO:
     2,
 
   potencialPadraoReducao:
-    0.695,
+    0.682,
 
   semirreacaoReducao:
     "O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂",
@@ -390,7 +390,7 @@ export const PAR_OXIGENIO_PEROXIDO:
     "No modelo de permanganometria do H₂O₂, o potencial do par O₂/H₂O₂ é tratado termodinamicamente e requer uma hipótese para a atividade de O₂.",
 
   referencia:
-    "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C: aproximadamente +0,695 V.",
+    "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C conforme validação acadêmica: +0,682 V.",
 };
 
 /* =========================================================

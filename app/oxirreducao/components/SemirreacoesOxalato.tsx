@@ -107,7 +107,7 @@ import {
               {formatarNumero(
                 PAR_PERMANGANATO_MANGANES
                   .potencialPadraoReducao,
-                2
+                3
               )}{" "}
               V
             </div>

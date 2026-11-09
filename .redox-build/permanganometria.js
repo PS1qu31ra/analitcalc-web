@@ -140,18 +140,15 @@ function calcularSistemaPermanganometriaFerro(entrada) {
         coeficienteAnalito: COEFICIENTE_FE2,
         coeficienteTitulante: COEFICIENTE_MNO4,
     });
-    const volumeTotalNoPEMl = entrada.volumeAnalitoMl + estequiometria.volumeEquivalenciaMl;
-    const equilibrioNoPE = (0, equilibrioPermanganometriaFerro_1.resolverEquilibrioPermanganometriaFerro)({
-        molFeTotal: estequiometria.molAnalitoInicial,
-        molMnTotal: estequiometria.molTitulanteEquivalencia,
-        volumeTotalMl: volumeTotalNoPEMl,
+    // No PE, aplica-se diretamente a metodologia dos slides:
+    // média ponderada dos potenciais condicionais pelo número
+    // de elétrons de cada par (MnO₄⁻/Mn²⁺: 5; Fe³⁺/Fe²⁺: 1).
+    const potencialEquivalenciaV = calcularPotencialEquivalenciaPermanganometria({
         concentracaoHPlusMolL: entrada.concentracaoHPlusMolL,
         temperaturaC,
     });
-    const potencialEquivalenciaV = equilibrioNoPE.potencialV;
-    if (potencialEquivalenciaV === null ||
-        !Number.isFinite(potencialEquivalenciaV)) {
-        throw new Error('Não foi possível resolver o potencial de equilíbrio no PE do sistema Fe²⁺/MnO₄⁻.');
+    if (!Number.isFinite(potencialEquivalenciaV)) {
+        throw new Error('Não foi possível calcular o potencial teórico no PE do sistema Fe²⁺/MnO₄⁻.');
     }
     return {
         reacaoGlobal: exports.REACAO_PERMANGANATO_FERRO,
@@ -245,7 +242,7 @@ function calcularPontoPermanganometriaFerro({ entrada, volumeAdicionadoMl, }) {
         parControlador =
             "equivalencia";
         descricao =
-            "No ponto de equivalência, o potencial é obtido pela solução simultânea das equações de Nernst e do balanço de elétrons dos pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺.";
+            "No ponto de equivalência, o potencial é calculado pela média ponderada dos potenciais condicionais dos pares Fe³⁺/Fe²⁺ (1 elétron) e MnO₄⁻/Mn²⁺ (5 elétrons), conforme a metodologia dos slides.";
     }
     else {
         parControlador =

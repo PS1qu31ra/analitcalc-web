@@ -19,11 +19,19 @@ Esta versão aplica correções no núcleo matemático da permanganometria, iodo
 
 ### 2. Potenciais de equivalência da permanganometria
 
-- Fe²⁺, H₂O₂ e oxalato agora obtêm o potencial no PE pelo resolvedor acoplado das equações de Nernst e dos balanços estequiométricos.
-- Os sistemas H₂O₂ e oxalato não usam mais a média ponderada simplificada como resultado principal.
-- O sistema Fe²⁺ também usa o resolvedor no PE; a expressão ponderada permanece apenas como referência analítica.
-- Os balanços de Fe e oxalato foram rearranjados para evitar subtração de quantidades grandes e quase iguais perto do PE.
-- As funções fechadas de H₂O₂ e oxalato foram mantidas como aproximações assintóticas explícitas, com a concentração total de manganês como entrada. O resultado principal, entretanto, vem do equilíbrio completo.
+- O potencial teórico no PE dos três sistemas segue a metodologia dos slides da orientadora: média ponderada dos potenciais condicionais pelo número de elétrons de cada par.
+- Fe²⁺/MnO₄⁻: `EPE = (E'Fe + 5 × E'Mn) / 6`, com 1 elétron para Fe³⁺/Fe²⁺ e 5 para MnO₄⁻/Mn²⁺.
+- H₂O₂/MnO₄⁻: `EPE = (2 × E'O₂/H₂O₂ + 5 × E'Mn) / 7`.
+- Oxalato/MnO₄⁻: `EPE = (2 × E'CO₂/H₂C₂O₄ + 5 × E'Mn) / 7`.
+- Os potenciais condicionais preservam as condições químicas: acidez, atividade de O₂ e especiação ácido-base do oxalato.
+- Foi removida a correção adicional dependente da concentração total de manganês que elevava o PE de H₂O₂ e oxalato em aproximadamente `0,012486 V`.
+- Valores de referência a 25 °C, com os parâmetros padrão da plataforma: Fe²⁺ `1,3868 V`; H₂O₂ `1,2734 V`; oxalato `0,9388 V`.
+
+- Para reproduzir a validação acadêmica da permanganometria, a base utiliza exatamente: MnO₄⁻/Mn²⁺ `+1,510 V`; Fe³⁺/Fe²⁺ `+0,771 V`; O₂/H₂O₂ `+0,682 V`.
+- As semirreações de redução exibidas são: `MnO₄⁻ + 8 H⁺ + 5 e⁻ ⇌ Mn²⁺ + 4 H₂O`; `Fe³⁺ + e⁻ ⇌ Fe²⁺`; `O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂`.
+- O valor `+0,682 V` para O₂/H₂O₂ substitui o valor anterior `+0,695 V`. Com [H⁺] = 1,0 mol L⁻¹ e atividade de O₂ igual a 1, o potencial de equivalência validado para H₂O₂ é `1,2734 V`.
+- As regiões antes e após o PE permanecem calculadas pelo par redox predominante e sua equação de Nernst. Os resolvedores acoplados continuam disponíveis para calcular as espécies residuais apresentadas nas consultas, mas não substituem a expressão ponderada no potencial teórico do PE.
+- Os balanços de Fe, H₂O₂ e oxalato continuam cobertos pelos testes de regressão.
 
 ### 3. Equação de Nernst
 
@@ -81,7 +89,7 @@ A suíte cobre:
 - localização das derivadas e rejeição de identificadores inválidos;
 - notação científica sem o caractere `e` de programação.
 
-**Resultado desta entrega: 32 testes aprovados.**
+**Resultado desta entrega: 39 testes aprovados.**
 
 ## Limitações que permanecem explícitas
 

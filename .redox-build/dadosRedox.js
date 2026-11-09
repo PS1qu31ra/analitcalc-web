@@ -107,7 +107,7 @@ exports.especiesRedox = [
  * ⇌
  * Mn²⁺ + 4 H₂O
  *
- * E° ≈ +1,51 V
+ * E° = +1,510 V
  *
  * Q =
  *
@@ -121,7 +121,7 @@ exports.PAR_PERMANGANATO_MANGANES = {
     oxidante: exports.MNO4_MENOS,
     redutor: exports.MN2_MAIS,
     numeroEletrons: 5,
-    potencialPadraoReducao: 1.51,
+    potencialPadraoReducao: 1.510,
     semirreacaoReducao: "MnO₄⁻ + 8 H⁺ + 5 e⁻ ⇌ Mn²⁺ + 4 H₂O",
     meios: [
         "acido",
@@ -145,7 +145,7 @@ exports.PAR_PERMANGANATO_MANGANES = {
         ],
     },
     observacao: "Em meio fortemente ácido, o permanganato é reduzido predominantemente a Mn²⁺.",
-    referencia: "E° adotado a 25 °C: aproximadamente +1,51 V.",
+    referencia: "E° adotado a 25 °C conforme validação acadêmica: +1,510 V.",
 };
 /* =========================================================
  * PAR Fe³⁺ / Fe²⁺
@@ -176,7 +176,7 @@ exports.PAR_FERRO_III_FERRO_II = {
         ],
     },
     observacao: "Par utilizado na titulação clássica de Fe²⁺ com permanganato.",
-    referencia: "E° adotado a 25 °C: aproximadamente +0,771 V.",
+    referencia: "E° adotado a 25 °C conforme validação acadêmica: +0,771 V.",
 };
 /* =========================================================
  * PAR O₂ / H₂O₂
@@ -189,7 +189,7 @@ exports.PAR_FERRO_III_FERRO_II = {
  * ⇌
  * H₂O₂
  *
- * E° ≈ +0,695 V
+ * E° = +0,682 V
  *
  * Durante a permanganometria,
  * a reação ocorre no sentido
@@ -212,7 +212,7 @@ exports.PAR_OXIGENIO_PEROXIDO = {
     oxidante: exports.O2,
     redutor: exports.H2O2,
     numeroEletrons: 2,
-    potencialPadraoReducao: 0.695,
+    potencialPadraoReducao: 0.682,
     semirreacaoReducao: "O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂",
     meios: [
         "acido",
@@ -236,7 +236,7 @@ exports.PAR_OXIGENIO_PEROXIDO = {
         ],
     },
     observacao: "No modelo de permanganometria do H₂O₂, o potencial do par O₂/H₂O₂ é tratado termodinamicamente e requer uma hipótese para a atividade de O₂.",
-    referencia: "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C: aproximadamente +0,695 V.",
+    referencia: "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C conforme validação acadêmica: +0,682 V.",
 };
 /* =========================================================
  * PAR CO₂ / H₂C₂O₄

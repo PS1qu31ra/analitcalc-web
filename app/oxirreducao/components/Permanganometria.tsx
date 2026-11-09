@@ -849,7 +849,7 @@ export default function Permanganometria() {
                 null
                   ? `${formatarNumero(
                       potencialEquivalenciaAtivo,
-                      3
+                      4
                     )} V`
                   : "Em desenvolvimento"}
               </strong>
