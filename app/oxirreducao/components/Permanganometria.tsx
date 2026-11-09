@@ -201,49 +201,37 @@ export default function Permanganometria() {
   const [
     concentracaoAnalito,
     setConcentracaoAnalito,
-  ] = useState(
-    "0,100"
-  );
+  ] = useState("");
 
 
   const [
     volumeAnalito,
     setVolumeAnalito,
-  ] = useState(
-    "25,00"
-  );
+  ] = useState("");
 
 
   const [
     concentracaoTitulante,
     setConcentracaoTitulante,
-  ] = useState(
-    "0,0200"
-  );
+  ] = useState("");
 
 
   const [
     concentracaoHPlus,
     setConcentracaoHPlus,
-  ] = useState(
-    "1,00"
-  );
+  ] = useState("");
 
 
   const [
     atividadeOxigenio,
     setAtividadeOxigenio,
-  ] = useState(
-    "1,00"
-  );
+  ] = useState("");
 
 
   const [
     temperatura,
     setTemperatura,
-  ] = useState(
-    "25"
-  );
+  ] = useState("");
 
 
   const [
@@ -278,6 +266,9 @@ export default function Permanganometria() {
   ] = useState(
     ""
   );
+
+  const [jaCalculou, setJaCalculou] = useState(false);
+  const [dadosAlterados, setDadosAlterados] = useState(false);
 
 
   const ehFerro =
@@ -383,9 +374,18 @@ export default function Permanganometria() {
       "visao-geral"
     );
 
+    setConcentracaoAnalito("");
+    setVolumeAnalito("");
+    setConcentracaoTitulante("");
+    setConcentracaoHPlus("");
+    setAtividadeOxigenio("");
+    setTemperatura("");
+
     setErro(
       ""
     );
+    setJaCalculou(false);
+    setDadosAlterados(false);
   }
 
 
@@ -395,6 +395,24 @@ export default function Permanganometria() {
   ) {
     event.preventDefault();
 
+    const camposObrigatorios = [
+      concentracaoAnalito,
+      volumeAnalito,
+      concentracaoTitulante,
+      concentracaoHPlus,
+      temperatura,
+      ...(ehPeroxido ? [atividadeOxigenio] : []),
+    ];
+
+    const entradaCompleta = camposObrigatorios.every((valor) => {
+      const numero = converterNumero(valor);
+      return valor.trim() !== "" && Number.isFinite(numero) && numero > 0;
+    });
+
+    if (!entradaCompleta) {
+      setErro("Preencha todos os campos com valores numéricos positivos antes de calcular.");
+      return;
+    }
 
     try {
       if (
@@ -440,6 +458,8 @@ export default function Permanganometria() {
         setErro(
           ""
         );
+        setJaCalculou(true);
+        setDadosAlterados(false);
 
         return;
       }
@@ -493,6 +513,8 @@ export default function Permanganometria() {
         setErro(
           ""
         );
+        setJaCalculou(true);
+        setDadosAlterados(false);
 
         return;
       }
@@ -541,6 +563,8 @@ export default function Permanganometria() {
         setErro(
           ""
         );
+        setJaCalculou(true);
+        setDadosAlterados(false);
       }
 
     } catch (
@@ -638,16 +662,14 @@ export default function Permanganometria() {
               <input
                 type="text"
                 inputMode="decimal"
-                value={
-                  concentracaoAnalito
-                }
-                onChange={(
-                  event
-                ) =>
-                  setConcentracaoAnalito(
-                    event.target.value
-                  )
-                }
+                value={concentracaoAnalito}
+                placeholder="Ex.: 0,100"
+                required
+                onChange={(event) => {
+                  setConcentracaoAnalito(event.target.value);
+                  setDadosAlterados(true);
+                  setErro("");
+                }}
               />
 
               <span>
@@ -664,16 +686,14 @@ export default function Permanganometria() {
               <input
                 type="text"
                 inputMode="decimal"
-                value={
-                  volumeAnalito
-                }
-                onChange={(
-                  event
-                ) =>
-                  setVolumeAnalito(
-                    event.target.value
-                  )
-                }
+                value={volumeAnalito}
+                placeholder="Ex.: 25,00"
+                required
+                onChange={(event) => {
+                  setVolumeAnalito(event.target.value);
+                  setDadosAlterados(true);
+                  setErro("");
+                }}
               />
 
               <span>
@@ -690,16 +710,14 @@ export default function Permanganometria() {
               <input
                 type="text"
                 inputMode="decimal"
-                value={
-                  concentracaoTitulante
-                }
-                onChange={(
-                  event
-                ) =>
-                  setConcentracaoTitulante(
-                    event.target.value
-                  )
-                }
+                value={concentracaoTitulante}
+                placeholder="Ex.: 0,0200"
+                required
+                onChange={(event) => {
+                  setConcentracaoTitulante(event.target.value);
+                  setDadosAlterados(true);
+                  setErro("");
+                }}
               />
 
               <span>
@@ -716,16 +734,14 @@ export default function Permanganometria() {
               <input
                 type="text"
                 inputMode="decimal"
-                value={
-                  concentracaoHPlus
-                }
-                onChange={(
-                  event
-                ) =>
-                  setConcentracaoHPlus(
-                    event.target.value
-                  )
-                }
+                value={concentracaoHPlus}
+                placeholder="Ex.: 1,00"
+                required
+                onChange={(event) => {
+                  setConcentracaoHPlus(event.target.value);
+                  setDadosAlterados(true);
+                  setErro("");
+                }}
               />
 
               <span>
@@ -743,16 +759,14 @@ export default function Permanganometria() {
                 <input
                   type="text"
                   inputMode="decimal"
-                  value={
-                    atividadeOxigenio
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setAtividadeOxigenio(
-                      event.target.value
-                    )
-                  }
+                  value={atividadeOxigenio}
+                  placeholder="Ex.: 1,00"
+                  required
+                  onChange={(event) => {
+                    setAtividadeOxigenio(event.target.value);
+                    setDadosAlterados(true);
+                    setErro("");
+                  }}
                 />
 
                 <span>
@@ -770,16 +784,14 @@ export default function Permanganometria() {
               <input
                 type="text"
                 inputMode="decimal"
-                value={
-                  temperatura
-                }
-                onChange={(
-                  event
-                ) =>
-                  setTemperatura(
-                    event.target.value
-                  )
-                }
+                value={temperatura}
+                placeholder="Ex.: 25"
+                required
+                onChange={(event) => {
+                  setTemperatura(event.target.value);
+                  setDadosAlterados(true);
+                  setErro("");
+                }}
               />
 
               <span>
@@ -809,16 +821,22 @@ export default function Permanganometria() {
           <header className="oxirreducaoResultsHeader">
             <div>
               <span className="oxirreducaoSectionLabel">
-                Resultado rápido
+                {jaCalculou ? "Resultado rápido" : "Valores de referência"}
               </span>
 
               <h3>
-                Sistema calculado
+                {jaCalculou ? "Sistema calculado" : "Exemplo de referência"}
               </h3>
             </div>
 
-            <span className="oxirreducaoStatus">
-              Ativo
+            <span
+              className={`oxirreducaoStatus ${
+                dadosAlterados || !jaCalculou
+                  ? "oxirreducaoStatusPending"
+                  : ""
+              }`}
+            >
+              {dadosAlterados ? "Recalcular" : jaCalculou ? "Ativo" : "Referência"}
             </span>
           </header>
 
@@ -901,6 +919,14 @@ export default function Permanganometria() {
                   : "2 MnO₄⁻ + 5 C₂O₄²⁻ + 16 H⁺ → 2 Mn²⁺ + 10 CO₂ + 8 H₂O"}
             </strong>
           </div>
+
+          {(!jaCalculou || dadosAlterados) && (
+            <p className="oxirreducaoReferenceHint">
+              {dadosAlterados
+                ? "Os campos foram alterados. Recalcule para atualizar os resultados."
+                : "Os resultados exibidos são um exemplo. Preencha os campos usando as referências em cinza para calcular sua amostra."}
+            </p>
+          )}
         </aside>
       </div>
 

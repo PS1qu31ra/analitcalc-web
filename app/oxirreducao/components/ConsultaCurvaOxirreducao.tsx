@@ -123,6 +123,21 @@ function formatarCientifico(valor: number) {
   return formatarCientificoPtBr(valor, 3);
 }
 
+function renderizarValorComUnidade(valor: string) {
+  const partes = valor.match(/^(.*)\s+(mol\/L|mol)$/);
+
+  if (!partes) {
+    return valor;
+  }
+
+  return (
+    <span className="curveSpeciesValueWithUnit">
+      {partes[1]}{" "}
+      <span className="curveSpeciesUnit">{partes[2]}</span>
+    </span>
+  );
+}
+
 function converterNumero(
   valor: string
 ) {
@@ -1453,7 +1468,7 @@ export default function ConsultaCurvaOxirreducao(
                     </span>
 
                     <strong>
-                      {especie.valor}
+                      {renderizarValorComUnidade(especie.valor)}
                     </strong>
                   </div>
                 )

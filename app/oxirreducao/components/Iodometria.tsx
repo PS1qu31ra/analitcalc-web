@@ -216,7 +216,7 @@ function SemirreacoesIodometria({
       <small>
         {item.eletrons} e⁻
         {item.potencialPadraoV !== null
-          ? ` • E° = ${formatarNumero(
+          ? ` → E° = ${formatarNumero(
               item.potencialPadraoV,
               4
             )} V`
@@ -246,7 +246,7 @@ function SemirreacoesIodometria({
             <span>Par I₃⁻/I⁻ (predominante na solução com KI)</span>
             <strong>{SEMIRREACAO_IODO}</strong>
             <small>
-              I₃⁻/I⁻ • E° ≈ {formatarNumero(E0_I3_I_25C, 4)} V a 25 °C
+              I₃⁻/I⁻ → E° ≈ {formatarNumero(E0_I3_I_25C, 4)} V a 25 °C
               (referência tabelada ≈ 0,536 V).
             </small>
           </div>
@@ -265,8 +265,7 @@ function SemirreacoesIodometria({
           </div>
           <div className="reactionWideCard">
             <span>No PE — média ponderada dos potenciais padrão</span>
-            <strong>EPE = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V</strong>
-            <small>Dois elétrons em cada par redox, conforme a dedução dos slides 40 e 41.</small>
+            <strong>E<sub>PE</sub> = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V</strong>
           </div>
           <div className="reactionWideCard">
             <span>Após o PE — Nernst do par do titulante</span>
@@ -278,7 +277,7 @@ function SemirreacoesIodometria({
             <span>Par tetrationato/tiossulfato</span>
             <strong>{SEMIRREACAO_TIOS}</strong>
             <small>
-              2 e⁻ • E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V
+              2 e⁻ → E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V
             </small>
           </div>
 
@@ -441,7 +440,7 @@ function EstequiometriaIodometria({
             <strong>
               Oxidante:{" "}
               {sistema.agenteOxidantePrimeiraEtapa}
-              {" • "}
+              {" → "}
               Redutor:{" "}
               {sistema.agenteRedutorPrimeiraEtapa}
             </strong>
@@ -453,7 +452,7 @@ function EstequiometriaIodometria({
             </span>
 
             <strong>
-              Oxidante: I₃⁻ • Redutor: S₂O₃²⁻
+              Oxidante: I₃⁻ → Redutor: S₂O₃²⁻
             </strong>
           </div>
         </div>
@@ -526,20 +525,12 @@ function EfeitoConcentracaoIodometria({
   const [
     concentracaoAnalito,
     setConcentracaoAnalito,
-  ] = useState(
-    numeroParaCampo(
-      resultadoBase.entrada.concentracaoAnalitoMolL
-    )
-  );
+  ] = useState("");
 
   const [
     concentracaoTios,
     setConcentracaoTios,
-  ] = useState(
-    numeroParaCampo(
-      resultadoBase.entrada.concentracaoTiossulfatoMolL
-    )
-  );
+  ] = useState("");
 
   const [
     simulacao,
@@ -550,17 +541,31 @@ function EfeitoConcentracaoIodometria({
 
   const [erro, setErro] = useState("");
 
+  function aplicarFatorAnalito(fator: number) {
+    const atual = converterNumero(concentracaoAnalito);
+    const referencia =
+      Number.isFinite(atual) && atual > 0
+        ? atual
+        : resultadoBase.entrada.concentracaoAnalitoMolL;
+
+    setConcentracaoAnalito(numeroParaCampo(referencia * fator));
+    setErro("");
+  }
+
+  function aplicarFatorTios(fator: number) {
+    const atual = converterNumero(concentracaoTios);
+    const referencia =
+      Number.isFinite(atual) && atual > 0
+        ? atual
+        : resultadoBase.entrada.concentracaoTiossulfatoMolL;
+
+    setConcentracaoTios(numeroParaCampo(referencia * fator));
+    setErro("");
+  }
+
   useEffect(() => {
-    setConcentracaoAnalito(
-      numeroParaCampo(
-        resultadoBase.entrada.concentracaoAnalitoMolL
-      )
-    );
-    setConcentracaoTios(
-      numeroParaCampo(
-        resultadoBase.entrada.concentracaoTiossulfatoMolL
-      )
-    );
+    setConcentracaoAnalito("");
+    setConcentracaoTios("");
     setSimulacao(null);
     setErro("");
   }, [resultadoBase]);
@@ -608,7 +613,7 @@ function EfeitoConcentracaoIodometria({
         </span>
         <h2>Efeito da concentração</h2>
         <p>
-          Altere a concentração do analito e do Na₂S₂O₃. O volume da amostra, a concentração inicial de iodeto e a temperatura permanecem iguais à condição principal. O excesso de I⁻ é recalculado e verificado automaticamente.
+          Altere a concentração do analito e do Na₂S₂O₃. O volume da amostra, a concentração inicial de iodeto e a temperatura permanecem iguais à condição principal. O excesso de I⁻ é recalculado e verificado automaticamente. Como sugestão, teste metade ou o dobro de uma concentração por vez para observar o efeito isolado no PE.
         </p>
 
         <div className="oxirreducaoMainGrid">
@@ -618,13 +623,18 @@ function EfeitoConcentracaoIodometria({
               <div className="oxirreducaoInputUnit">
                 <input
                   value={concentracaoAnalito}
-                  onChange={(event) =>
-                    setConcentracaoAnalito(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(resultadoBase.entrada.concentracaoAnalitoMolL)}`}
+                  onChange={(event) => {
+                    setConcentracaoAnalito(event.target.value);
+                    setErro("");
+                  }}
                   inputMode="decimal"
                 />
                 <span>mol/L</span>
               </div>
+              <small>
+                Referência original: {numeroParaCampo(resultadoBase.entrada.concentracaoAnalitoMolL)} mol/L
+              </small>
             </label>
 
             <label>
@@ -632,14 +642,53 @@ function EfeitoConcentracaoIodometria({
               <div className="oxirreducaoInputUnit">
                 <input
                   value={concentracaoTios}
-                  onChange={(event) =>
-                    setConcentracaoTios(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(resultadoBase.entrada.concentracaoTiossulfatoMolL)}`}
+                  onChange={(event) => {
+                    setConcentracaoTios(event.target.value);
+                    setErro("");
+                  }}
                   inputMode="decimal"
                 />
                 <span>mol/L</span>
               </div>
+              <small>
+                Referência original: {numeroParaCampo(resultadoBase.entrada.concentracaoTiossulfatoMolL)} mol/L
+              </small>
             </label>
+
+            <div className="oxirreducaoConcentracaoQuickActions">
+              <section>
+                <header>
+                  <div>
+                    <span>Analito</span>
+                    <strong>Ajuste rápido</strong>
+                  </div>
+                  <small>Concentração</small>
+                </header>
+                <div className="oxirreducaoConcentracaoQuickButtons">
+                  <button type="button" onClick={() => aplicarFatorAnalito(2)}>×2</button>
+                  <button type="button" onClick={() => aplicarFatorAnalito(5)}>×5</button>
+                  <button type="button" onClick={() => aplicarFatorAnalito(0.5)}>÷2</button>
+                  <button type="button" onClick={() => aplicarFatorAnalito(0.2)}>÷5</button>
+                </div>
+              </section>
+
+              <section>
+                <header>
+                  <div>
+                    <span>Na₂S₂O₃</span>
+                    <strong>Ajuste rápido</strong>
+                  </div>
+                  <small>Concentração</small>
+                </header>
+                <div className="oxirreducaoConcentracaoQuickButtons">
+                  <button type="button" onClick={() => aplicarFatorTios(2)}>×2</button>
+                  <button type="button" onClick={() => aplicarFatorTios(5)}>×5</button>
+                  <button type="button" onClick={() => aplicarFatorTios(0.5)}>÷2</button>
+                  <button type="button" onClick={() => aplicarFatorTios(0.2)}>÷5</button>
+                </div>
+              </section>
+            </div>
 
             {erro && (
               <div className="oxirreducaoError">
@@ -2699,40 +2748,15 @@ export default function Iodometria() {
       "cloro-ativo"
     );
 
-  const [concentracaoAnalito, setConcentracaoAnalito] =
-    useState(
-      numeroParaCampo(
-        entradaInicial.concentracaoAnalitoMolL
-      )
-    );
+  const [concentracaoAnalito, setConcentracaoAnalito] = useState("");
 
-  const [volumeAmostra, setVolumeAmostra] =
-    useState(
-      numeroParaCampo(
-        entradaInicial.volumeAmostraMl
-      )
-    );
+  const [volumeAmostra, setVolumeAmostra] = useState("");
 
-  const [concentracaoTios, setConcentracaoTios] =
-    useState(
-      numeroParaCampo(
-        entradaInicial.concentracaoTiossulfatoMolL
-      )
-    );
+  const [concentracaoTios, setConcentracaoTios] = useState("");
 
-  const [concentracaoIodeto, setConcentracaoIodeto] =
-    useState(
-      numeroParaCampo(
-        entradaInicial.concentracaoIodetoInicialMolL
-      )
-    );
+  const [concentracaoIodeto, setConcentracaoIodeto] = useState("");
 
-  const [temperatura, setTemperatura] =
-    useState(
-      numeroParaCampo(
-        entradaInicial.temperaturaC
-      )
-    );
+  const [temperatura, setTemperatura] = useState("");
 
   const [resultado, setResultado] =
     useState<ResultadoCurvaIodometria>(() =>
@@ -2743,40 +2767,22 @@ export default function Iodometria() {
 
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
+  const [jaCalculou, setJaCalculou] = useState(false);
+  const [dadosAlterados, setDadosAlterados] = useState(false);
 
   const sistema =
     buscarSistemaIodometria(
       sistemaAtivo
     );
 
-  function aplicarEntradaNosCampos(
-    entrada: EntradaIodometria
-  ) {
-    setConcentracaoAnalito(
-      numeroParaCampo(
-        entrada.concentracaoAnalitoMolL
-      )
-    );
-    setVolumeAmostra(
-      numeroParaCampo(
-        entrada.volumeAmostraMl
-      )
-    );
-    setConcentracaoTios(
-      numeroParaCampo(
-        entrada.concentracaoTiossulfatoMolL
-      )
-    );
-    setConcentracaoIodeto(
-      numeroParaCampo(
-        entrada.concentracaoIodetoInicialMolL
-      )
-    );
-    setTemperatura(
-      numeroParaCampo(
-        entrada.temperaturaC
-      )
-    );
+  const entradaReferencia = entradaPadraoIodometria(sistemaAtivo);
+
+  function limparCampos() {
+    setConcentracaoAnalito("");
+    setVolumeAmostra("");
+    setConcentracaoTios("");
+    setConcentracaoIodeto("");
+    setTemperatura("");
   }
 
   function alterarSistema(
@@ -2787,18 +2793,39 @@ export default function Iodometria() {
 
     setSistemaAtivo(id);
     setAbaAtiva("visao-geral");
-    aplicarEntradaNosCampos(entrada);
+    limparCampos();
     setResultado(
       gerarCurvaIodometria({ entrada })
     );
     setMensagem("");
     setErro("");
+    setJaCalculou(false);
+    setDadosAlterados(false);
   }
 
   function calcular(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
+
+    const camposObrigatorios = [
+      concentracaoAnalito,
+      volumeAmostra,
+      concentracaoTios,
+      concentracaoIodeto,
+      temperatura,
+    ];
+
+    const entradaCompleta = camposObrigatorios.every((valor) => {
+      const numero = converterNumero(valor);
+      return valor.trim() !== "" && Number.isFinite(numero) && numero > 0;
+    });
+
+    if (!entradaCompleta) {
+      setMensagem("");
+      setErro("Preencha todos os campos com valores numéricos positivos antes de avaliar o sistema.");
+      return;
+    }
 
     const entrada: EntradaIodometria = {
       sistemaId: sistemaAtivo,
@@ -2835,6 +2862,8 @@ export default function Iodometria() {
       setMensagem(
         "Sistema iodimétrico recalculado com sucesso."
       );
+      setJaCalculou(true);
+      setDadosAlterados(false);
     } catch (error) {
       setMensagem("");
       setErro(
@@ -2928,9 +2957,14 @@ export default function Iodometria() {
                   type="text"
                   inputMode="decimal"
                   value={concentracaoAnalito}
-                  onChange={(event) =>
-                    setConcentracaoAnalito(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.concentracaoAnalitoMolL)}`}
+                  required
+                  onChange={(event) => {
+                    setConcentracaoAnalito(event.target.value);
+                    setDadosAlterados(true);
+                    setMensagem("");
+                    setErro("");
+                  }}
                 />
                 <span>mol/L</span>
               </div>
@@ -2943,9 +2977,14 @@ export default function Iodometria() {
                   type="text"
                   inputMode="decimal"
                   value={volumeAmostra}
-                  onChange={(event) =>
-                    setVolumeAmostra(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.volumeAmostraMl)}`}
+                  required
+                  onChange={(event) => {
+                    setVolumeAmostra(event.target.value);
+                    setDadosAlterados(true);
+                    setMensagem("");
+                    setErro("");
+                  }}
                 />
                 <span>mL</span>
               </div>
@@ -2958,9 +2997,14 @@ export default function Iodometria() {
                   type="text"
                   inputMode="decimal"
                   value={concentracaoTios}
-                  onChange={(event) =>
-                    setConcentracaoTios(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.concentracaoTiossulfatoMolL)}`}
+                  required
+                  onChange={(event) => {
+                    setConcentracaoTios(event.target.value);
+                    setDadosAlterados(true);
+                    setMensagem("");
+                    setErro("");
+                  }}
                 />
                 <span>mol/L</span>
               </div>
@@ -2973,9 +3017,14 @@ export default function Iodometria() {
                   type="text"
                   inputMode="decimal"
                   value={concentracaoIodeto}
-                  onChange={(event) =>
-                    setConcentracaoIodeto(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.concentracaoIodetoInicialMolL)}`}
+                  required
+                  onChange={(event) => {
+                    setConcentracaoIodeto(event.target.value);
+                    setDadosAlterados(true);
+                    setMensagem("");
+                    setErro("");
+                  }}
                 />
                 <span>mol/L</span>
               </div>
@@ -2991,9 +3040,14 @@ export default function Iodometria() {
                   type="text"
                   inputMode="decimal"
                   value={temperatura}
-                  onChange={(event) =>
-                    setTemperatura(event.target.value)
-                  }
+                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.temperaturaC)}`}
+                  required
+                  onChange={(event) => {
+                    setTemperatura(event.target.value);
+                    setDadosAlterados(true);
+                    setMensagem("");
+                    setErro("");
+                  }}
                 />
                 <span>°C</span>
               </div>
@@ -3020,8 +3074,12 @@ export default function Iodometria() {
           </form>
 
           <div className="resultsPanel">
-            <span className="eyebrow">Resumo calculado</span>
-            <h2>Condição atual</h2>
+            <span className="eyebrow">
+              {jaCalculou ? "Resumo calculado" : "Valores de referência"}
+            </span>
+            <h2>
+              {jaCalculou ? "Condição calculada" : "Exemplo de referência"}
+            </h2>
 
             <div className="resultGrid">
               <div className="resultCard">
@@ -3075,6 +3133,13 @@ export default function Iodometria() {
                 <strong>{formatarCientifico(resultado.molIodetoDisponivelAposGeracao / (resultado.entrada.volumeAmostraMl / 1000))} mol/L</strong>
               </div>
             </div>
+            {(!jaCalculou || dadosAlterados) && (
+              <p className="oxirreducaoReferenceHint">
+                {dadosAlterados
+                  ? "Os campos foram alterados. Avalie novamente o sistema para atualizar os resultados."
+                  : "Os resultados exibidos são um exemplo. Use as referências em cinza para preencher os dados da sua amostra."}
+              </p>
+            )}
             <div className="explanationBox">
               <p>{sistema.observacao} O I⁻ em cada ponto resulta do balanço estequiométrico e da diluição; o modelo não resolve uma especiação adicional I₂/I₃⁻.</p>
             </div>
