@@ -282,16 +282,6 @@ const nomeAnalito =
     : null;
 
 
-  const atividadeOxigenio =
-    ehPeroxido
-      ? (
-          resultadoBase as
-            ResultadoCurvaRedoxPeroxido
-        ).entrada
-          .atividadeOxigenio ??
-        1
-      : null;
-
       const atividadeCO2 =
   ehOxalato
     ? (
@@ -1036,15 +1026,22 @@ const nomeAnalito =
 
                 <div className="resultCard">
                   <span>
-                    a(O₂)
+                    [O₂]
                   </span>
 
                   <strong>
-                    {formatarNumero(
-                      atividadeOxigenio,
-                      3
-                    )}
+                    {pontoPeroxido
+                      ? formatarCientifico(
+                          pontoPeroxido.concentracaoO2MolL
+                        )
+                      : "-"}
                   </strong>
+
+                  {pontoPeroxido && (
+                    <small>
+                      mol/L
+                    </small>
+                  )}
                 </div>
               </>
             ) : (

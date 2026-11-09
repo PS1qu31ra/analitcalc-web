@@ -235,7 +235,7 @@ exports.PAR_OXIGENIO_PEROXIDO = {
             },
         ],
     },
-    observacao: "No modelo de permanganometria do H₂O₂, o potencial do par O₂/H₂O₂ é tratado termodinamicamente e requer uma hipótese para a atividade de O₂.",
+    observacao: "Na permanganometria do H₂O₂, a concentração de O₂ é calculada pela estequiometria da reação: cada mol de H₂O₂ consumido forma um mol de O₂.",
     referencia: "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C conforme validação acadêmica: +0,682 V.",
 };
 /* =========================================================

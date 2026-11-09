@@ -162,7 +162,7 @@ export default function EfeitoConcentracaoRedox({
     ehOxalato
       ? "O volume inicial da amostra, a concentração de H⁺, a atividade de CO₂ e a temperatura permanecem iguais ao sistema definido na calculadora principal."
       : ehPeroxido
-        ? "O volume inicial da amostra, a concentração de H⁺, a atividade de O₂ e a temperatura permanecem iguais ao sistema definido na calculadora principal."
+        ? "O volume inicial da amostra, a concentração de H⁺ e a temperatura permanecem iguais ao sistema definido na calculadora principal. A concentração de O₂ é recalculada pelo balanço estequiométrico em cada cenário."
         : "O volume inicial da amostra, a concentração de H⁺ e a temperatura permanecem iguais ao sistema definido na calculadora principal.";
 
   const [

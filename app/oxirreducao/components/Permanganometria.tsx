@@ -138,9 +138,6 @@ function gerarResultadoPeroxidoInicial() {
       concentracaoHPlusMolL:
         1,
 
-      atividadeOxigenio:
-        1,
-
       temperaturaC:
         25,
     },
@@ -219,12 +216,6 @@ export default function Permanganometria() {
   const [
     concentracaoHPlus,
     setConcentracaoHPlus,
-  ] = useState("");
-
-
-  const [
-    atividadeOxigenio,
-    setAtividadeOxigenio,
   ] = useState("");
 
 
@@ -378,7 +369,6 @@ export default function Permanganometria() {
     setVolumeAnalito("");
     setConcentracaoTitulante("");
     setConcentracaoHPlus("");
-    setAtividadeOxigenio("");
     setTemperatura("");
 
     setErro(
@@ -401,7 +391,6 @@ export default function Permanganometria() {
       concentracaoTitulante,
       concentracaoHPlus,
       temperatura,
-      ...(ehPeroxido ? [atividadeOxigenio] : []),
     ];
 
     const entradaCompleta = camposObrigatorios.every((valor) => {
@@ -489,11 +478,6 @@ export default function Permanganometria() {
             concentracaoHPlusMolL:
               converterNumero(
                 concentracaoHPlus
-              ),
-
-            atividadeOxigenio:
-              converterNumero(
-                atividadeOxigenio
               ),
 
             temperaturaC:
@@ -749,32 +733,6 @@ export default function Permanganometria() {
               </span>
             </div>
           </label>
-
-
-          {ehPeroxido && (
-            <label>
-              Atividade de O₂
-
-              <div className="oxirreducaoInputUnit">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={atividadeOxigenio}
-                  placeholder="Ex.: 1,00"
-                  required
-                  onChange={(event) => {
-                    setAtividadeOxigenio(event.target.value);
-                    setDadosAlterados(true);
-                    setErro("");
-                  }}
-                />
-
-                <span>
-                  a(O₂)
-                </span>
-              </div>
-            </label>
-          )}
 
 
           <label>

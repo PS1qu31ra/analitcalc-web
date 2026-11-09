@@ -175,17 +175,14 @@ import type {
   
           <div>
             <span>
-              a(O₂)
+              E° O₂/H₂O₂
             </span>
   
             <strong>
               {formatarNumero(
-                resultado
-                  .entrada
-                  .atividadeOxigenio ??
-                  1,
+                resultado.potencialPadraoPeroxido,
                 3
-              )}
+              )} V
             </strong>
           </div>
         </div>
@@ -193,14 +190,14 @@ import type {
   
         <div className="oxirreducaoEducationalNote">
           <strong>
-            Hipótese do modelo
+            Critério de cálculo
           </strong>
   
           <p>
-            Como O₂ é uma espécie gasosa, sua atividade depende
-            das condições experimentais. O modelo inicial utiliza
-            a(O₂) = 1 como condição de referência, permitindo
-            estudar termodinamicamente o par O₂/H₂O₂.
+            A quantidade de O₂ não é informada como dado independente:
+            ela é calculada pela estequiometria, pois cada mol de H₂O₂
+            consumido forma um mol de O₂. A concentração de O₂ é obtida
+            dividindo essa quantidade pelo volume total da solução.
           </p>
         </div>
       </section>
