@@ -32,7 +32,7 @@ export default function SeletorSistemaIodometria({
           </h3>
 
           <p>
-            O analito gera iodo in situ na presença de KI. O I₂ formado é então titulado com Na₂S₂O₃.
+            O analito gera iodo in situ na presença de KI em excesso, representado predominantemente como I₃⁻, que é titulado com Na₂S₂O₃.
           </p>
         </div>
       </header>

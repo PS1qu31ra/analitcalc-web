@@ -8,12 +8,10 @@ import {
 } from "react";
 
 import {
-  E0_I2_AQ_I,
   E0_I3_I_25C,
   E0_TETRATIONATO_TIOS,
   REACAO_TIOS,
   EQUILIBRIO_TRIIODeto,
-  K_FORMACAO_I3_25C,
   SEMIRREACAO_IODO,
   SEMIRREACAO_TIOS,
   TEXTO_INDICADOR_AMIDO,
@@ -254,11 +252,26 @@ function SemirreacoesIodometria({
           </div>
 
           <div className="reactionWideCard">
-            <span>Complexação do iodo em excesso de iodeto</span>
+            <span>Formação da espécie titulada em excesso de KI</span>
             <strong>{EQUILIBRIO_TRIIODeto}</strong>
             <small>
-              Kf ≈ {formatarNumero(K_FORMACAO_I3_25C, 0)} a 25 °C (referência em escala molal, aproximada por concentrações). O modelo calcula também I₂ livre em equilíbrio; E°(I₂ aquoso/I⁻) = {formatarNumero(E0_I2_AQ_I, 3)} V é uma referência termodinâmica interna equivalente, não o potencial exibido como principal. A correção térmica do equilíbrio usa a equação de van&apos;t Hoff.
+              O iodo gerado é representado como I₃⁻. A concentração inicial de KI serve para verificar o excesso e fechar o balanço de iodeto; o motor não calcula [I₂] livre nem aplica Kf de especiação.
             </small>
+          </div>
+          <div className="reactionWideCard">
+            <span>Antes do PE — Nernst do par da amostra</span>
+            <strong>E = E°(I₃⁻/I⁻) − (0,0592/2) log([I⁻]³/[I₃⁻])</strong>
+            <small>E° = {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C; as concentrações vêm do balanço estequiométrico.</small>
+          </div>
+          <div className="reactionWideCard">
+            <span>No PE — média ponderada dos potenciais padrão</span>
+            <strong>EPE = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V</strong>
+            <small>Dois elétrons em cada par redox, conforme a dedução dos slides 40 e 41.</small>
+          </div>
+          <div className="reactionWideCard">
+            <span>Após o PE — Nernst do par do titulante</span>
+            <strong>E = E°(S₄O₆²⁻/S₂O₃²⁻) − (0,0592/2) log([S₂O₃²⁻]²/[S₄O₆²⁻])</strong>
+            <small>E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V a 25 °C.</small>
           </div>
 
           <div className="reactionWideCard">
@@ -300,8 +313,8 @@ function EstequiometriaIodometria({
         </h2>
 
         <p>
-          O cálculo separa a formação de iodo oxidado (contabilizado como equivalentes de I₂) da titulação
-          do I₂ com tiossulfato e, em seguida, combina as
+          O cálculo separa a formação de triiodeto (I₃⁻) da titulação
+          do I₃⁻ com tiossulfato e, em seguida, combina as
           duas relações para obter a igualdade geral entre
           analito e titulante.
         </p>
@@ -340,7 +353,7 @@ function EstequiometriaIodometria({
         <div className="iodometriaStoichiometryGrid">
           <div className="resultCard iodometriaStoichiometryCard">
             <span>
-              Elétrons — geração de I₂
+              Elétrons — geração de I₃⁻
             </span>
 
             <strong>
@@ -350,7 +363,7 @@ function EstequiometriaIodometria({
 
           <div className="resultCard iodometriaStoichiometryCard">
             <span>
-              Elétrons — I₂ × S₂O₃²⁻
+              Elétrons — I₃⁻ × S₂O₃²⁻
             </span>
 
             <strong>
@@ -402,7 +415,7 @@ function EstequiometriaIodometria({
         <div className="reactionDetailsStack">
           <div className="reactionWideCard">
             <span>
-              Igualdade de mols — geração de I₂
+              Igualdade de mols — geração de I₃⁻
             </span>
 
             <strong>
@@ -422,7 +435,7 @@ function EstequiometriaIodometria({
 
           <div className="reactionWideCard">
             <span>
-              Agentes na etapa de geração de I₂
+              Agentes na etapa de geração de I₃⁻
             </span>
 
             <strong>
@@ -462,7 +475,7 @@ function CurvaIodometria({
         <h2>Curva potenciométrica da iodometria</h2>
 
         <p>
-          O motor resolve simultaneamente o equilíbrio entre os pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, considerando I₂ livre em equilíbrio com I₃⁻. A transição ao redor do ponto de equivalência é calculada sem troca descontínua de equação.
+          O motor segue as três regiões da metodologia dos slides: Nernst do par I₃⁻/I⁻ antes do PE, média ponderada dos potenciais padrão no PE e Nernst do par S₄O₆²⁻/S₂O₃²⁻ após o PE. As concentrações são calculadas por estequiometria e diluição.
         </p>
 
         <div className="resultGrid">
@@ -477,8 +490,8 @@ function CurvaIodometria({
           </div>
 
           <div className="resultCard">
-            <span>Iodo gerado (equiv. I₂)</span>
-            <strong>{formatarCientifico(resultado.molI2Gerado)} mol</strong>
+            <span>Triiodeto gerado (I₃⁻)</span>
+            <strong>{formatarCientifico(resultado.molI3Gerado)} mol</strong>
           </div>
 
           <div className="resultCard">
@@ -497,7 +510,7 @@ function CurvaIodometria({
 
       <div className="explanationBox">
         <p>
-          O modelo considera I₂ + I⁻ ⇌ I₃⁻ em solução aquosa e aplica Nernst ao par I₃⁻/I⁻, coerente com o equilíbrio de formação. O iodeto inicial é informado na mistura antes da geração de iodo: o motor desconta o consumo estequiométrico e recalcula I⁻ livre, I₃⁻ e I₂ em cada volume. Após o PE, o tiossulfato e o tetrationato passam a controlar o potencial. As atividades são aproximadas por concentrações e os potenciais padrão intrínsecos ainda são tomados a 25 °C.
+          O KI é informado pela concentração inicial de I⁻ e deve estar em excesso para a reação global gerar I₃⁻. Em cada volume, o iodeto é calculado pelo balanço estequiométrico: iodeto remanescente após a geração + três mols de I⁻ regenerados por mol de I₃⁻ reduzido. Antes do PE aplica-se Nernst ao par I₃⁻/I⁻; no PE utiliza-se a média ponderada dos dois pares, conforme os slides; após o PE aplica-se Nernst ao par S₄O₆²⁻/S₂O₃²⁻. As concentrações são aproximações de atividades e os potenciais padrão são referências a 25 °C.
         </p>
       </div>
     </section>
@@ -775,7 +788,7 @@ function TempoRealIodometria({
         <span className="eyebrow">Simulação em tempo real</span>
         <h2>Adição gradual de Na₂S₂O₃</h2>
         <p>
-          Acompanhe o consumo de I₂, a formação de I⁻ e S₄O₆²⁻ e o aparecimento do excesso de S₂O₃²⁻ após o PE.
+          Acompanhe o consumo de I₃⁻, a formação de I⁻ e S₄O₆²⁻ e o aparecimento do excesso de S₂O₃²⁻ após o PE.
         </p>
       </div>
 
@@ -880,11 +893,7 @@ function TempoRealIodometria({
             <strong>{pontoAtual ? `${formatarNumero(pontoAtual.potencialV, 4)} V` : "-"}</strong>
           </div>
           <div className="resultCard">
-            <span>[I₂] livre (minoritário)</span>
-            <strong>{pontoAtual ? formatarCientifico(pontoAtual.concentracaoI2MolL) : "-"}</strong>
-          </div>
-          <div className="resultCard">
-            <span>[I⁻] livre</span>
+            <span>[I⁻]</span>
             <strong>{pontoAtual ? formatarCientifico(pontoAtual.concentracaoIodetoMolL) : "-"}</strong>
           </div>
           <div className="resultCard">
@@ -920,8 +929,7 @@ function TempoRealIodometria({
                   <th>#</th>
                   <th>Volume</th>
                   <th>E (V)</th>
-                  <th>[I₂] livre</th>
-                  <th>[I⁻] livre</th>
+                  <th>[I⁻]</th>
                   <th>[I₃⁻]</th>
                   <th>[S₂O₃²⁻]</th>
                   <th>[S₄O₆²⁻]</th>
@@ -934,7 +942,6 @@ function TempoRealIodometria({
                     <td>{index + 1}</td>
                     <td>{formatarNumero(ponto.volumeAdicionadoMl, 3)} mL</td>
                     <td>{formatarNumero(ponto.potencialV, 4)}</td>
-                    <td>{formatarCientifico(ponto.concentracaoI2MolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoIodetoMolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoI3MolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoTiossulfatoMolL)}</td>
@@ -2973,9 +2980,7 @@ export default function Iodometria() {
                 <span>mol/L</span>
               </div>
               <small>
-                Concentração de iodeto na mistura inicial, antes de reagir com o analito.
-                O cálculo desconta o I⁻ consumido e determina o excesso e o I₃⁻.
-                O volume da amostra representa o volume total inicial da mistura, inclusive KI adicionado.
+                Concentração inicial de iodeto fornecida pelo KI. Deve ser suficiente para consumir o analito e ainda deixar I⁻ em excesso para formar I₃⁻. Em cada ponto, o motor calcula o iodeto pelas relações estequiométricas das reações. O volume da amostra representa o volume inicial total da mistura, inclusive o KI adicionado.
               </small>
             </label>
 
@@ -3026,8 +3031,8 @@ export default function Iodometria() {
               </div>
 
               <div className="resultCard">
-                <span>Iodo gerado (equiv. I₂)</span>
-                <strong>{formatarCientifico(resultado.molI2Gerado)}</strong>
+                <span>Triiodeto gerado (I₃⁻)</span>
+                <strong>{formatarCientifico(resultado.molI3Gerado)}</strong>
                 <small>mol</small>
               </div>
 
@@ -3066,12 +3071,12 @@ export default function Iodometria() {
                 <strong>{formatarNumero(resultado.entrada.concentracaoIodetoInicialMolL, 4)} mol/L</strong>
               </div>
               <div className="resultCard">
-                <span>[I⁻] após geração, antes da complexação</span>
+                <span>[I⁻] remanescente após gerar I₃⁻</span>
                 <strong>{formatarCientifico(resultado.molIodetoDisponivelAposGeracao / (resultado.entrada.volumeAmostraMl / 1000))} mol/L</strong>
               </div>
             </div>
             <div className="explanationBox">
-              <p>{sistema.observacao} O I⁻ efetivamente livre durante a titulação depende também do equilíbrio I₂/I₃⁻ e da diluição.</p>
+              <p>{sistema.observacao} O I⁻ em cada ponto resulta do balanço estequiométrico e da diluição; o modelo não resolve uma especiação adicional I₂/I₃⁻.</p>
             </div>
           </div>
         </div>

@@ -32,15 +32,29 @@ Esta versão aplica correções no núcleo matemático da permanganometria, iodo
 - `log10QuocienteReacao` foi adicionado ao resultado. `quocienteReacao` é limitado à faixa representável por `Number` apenas para manter um valor finito de exibição.
 - O fator de Nernst utiliza `Math.LN10` em vez da aproximação decimal `2.303`.
 
-### 4. Iodometria e especiação do iodo
+### 4. Iodometria — metodologia dos slides 39–42
 
-- O potencial padrão utilizado no par é agora o de I₂(aq)/I⁻ (`+0,621 V`), e não o valor de I₂(s)/I⁻ (`+0,5355 V`).
-- Foi incluído o equilíbrio `I₂(aq) + I⁻ ⇌ I₃⁻`.
-- A especiação é resolvida a partir dos balanços analíticos de iodo oxidado e iodeto. O cálculo de Nernst utiliza I₂(aq) e I⁻ livres; I₃⁻ é calculado e exibido separadamente.
-- A constante de formação de triiodeto usa `Kf ≈ 698` a 25 °C e correção de temperatura por van’t Hoff com ΔH° e ΔCp° de referência.
-- O solucionador da extensão da reação foi reparametrizado pelo reagente residual (iodo após o PE; tiossulfato antes do PE). Isso evita perder algarismos significativos ao subtrair quantidades quase iguais na região de equivalência.
-- A interface agora apresenta `[I₂(aq)] livre`, `[I⁻] livre` e `[I₃⁻]`.
-- Identificadores de sistema inválidos geram erro explícito em vez de selecionar silenciosamente cloro ativo.
+O motor iodimétrico foi reorganizado para seguir o procedimento apresentado nos slides da orientadora, com cálculo separado em três regiões:
+
+- **Antes do PE:** o potencial é calculado pela equação de Nernst do par da amostra `I₃⁻/I⁻`:
+  `E = E°(I₃⁻/I⁻) − (0,0592/2) log([I⁻]³/[I₃⁻])`.
+- **No PE:** aplica-se a média ponderada dos potenciais padrão, conforme os slides 40–41. Como os dois pares titulométricos envolvem dois elétrons:
+  `EPE = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V`.
+- **Após o PE:** o potencial é calculado pela equação de Nernst do par do titulante `S₄O₆²⁻/S₂O₃²⁻`:
+  `E = E°(S₄O₆²⁻/S₂O₃²⁻) − (0,0592/2) log([S₂O₃²⁻]²/[S₄O₆²⁻])`.
+
+Outras alterações:
+
+- O potencial padrão do par `I₃⁻/I⁻` é fixado em `+0,536 V`, conforme a referência adotada pela orientadora. O valor `+0,621 V` não é utilizado.
+- O potencial padrão do par `S₄O₆²⁻/S₂O₃²⁻` permanece em `+0,080 V`.
+- O motor não resolve mais o equilíbrio de especiação `I₂(aq) + I⁻ ⇌ I₃⁻` nem calcula `I₂` livre. Em excesso de KI, o iodo gerado é representado diretamente como `I₃⁻`.
+- As concentrações de `I₃⁻`, `I⁻`, `S₂O₃²⁻` e `S₄O₆²⁻` são calculadas por estequiometria e diluição em cada volume.
+- A concentração inicial de iodeto fornecida pelo KI é usada para verificar se existe iodeto suficiente para gerar `I₃⁻` e para fechar o balanço estequiométrico do iodeto remanescente. Ela não é tratada como concentração livre calculada por equilíbrio de especiação.
+- A reação de titulação considerada é `I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻`.
+- O consumo de iodeto na geração do triiodeto inclui também o iodeto incorporado ao `I₃⁻`: 3 mol por mol de Cl₂, 2,5 por Cu²⁺, 6 por O₂ no equivalente global do método de Winkler, 3 por H₂O₂, 3 por ClO⁻ e 8 por IO₃⁻.
+- O potencial no PE é calculado diretamente pela expressão ponderada dos slides; não é obtido por média de potenciais numéricos do equilíbrio acoplado.
+- A busca binária proposta foi preservada para localizar, entre os limites ordenados da curva, se o volume consultado pertence à região anterior, à faixa do PE ou à região posterior. Depois da classificação, o motor aplica o balanço e a equação de Nernst correspondentes.
+- A interface mostra as três equações por região, os potenciais padrão adotados e as concentrações estequiométricas de triiodeto, iodeto, tiossulfato e tetrationato.
 
 ## Testes de regressão
 
@@ -50,33 +64,30 @@ Executar na raiz do projeto:
 npm run test:redox
 ```
 
-O comando compila o núcleo `lib/oxirreducao` em um diretório temporário e executa `scripts/testar-oxirreducao.js`.
+O comando compila o núcleo TypeScript e executa `scripts/testar-oxirreducao.js`.
 
-Cobertura desta versão:
+A suíte cobre:
 
-- volumes estequiométricos de Fe²⁺, H₂O₂ e oxalato;
-- potenciais de equivalência e fechamento dos balanços;
-- aproximações assintóticas de H₂O₂ e oxalato;
-- segunda derivada sem zero artificial, incluindo curvas sintéticas;
-- comportamento da derivada em curva descendente;
-- Nernst em condições ordinárias e em atividades extremas;
-- balanços I₂/I₃⁻/I⁻ e constante de formação;
-- igualdade dos potenciais dos pares iodo e tiossulfato;
-- os seis sistemas iodimétricos antes, no e após o PE;
-- rejeição de identificadores inválidos.
+- regressão dos cálculos de permanganometria;
+- Nernst e estabilidade em espaço logarítmico;
+- E° = +0,536 V para I₃⁻/I⁻;
+- PE iodimétrico de 0,308 V pela média ponderada;
+- cálculo pré-PE pelo par da amostra;
+- cálculo no PE pela média ponderada;
+- cálculo pós-PE pelo par do titulante;
+- balanços de matéria de I₃⁻, I⁻, S₂O₃²⁻ e S₄O₆²⁻;
+- suficiência do KI e consumo de iodeto nos seis sistemas;
+- busca binária para classificar a região de cada volume consultado;
+- localização das derivadas e rejeição de identificadores inválidos;
+- notação científica sem o caractere `e` de programação.
 
-**Resultado desta entrega: 23 testes aprovados.**
+**Resultado desta entrega: 32 testes aprovados.**
 
 ## Limitações que permanecem explícitas
 
-1. A especiação I₂/I₃⁻ usa concentrações como aproximação de atividades. Não há correção geral por coeficientes de atividade ou força iônica.
-2. A constante de formação de triiodeto de referência é reportada em escala molal; o motor a trata como aproximação em soluções diluídas expressas em mol/L.
-3. Os potenciais padrão da iodometria são referências a 25 °C. O modelo ajusta Kf com a temperatura, mas ainda não inclui a dependência térmica completa dos potenciais padrão.
+1. As concentrações são usadas como aproximações de atividades. Não há correção geral por coeficientes de atividade ou força iônica.
+2. Os potenciais padrão `+0,536 V` para I₃⁻/I⁻ e `+0,080 V` para S₄O₆²⁻/S₂O₃²⁻ são referências a 25 °C. O fator de Nernst acompanha a temperatura informada, mas não há correção térmica completa dos potenciais padrão.
+3. O potencial no PE segue a dedução didática dos slides 40–41. A aplicação da média ponderada pressupõe as relações estequiométricas e o cancelamento dos termos logarítmicos demonstrados pela orientadora.
 4. A validação desta entrega é computacional e teórica. Não substitui comparação com dados experimentais, padrões certificados ou validação metrológica em bancada.
-5. A instalação das dependências do projeto não foi concluída neste ambiente. Por isso, foi validada a compilação isolada do núcleo TypeScript e a sintaxe dos componentes TSX alterados; o build integral do Next.js deve ser executado no ambiente de desenvolvimento do projeto.
+5. A instalação das dependências do projeto não foi concluída neste ambiente. A compilação isolada do núcleo TypeScript e os testes de regressão foram executados; o build integral do Next.js deve ser executado no ambiente de desenvolvimento do projeto.
 
-## Referências físico-químicas utilizadas na correção iodimétrica
-
-- Potencial padrão do par I₂(aq)/I⁻: `+0,621 V` — material didático de titulações redox com iodo, University of Richmond.
-- Palmer, D. A.; Ramette, R. W.; Mesmer, R. E. *Triiodide ion formation equilibrium and activity coefficients in aqueous solution*. Journal of Solution Chemistry, 13 (1984), 673–683. DOI: `10.1007/BF00650374`. Valores de referência: Kf ≈ 698 ± 10 a 25 °C; ΔH° ≈ −17,0 ± 0,6 kJ mol⁻¹; ΔCp° ≈ −21 ± 8 J mol⁻¹ K⁻¹.
-- Vogel’s Textbook of Quantitative Chemical Analysis, discussão da formação de I₃⁻ em soluções de iodo com excesso de iodeto e da forma da reação com tiossulfato.

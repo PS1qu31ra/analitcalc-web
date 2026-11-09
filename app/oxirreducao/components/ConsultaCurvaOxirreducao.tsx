@@ -1167,7 +1167,7 @@ export default function ConsultaCurvaOxirreducao(
         const controlador =
           ponto.regiao ===
             "antes_pe"
-            ? "I₂ / I⁻"
+            ? "I₃⁻ / I⁻"
             : ponto.regiao ===
                 "pe"
               ? "Equivalência"
@@ -1177,11 +1177,11 @@ export default function ConsultaCurvaOxirreducao(
         const descricao =
           ponto.regiao ===
             "antes_pe"
-            ? "Ainda há iodo disponível para reação com o tiossulfato. O sistema I₂/I⁻ predomina no comportamento potenciométrico."
+            ? "Ainda há I₃⁻ disponível para reação com o tiossulfato. O potencial é calculado pelo par I₃⁻/I⁻ da amostra."
             : ponto.regiao ===
                 "pe"
               ? "O volume consultado coincide com o ponto de equivalência estequiométrico da titulação iodimétrica."
-              : "O tiossulfato está em excesso e o sistema S₄O₆²⁻/S₂O₃²⁻ passa a ter maior influência sobre o potencial.";
+              : "O tiossulfato está em excesso; o potencial é calculado pelo par S₄O₆²⁻/S₂O₃²⁻ do titulante.";
 
 
         setConsulta({
@@ -1203,12 +1203,12 @@ export default function ConsultaCurvaOxirreducao(
           especies: [
             {
               rotulo:
-                "[I₂]",
+                "[I₃⁻]",
 
               valor:
                 `${formatarCientifico(
                   ponto
-                    .concentracaoI2MolL
+                    .concentracaoI3MolL
                 )} mol/L`,
             },
 

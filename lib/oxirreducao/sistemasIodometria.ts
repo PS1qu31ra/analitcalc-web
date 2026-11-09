@@ -58,7 +58,7 @@ export const SISTEMA_CLORO_ATIVO:
     "Cloro ativo — expresso como Cl₂",
 
   descricao:
-    "Determinação indireta de cloro ativo pela liberação de I₂ a partir de iodeto e posterior titulação com tiossulfato.",
+    "Determinação indireta de cloro ativo pela formação de I₃⁻ a partir de iodeto e posterior titulação com tiossulfato.",
 
   titulante:
     "Na₂S₂O₃",
@@ -67,7 +67,7 @@ export const SISTEMA_CLORO_ATIVO:
     "disponivel",
 
   observacao:
-    "Primeiro sistema da iodometria. O cloro oxida I⁻ a I₂ e o iodo formado é titulado com S₂O₃²⁻.",
+    "Primeiro sistema da iodometria. O cloro oxida I⁻ e forma I₃⁻, que é titulado com S₂O₃²⁻.",
 };
 
 

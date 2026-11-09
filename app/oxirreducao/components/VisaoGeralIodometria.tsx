@@ -13,7 +13,7 @@ export default function VisaoGeralIodometria() {
           <p>
             O cloro ativo é determinado indiretamente.
             Primeiro, o analito oxida iodeto em excesso e
-            libera I₂. Em seguida, o iodo formado é titulado
+            forma I₃⁻ em excesso de KI. Em seguida, o triiodeto é titulado
             com solução padrão de tiossulfato de sódio.
           </p>
         </header>
@@ -47,7 +47,7 @@ export default function VisaoGeralIodometria() {
   
             <p>
               Fornece I⁻ em excesso para a formação
-              quantitativa de I₂.
+              quantitativa de I₃⁻.
             </p>
           </article>
   
@@ -62,7 +62,7 @@ export default function VisaoGeralIodometria() {
             </strong>
   
             <p>
-              O tiossulfato reduz o I₂ formado novamente
+              O tiossulfato reduz o I₃⁻ formado novamente
               a iodeto.
             </p>
           </article>
@@ -80,7 +80,7 @@ export default function VisaoGeralIodometria() {
             <p>
               Forma uma coloração intensa com o iodo;
               próximo ao ponto final, o desaparecimento
-              dessa coloração indica o consumo do I₂.
+              dessa coloração indica o consumo do I₃⁻.
             </p>
           </article>
         </div>
@@ -92,7 +92,7 @@ export default function VisaoGeralIodometria() {
           </span>
   
           <strong>
-            Cl₂ + 2 I⁻ → 2 Cl⁻ + I₂
+            Cl₂ + 3 I⁻ → 2 Cl⁻ + I₃⁻
           </strong>
         </div>
   
@@ -103,7 +103,7 @@ export default function VisaoGeralIodometria() {
           </span>
   
           <strong>
-            I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻
+            I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻
           </strong>
         </div>
   
@@ -114,7 +114,7 @@ export default function VisaoGeralIodometria() {
           </span>
   
           <strong>
-            1 Cl₂ : 1 I₂ : 2 S₂O₃²⁻
+            1 Cl₂ : 1 I₃⁻ : 2 S₂O₃²⁻
           </strong>
         </div>
   
@@ -128,8 +128,8 @@ export default function VisaoGeralIodometria() {
             O Cl₂ não é titulado diretamente pelo
             tiossulfato no procedimento analítico. Sua
             quantidade é convertida estequiometricamente em
-            I₂ pela reação com iodeto. A quantidade de
-            tiossulfato necessária para consumir esse I₂
+            I₃⁻ pela reação com iodeto. A quantidade de
+            tiossulfato necessária para consumir esse I₃⁻
             permite calcular a quantidade original de
             cloro ativo.
           </p>
