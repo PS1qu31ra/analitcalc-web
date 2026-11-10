@@ -1,6 +1,10 @@
 import type {
     ResultadoCurvaRedoxPeroxido,
   } from "@/lib/oxirreducao/curvaRedoxPeroxido";
+
+  import {
+    PAR_OXIGENIO_PEROXIDO,
+  } from "@/lib/oxirreducao/dadosRedox";
   
   
   type VisaoGeralPeroxidoProps = {
@@ -179,10 +183,10 @@ import type {
             </span>
   
             <strong>
-              {formatarNumero(
-                resultado.potencialPadraoPeroxido,
-                3
-              )} V
+            {formatarNumero(
+  PAR_OXIGENIO_PEROXIDO.potencialPadraoReducao,
+  3
+)} V
             </strong>
           </div>
         </div>
