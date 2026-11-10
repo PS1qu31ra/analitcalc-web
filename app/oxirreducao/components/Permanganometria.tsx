@@ -68,6 +68,10 @@ import TempoRealRedox from "./TempoRealRedox";
 import ErroExperimentalRedox from "./ErroExperimentalRedox";
 
 
+const CONCENTRACAO_H_PLUS_FIXA_MOL_L = 1;
+const TEMPERATURA_FIXA_C = 25;
+
+
 function converterNumero(
   valor: string
 ) {
@@ -98,75 +102,6 @@ function formatarNumero(
   ).format(
     valor
   );
-}
-
-
-function gerarResultadoFerroInicial() {
-  return gerarCurvaPermanganometriaFerro({
-    entrada: {
-      concentracaoAnalitoMolL:
-        0.1,
-
-      volumeAnalitoMl:
-        25,
-
-      concentracaoTitulanteMolL:
-        0.02,
-
-      concentracaoHPlusMolL:
-        1,
-
-      temperaturaC:
-        25,
-    },
-  });
-}
-
-
-function gerarResultadoPeroxidoInicial() {
-  return gerarCurvaPermanganometriaPeroxido({
-    entrada: {
-      concentracaoAnalitoMolL:
-        0.1,
-
-      volumeAnalitoMl:
-        25,
-
-      concentracaoTitulanteMolL:
-        0.02,
-
-      concentracaoHPlusMolL:
-        1,
-
-      temperaturaC:
-        25,
-    },
-  });
-}
-
-
-function gerarResultadoOxalatoInicial() {
-  return gerarCurvaPermanganometriaOxalato({
-    entrada: {
-      concentracaoAnalitoMolL:
-        0.1,
-
-      volumeAnalitoMl:
-        25,
-
-      concentracaoTitulanteMolL:
-        0.02,
-
-      concentracaoHPlusMolL:
-        1,
-
-      atividadeCO2:
-        1,
-
-      temperaturaC:
-        25,
-    },
-  });
 }
 
 
@@ -214,41 +149,21 @@ export default function Permanganometria() {
 
 
   const [
-    concentracaoHPlus,
-    setConcentracaoHPlus,
-  ] = useState("");
-
-
-  const [
-    temperatura,
-    setTemperatura,
-  ] = useState("");
-
-
-  const [
     resultadoFerro,
     setResultadoFerro,
-  ] =
-    useState<ResultadoCurvaRedox>(
-      gerarResultadoFerroInicial
-    );
+  ] = useState<ResultadoCurvaRedox | null>(null);
 
 
   const [
     resultadoPeroxido,
     setResultadoPeroxido,
-  ] =
-    useState<ResultadoCurvaRedoxPeroxido>(
-      gerarResultadoPeroxidoInicial
-    );
+  ] = useState<ResultadoCurvaRedoxPeroxido | null>(null);
 
-    const [
-      resultadoOxalato,
-      setResultadoOxalato,
-    ] =
-      useState<ResultadoCurvaRedoxOxalato>(
-        gerarResultadoOxalatoInicial
-      );
+
+  const [
+    resultadoOxalato,
+    setResultadoOxalato,
+  ] = useState<ResultadoCurvaRedoxOxalato | null>(null);
 
 
   const [
@@ -287,6 +202,7 @@ export default function Permanganometria() {
 
         if (
           !ehOxalato ||
+          !resultadoOxalato ||
           !abaUsaCurvaRefinada
         ) {
           return null;
@@ -335,23 +251,18 @@ export default function Permanganometria() {
 
   const volumeEquivalenciaAtivo =
     ehFerro
-      ? resultadoFerro
-          .volumeEquivalenciaMl
+      ? resultadoFerro?.volumeEquivalenciaMl ?? null
       : ehPeroxido
-        ? resultadoPeroxido
-            .volumeEquivalenciaMl
-        : resultadoOxalato
-            .volumeEquivalenciaMl;
+        ? resultadoPeroxido?.volumeEquivalenciaMl ?? null
+        : resultadoOxalato?.volumeEquivalenciaMl ?? null;
 
-            const potencialEquivalenciaAtivo =
-            ehFerro
-              ? resultadoFerro
-                  .potencialEquivalenciaV
-              : ehPeroxido
-                ? resultadoPeroxido
-                    .potencialEquivalenciaV
-                : resultadoOxalato
-                    .potencialEquivalenciaV;
+
+  const potencialEquivalenciaAtivo =
+    ehFerro
+      ? resultadoFerro?.potencialEquivalenciaV ?? null
+      : ehPeroxido
+        ? resultadoPeroxido?.potencialEquivalenciaV ?? null
+        : resultadoOxalato?.potencialEquivalenciaV ?? null;
 
   function alterarSistema(
     novoSistema:
@@ -368,8 +279,9 @@ export default function Permanganometria() {
     setConcentracaoAnalito("");
     setVolumeAnalito("");
     setConcentracaoTitulante("");
-    setConcentracaoHPlus("");
-    setTemperatura("");
+    setResultadoFerro(null);
+    setResultadoPeroxido(null);
+    setResultadoOxalato(null);
 
     setErro(
       ""
@@ -389,8 +301,6 @@ export default function Permanganometria() {
       concentracaoAnalito,
       volumeAnalito,
       concentracaoTitulante,
-      concentracaoHPlus,
-      temperatura,
     ];
 
     const entradaCompleta = camposObrigatorios.every((valor) => {
@@ -426,14 +336,10 @@ export default function Permanganometria() {
               ),
 
             concentracaoHPlusMolL:
-              converterNumero(
-                concentracaoHPlus
-              ),
+              CONCENTRACAO_H_PLUS_FIXA_MOL_L,
 
             temperaturaC:
-              converterNumero(
-                temperatura
-              ),
+              TEMPERATURA_FIXA_C,
           };
 
 
@@ -476,14 +382,10 @@ export default function Permanganometria() {
               ),
 
             concentracaoHPlusMolL:
-              converterNumero(
-                concentracaoHPlus
-              ),
+              CONCENTRACAO_H_PLUS_FIXA_MOL_L,
 
             temperaturaC:
-              converterNumero(
-                temperatura
-              ),
+              TEMPERATURA_FIXA_C,
           };
 
 
@@ -526,14 +428,13 @@ export default function Permanganometria() {
               ),
 
             concentracaoHPlusMolL:
-              converterNumero(
-                concentracaoHPlus
-              ),
+              CONCENTRACAO_H_PLUS_FIXA_MOL_L,
+
+            atividadeCO2:
+              1,
 
             temperaturaC:
-              converterNumero(
-                temperatura
-              ),
+              TEMPERATURA_FIXA_C,
           };
 
 
@@ -652,6 +553,10 @@ export default function Permanganometria() {
                 onChange={(event) => {
                   setConcentracaoAnalito(event.target.value);
                   setDadosAlterados(true);
+                  setJaCalculou(false);
+                  setResultadoFerro(null);
+                  setResultadoPeroxido(null);
+                  setResultadoOxalato(null);
                   setErro("");
                 }}
               />
@@ -671,11 +576,15 @@ export default function Permanganometria() {
                 type="text"
                 inputMode="decimal"
                 value={volumeAnalito}
-                placeholder="Ex.: 25,00"
+                placeholder={ehFerro ? "Ex.: 25,00" : "Ex.: 10,00"}
                 required
                 onChange={(event) => {
                   setVolumeAnalito(event.target.value);
                   setDadosAlterados(true);
+                  setJaCalculou(false);
+                  setResultadoFerro(null);
+                  setResultadoPeroxido(null);
+                  setResultadoOxalato(null);
                   setErro("");
                 }}
               />
@@ -700,6 +609,10 @@ export default function Permanganometria() {
                 onChange={(event) => {
                   setConcentracaoTitulante(event.target.value);
                   setDadosAlterados(true);
+                  setJaCalculou(false);
+                  setResultadoFerro(null);
+                  setResultadoPeroxido(null);
+                  setResultadoOxalato(null);
                   setErro("");
                 }}
               />
@@ -711,52 +624,24 @@ export default function Permanganometria() {
           </label>
 
 
-          <label>
-            Concentração de H⁺
-
-            <div className="oxirreducaoInputUnit">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={concentracaoHPlus}
-                placeholder="Ex.: 1,00"
-                required
-                onChange={(event) => {
-                  setConcentracaoHPlus(event.target.value);
-                  setDadosAlterados(true);
-                  setErro("");
-                }}
-              />
-
-              <span>
-                mol/L
-              </span>
+          <div
+            className="oxirreducaoFixedConditions"
+            aria-label="Condições fixas da titulação"
+          >
+            <div className="oxirreducaoFixedCondition">
+              <span>Concentração de H⁺</span>
+              <strong>1,00 mol/L</strong>
             </div>
-          </label>
 
-
-          <label>
-            Temperatura
-
-            <div className="oxirreducaoInputUnit">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={temperatura}
-                placeholder="Ex.: 25"
-                required
-                onChange={(event) => {
-                  setTemperatura(event.target.value);
-                  setDadosAlterados(true);
-                  setErro("");
-                }}
-              />
-
-              <span>
-                °C
-              </span>
+            <div className="oxirreducaoFixedCondition">
+              <span>Temperatura</span>
+              <strong>25 °C</strong>
             </div>
-          </label>
+
+            <p className="oxirreducaoFixedConditionsNote">
+              Condições padronizadas para os sistemas de permanganometria.
+            </p>
+          </div>
 
 
           {erro && (
@@ -775,26 +660,23 @@ export default function Permanganometria() {
         </form>
 
 
+        {jaCalculou ? (
         <aside className="oxirreducaoResults">
           <header className="oxirreducaoResultsHeader">
             <div>
               <span className="oxirreducaoSectionLabel">
-                {jaCalculou ? "Resultado rápido" : "Valores de referência"}
+                Resultado rápido
               </span>
 
               <h3>
-                {jaCalculou ? "Sistema calculado" : "Exemplo de referência"}
+                Sistema calculado
               </h3>
             </div>
 
             <span
-              className={`oxirreducaoStatus ${
-                dadosAlterados || !jaCalculou
-                  ? "oxirreducaoStatusPending"
-                  : ""
-              }`}
+              className="oxirreducaoStatus"
             >
-              {dadosAlterados ? "Recalcular" : jaCalculou ? "Ativo" : "Referência"}
+              Ativo
             </span>
           </header>
 
@@ -806,11 +688,9 @@ export default function Permanganometria() {
               </span>
 
               <strong>
-                {formatarNumero(
-                  volumeEquivalenciaAtivo,
-                  2
-                )}{" "}
-                mL
+                {volumeEquivalenciaAtivo !== null
+                  ? `${formatarNumero(volumeEquivalenciaAtivo, 2)} mL`
+                  : "—"}
               </strong>
             </article>
 
@@ -871,24 +751,39 @@ export default function Permanganometria() {
 
             <strong>
               {ehFerro
-                ? "MnO₄⁻ + 5 Fe²⁺ + 8 H⁺ → Mn²⁺ + 5 Fe³⁺ + 4 H₂O"
+                ? "MnO₄⁻ + 8 H⁺ + 5 Fe²⁺ ⇌ Mn²⁺ + 5 Fe³⁺ + 4 H₂O"
                 : ehPeroxido
-                  ? "2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O"
-                  : "2 MnO₄⁻ + 5 C₂O₄²⁻ + 16 H⁺ → 2 Mn²⁺ + 10 CO₂ + 8 H₂O"}
+                  ? "2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ ⇌ 2 Mn²⁺ + 5 O₂ + 8 H₂O"
+                  : "2 MnO₄⁻ + 5 H₂C₂O₄ + 6 H⁺ ⇌ 2 Mn²⁺ + 10 CO₂ + 8 H₂O"}
             </strong>
           </div>
 
-          {(!jaCalculou || dadosAlterados) && (
+        </aside>
+        ) : (
+          <aside className="oxirreducaoResults">
+            <header className="oxirreducaoResultsHeader">
+              <div>
+                <span className="oxirreducaoSectionLabel">
+                  Aguardando cálculo
+                </span>
+                <h3>Resultados da titulação</h3>
+              </div>
+              <span className="oxirreducaoStatus oxirreducaoStatusPending">
+                Pendente
+              </span>
+            </header>
             <p className="oxirreducaoReferenceHint">
               {dadosAlterados
-                ? "Os campos foram alterados. Recalcule para atualizar os resultados."
-                : "Os resultados exibidos são um exemplo. Preencha os campos usando as referências em cinza para calcular sua amostra."}
+                ? "Os dados foram alterados. Clique em “Calcular sistema redox” para visualizar os resultados atualizados."
+                : "Preencha os dados da titulação e clique em “Calcular sistema redox” para visualizar os resultados."}
             </p>
-          )}
-        </aside>
+          </aside>
+        )}
       </div>
 
 
+      {jaCalculou && (
+      <>
       <PermanganometriaTabs
         abaAtiva={
           abaAtiva
@@ -902,7 +797,7 @@ export default function Permanganometria() {
       />
 
 
-      {ehFerro &&
+      {ehFerro && resultadoFerro &&
         abaAtiva === "visao-geral" && (
           <VisaoGeral
             resultado={
@@ -912,13 +807,13 @@ export default function Permanganometria() {
         )}
 
 
-      {ehFerro &&
+      {ehFerro && resultadoFerro &&
         abaAtiva === "semirreacoes" && (
           <Semirreacoes />
         )}
 
 
-      {ehFerro &&
+      {ehFerro && resultadoFerro &&
         abaAtiva === "estequiometria" && (
           <Estequiometria
             resultado={
@@ -928,7 +823,7 @@ export default function Permanganometria() {
         )}
 
 
-      {ehFerro &&
+      {ehFerro && resultadoFerro &&
         abaAtiva === "curva" && (
           <CurvaPotenciometrica
             resultado={
@@ -937,7 +832,7 @@ export default function Permanganometria() {
           />
         )}
 
-{ehFerro &&
+{ehFerro && resultadoFerro &&
   abaAtiva === "derivadas" && (
     <DerivadasRedox
       sistema="ferro-ii"
@@ -952,7 +847,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehFerro &&
+{ehFerro && resultadoFerro &&
   abaAtiva ===
     "concentracao" && (
     <EfeitoConcentracaoRedox
@@ -963,7 +858,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehFerro &&
+{ehFerro && resultadoFerro &&
   abaAtiva ===
     "tempo-real" && (
     <TempoRealRedox
@@ -974,7 +869,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehFerro &&
+{ehFerro && resultadoFerro &&
   abaAtiva ===
     "erro-experimental" && (
     <ErroExperimentalRedox
@@ -985,7 +880,7 @@ export default function Permanganometria() {
     />
   )}
   
-      {ehPeroxido &&
+      {ehPeroxido && resultadoPeroxido &&
         abaAtiva === "visao-geral" && (
           <VisaoGeralPeroxido
             resultado={
@@ -995,13 +890,13 @@ export default function Permanganometria() {
         )}
 
 
-      {ehPeroxido &&
+      {ehPeroxido && resultadoPeroxido &&
         abaAtiva === "semirreacoes" && (
           <SemirreacoesPeroxido />
         )}
 
 
-      {ehPeroxido &&
+      {ehPeroxido && resultadoPeroxido &&
         abaAtiva === "estequiometria" && (
           <EstequiometriaPeroxido
             resultado={
@@ -1011,7 +906,7 @@ export default function Permanganometria() {
         )}
 
 
-      {ehPeroxido &&
+      {ehPeroxido && resultadoPeroxido &&
         abaAtiva === "curva" && (
           <CurvaPotenciometricaPeroxido
             resultado={
@@ -1020,7 +915,7 @@ export default function Permanganometria() {
           />
         )}
 
-{ehPeroxido &&
+{ehPeroxido && resultadoPeroxido &&
   abaAtiva === "derivadas" && (
     <DerivadasRedox
       sistema="peroxido-hidrogenio"
@@ -1035,7 +930,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehPeroxido &&
+{ehPeroxido && resultadoPeroxido &&
   abaAtiva ===
     "concentracao" && (
     <EfeitoConcentracaoRedox
@@ -1046,7 +941,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehPeroxido &&
+{ehPeroxido && resultadoPeroxido &&
   abaAtiva ===
     "tempo-real" && (
     <TempoRealRedox
@@ -1058,7 +953,7 @@ export default function Permanganometria() {
   )}
 
 
-{ehPeroxido &&
+{ehPeroxido && resultadoPeroxido &&
   abaAtiva ===
     "erro-experimental" && (
     <ErroExperimentalRedox
@@ -1070,7 +965,7 @@ export default function Permanganometria() {
   )}
 
 
-      {ehOxalato &&
+      {ehOxalato && resultadoOxalato &&
         abaAtiva === "visao-geral" && (
           <VisaoGeralOxalato
             resultado={
@@ -1079,13 +974,13 @@ export default function Permanganometria() {
           />
         )}
 
-{ehOxalato &&
+{ehOxalato && resultadoOxalato &&
   abaAtiva === "semirreacoes" && (
     <SemirreacoesOxalato />
   )}
 
 
-      {ehOxalato &&
+      {ehOxalato && resultadoOxalato &&
         abaAtiva === "estequiometria" && (
           <EstequiometriaOxalato
             resultado={
@@ -1094,7 +989,7 @@ export default function Permanganometria() {
           />
         )}
 
-{ehOxalato &&
+{ehOxalato && resultadoOxalato &&
   abaAtiva === "curva" && (
     <CurvaPotenciometricaOxalato
       resultado={
@@ -1103,7 +998,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehOxalato &&
+{ehOxalato && resultadoOxalato &&
   abaAtiva ===
     "derivadas" &&
   resultadoOxalatoDerivadas && (
@@ -1120,7 +1015,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehOxalato &&
+{ehOxalato && resultadoOxalato &&
   abaAtiva ===
     "concentracao" && (
     <EfeitoConcentracaoRedox
@@ -1131,7 +1026,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehOxalato &&
+{ehOxalato && resultadoOxalato &&
   abaAtiva ===
     "tempo-real" &&
   resultadoOxalatoDerivadas && (
@@ -1143,7 +1038,7 @@ export default function Permanganometria() {
     />
   )}
 
-{ehOxalato &&
+{ehOxalato && resultadoOxalato &&
   abaAtiva ===
     "erro-experimental" &&
   resultadoOxalatoDerivadas && (
@@ -1154,6 +1049,8 @@ export default function Permanganometria() {
       }
     />
   )}
+      </>
+      )}
     </section>
   );
 }

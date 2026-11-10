@@ -2743,11 +2743,6 @@ export default function Iodometria() {
       "visao-geral"
     );
 
-  const entradaInicial =
-    entradaPadraoIodometria(
-      "cloro-ativo"
-    );
-
   const [concentracaoAnalito, setConcentracaoAnalito] = useState("");
 
   const [volumeAmostra, setVolumeAmostra] = useState("");
@@ -2759,11 +2754,7 @@ export default function Iodometria() {
   const [temperatura, setTemperatura] = useState("");
 
   const [resultado, setResultado] =
-    useState<ResultadoCurvaIodometria>(() =>
-      gerarCurvaIodometria({
-        entrada: entradaInicial,
-      })
-    );
+    useState<ResultadoCurvaIodometria | null>(null);
 
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
@@ -2788,15 +2779,10 @@ export default function Iodometria() {
   function alterarSistema(
     id: SistemaIodometriaId
   ) {
-    const entrada =
-      entradaPadraoIodometria(id);
-
     setSistemaAtivo(id);
     setAbaAtiva("visao-geral");
     limparCampos();
-    setResultado(
-      gerarCurvaIodometria({ entrada })
-    );
+    setResultado(null);
     setMensagem("");
     setErro("");
     setJaCalculou(false);
@@ -2823,7 +2809,7 @@ export default function Iodometria() {
 
     if (!entradaCompleta) {
       setMensagem("");
-      setErro("Preencha todos os campos com valores numéricos positivos antes de avaliar o sistema.");
+      setErro("Preencha todos os campos com valores numéricos positivos antes de calcular o sistema.");
       return;
     }
 
@@ -2860,7 +2846,7 @@ export default function Iodometria() {
       setResultado(novoResultado);
       setErro("");
       setMensagem(
-        "Sistema iodimétrico recalculado com sucesso."
+        "Sistema iodimétrico calculado com sucesso."
       );
       setJaCalculou(true);
       setDadosAlterados(false);
@@ -2876,6 +2862,10 @@ export default function Iodometria() {
 
   const resultadoDenso = useMemo(
     () => {
+      if (!resultado) {
+        return null;
+      }
+
       const volumePE =
         resultado.volumeEquivalenciaMl;
 
@@ -2901,14 +2891,16 @@ export default function Iodometria() {
 
   const derivadas = useMemo(
     () =>
-      calcularDerivadasIodometria(
-        resultadoDenso.pontosValidos
-      ),
+      resultadoDenso
+        ? calcularDerivadasIodometria(
+            resultadoDenso.pontosValidos
+          )
+        : null,
     [resultadoDenso]
   );
 
   const oxigenioMgL =
-    sistemaAtivo === "oxigenio-dissolvido"
+    sistemaAtivo === "oxigenio-dissolvido" && resultado
       ? resultado.entrada.concentracaoAnalitoMolL *
         32 *
         1000
@@ -2962,6 +2954,8 @@ export default function Iodometria() {
                   onChange={(event) => {
                     setConcentracaoAnalito(event.target.value);
                     setDadosAlterados(true);
+                    setJaCalculou(false);
+                    setResultado(null);
                     setMensagem("");
                     setErro("");
                   }}
@@ -2982,6 +2976,8 @@ export default function Iodometria() {
                   onChange={(event) => {
                     setVolumeAmostra(event.target.value);
                     setDadosAlterados(true);
+                    setJaCalculou(false);
+                    setResultado(null);
                     setMensagem("");
                     setErro("");
                   }}
@@ -3002,6 +2998,8 @@ export default function Iodometria() {
                   onChange={(event) => {
                     setConcentracaoTios(event.target.value);
                     setDadosAlterados(true);
+                    setJaCalculou(false);
+                    setResultado(null);
                     setMensagem("");
                     setErro("");
                   }}
@@ -3022,6 +3020,8 @@ export default function Iodometria() {
                   onChange={(event) => {
                     setConcentracaoIodeto(event.target.value);
                     setDadosAlterados(true);
+                    setJaCalculou(false);
+                    setResultado(null);
                     setMensagem("");
                     setErro("");
                   }}
@@ -3045,6 +3045,8 @@ export default function Iodometria() {
                   onChange={(event) => {
                     setTemperatura(event.target.value);
                     setDadosAlterados(true);
+                    setJaCalculou(false);
+                    setResultado(null);
                     setMensagem("");
                     setErro("");
                   }}
@@ -3069,16 +3071,17 @@ export default function Iodometria() {
               type="submit"
               className="primaryButton"
             >
-              Avaliar sistema
+              Calcular sistema redox
             </button>
           </form>
 
+          {jaCalculou && resultado && derivadas ? (
           <div className="resultsPanel">
             <span className="eyebrow">
-              {jaCalculou ? "Resumo calculado" : "Valores de referência"}
+              Resumo calculado
             </span>
             <h2>
-              {jaCalculou ? "Condição calculada" : "Exemplo de referência"}
+              Condição calculada
             </h2>
 
             <div className="resultGrid">
@@ -3133,20 +3136,28 @@ export default function Iodometria() {
                 <strong>{formatarCientifico(resultado.molIodetoDisponivelAposGeracao / (resultado.entrada.volumeAmostraMl / 1000))} mol/L</strong>
               </div>
             </div>
-            {(!jaCalculou || dadosAlterados) && (
-              <p className="oxirreducaoReferenceHint">
-                {dadosAlterados
-                  ? "Os campos foram alterados. Avalie novamente o sistema para atualizar os resultados."
-                  : "Os resultados exibidos são um exemplo. Use as referências em cinza para preencher os dados da sua amostra."}
-              </p>
-            )}
             <div className="explanationBox">
               <p>{sistema.observacao} O I⁻ em cada ponto resulta do balanço estequiométrico e da diluição; o modelo não resolve uma especiação adicional I₂/I₃⁻.</p>
             </div>
           </div>
+          ) : (
+            <div className="resultsPanel">
+              <span className="eyebrow">
+                Aguardando cálculo
+              </span>
+              <h2>Resultados da iodometria</h2>
+              <p className="oxirreducaoReferenceHint">
+                {dadosAlterados
+                  ? "Os dados foram alterados. Clique em “Calcular sistema redox” para visualizar os resultados atualizados."
+                  : "Preencha os dados da titulação e clique em “Calcular sistema redox” para visualizar os resultados."}
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
+      {jaCalculou && resultado && resultadoDenso && derivadas && (
+      <>
       <section className="container tabsSection">
         <IodometriaTabs
           abaAtiva={abaAtiva}
@@ -3208,6 +3219,8 @@ export default function Iodometria() {
           />
         )}
       </section>
+      </>
+      )}
     </>
   );
 }

@@ -145,7 +145,7 @@ exports.PAR_PERMANGANATO_MANGANES = {
         ],
     },
     observacao: "Em meio fortemente ácido, o permanganato é reduzido predominantemente a Mn²⁺.",
-    referencia: "E° adotado a 25 °C conforme validação acadêmica: +1,510 V.",
+    referencia: "Potencial padrão de redução a 25 °C: +1,510 V.",
 };
 /* =========================================================
  * PAR Fe³⁺ / Fe²⁺
@@ -176,7 +176,7 @@ exports.PAR_FERRO_III_FERRO_II = {
         ],
     },
     observacao: "Par utilizado na titulação clássica de Fe²⁺ com permanganato.",
-    referencia: "E° adotado a 25 °C conforme validação acadêmica: +0,771 V.",
+    referencia: "Potencial padrão de redução a 25 °C: +0,771 V.",
 };
 /* =========================================================
  * PAR O₂ / H₂O₂
@@ -236,7 +236,7 @@ exports.PAR_OXIGENIO_PEROXIDO = {
         ],
     },
     observacao: "Na permanganometria do H₂O₂, a concentração de O₂ é calculada pela estequiometria da reação: cada mol de H₂O₂ consumido forma um mol de O₂.",
-    referencia: "E° adotado para O₂ + 2 H⁺ + 2 e⁻ ⇌ H₂O₂ a 25 °C conforme validação acadêmica: +0,682 V.",
+    referencia: "Potencial padrão de redução a 25 °C: +0,682 V.",
 };
 /* =========================================================
  * PAR CO₂ / H₂C₂O₄
@@ -273,7 +273,7 @@ exports.PAR_DIOXIDO_CARBONO_ACIDO_OXALICO = {
     redutor: exports.H2C2O4,
     numeroEletrons: 2,
     potencialPadraoReducao: -0.49,
-    semirreacaoReducao: "2 CO₂ + 2 H⁺ + 2 e⁻ ⇌ H₂C₂O₄",
+    semirreacaoReducao: "2 CO₂(g) + 2 H⁺ + 2 e⁻ ⇌ H₂C₂O₄",
     meios: [
         "acido",
     ],
@@ -295,8 +295,8 @@ exports.PAR_DIOXIDO_CARBONO_ACIDO_OXALICO = {
             },
         ],
     },
-    observacao: "O potencial do sistema oxalato é tratado pelo par CO₂/H₂C₂O₄. A concentração analítica total de oxalato deve ser convertida na fração protonada H₂C₂O₄ antes da aplicação da equação de Nernst.",
-    referencia: "E° adotado para 2 CO₂ + 2 H⁺ + 2 e⁻ ⇌ H₂C₂O₄ a 25 °C: aproximadamente -0,49 V.",
+    observacao: "Na titulação em meio ácido, o ácido oxálico é oxidado a CO₂ pelo permanganato.",
+    referencia: "Potencial padrão de redução a 25 °C: aproximadamente −0,49 V.",
 };
 /* =========================================================
  * BASE DE PARES

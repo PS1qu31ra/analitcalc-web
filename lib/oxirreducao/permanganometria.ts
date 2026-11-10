@@ -14,9 +14,6 @@ import {
   type RegiaoTitulacaoRedox,
 } from "./estequiometria";
 
-import {
-  resolverEquilibrioPermanganometriaFerro,
-} from "./equilibrioPermanganometriaFerro";
   
   
   /* =========================================================
@@ -32,7 +29,7 @@ import {
    */
   
   export const REACAO_PERMANGANATO_FERRO =
-    "MnO₄⁻ + 5 Fe²⁺ + 8 H⁺ → Mn²⁺ + 5 Fe³⁺ + 4 H₂O";
+    "MnO₄⁻ + 8 H⁺ + 5 Fe²⁺ ⇌ Mn²⁺ + 5 Fe³⁺ + 4 H₂O";
   
   
   const COEFICIENTE_FE2 =
@@ -168,7 +165,7 @@ import {
   
   
   /* =========================================================
-   * VALIDAÇÃO
+   * VERIFICAÇÃO DOS DADOS DE ENTRADA
    * ======================================================= */
   
   function validarEntradaPermanganometria(
@@ -386,9 +383,8 @@ import {
           COEFICIENTE_MNO4,
       });
   
-    // No PE, aplica-se diretamente a metodologia dos slides:
-    // média ponderada dos potenciais condicionais pelo número
-    // de elétrons de cada par (MnO₄⁻/Mn²⁺: 5; Fe³⁺/Fe²⁺: 1).
+    // No PE, o potencial é obtido pela média ponderada dos potenciais
+    // dos pares redox, considerando seus respectivos números de elétrons.
     const potencialEquivalenciaV =
       calcularPotencialEquivalenciaPermanganometria({
         concentracaoHPlusMolL: entrada.concentracaoHPlusMolL,
@@ -450,207 +446,111 @@ import {
    * ======================================================= */
   
   export function calcularPontoPermanganometriaFerro({
-    entrada,
-    volumeAdicionadoMl,
-  }: {
-    entrada:
-      EntradaPermanganometriaFerro;
-  
-    volumeAdicionadoMl:
-      number;
-  }): ResultadoPontoPermanganometria {
-    validarEntradaPermanganometria(
-      entrada
-    );
-  
-  
-    if (
-      !Number.isFinite(
-        volumeAdicionadoMl
-      ) ||
-      volumeAdicionadoMl <
-        0
-    ) {
-      throw new Error(
-        "O volume de titulante adicionado deve ser maior ou igual a zero."
-      );
-    }
-  
-  
-    const sistema =
-      calcularSistemaPermanganometriaFerro(
-        entrada
-      );
-  
-  
-    const temperaturaC =
-      entrada.temperaturaC ??
-      25;
-  
-  
-    const volumeTotalMl =
-      entrada.volumeAnalitoMl +
-      volumeAdicionadoMl;
-  
-  
-    const regiao =
-      determinarRegiaoTitulacao({
-        volumeAdicionadoMl,
-  
-        volumeEquivalenciaMl:
-          sistema
-            .volumeEquivalenciaMl,
-  
-        toleranciaMl:
-          1e-9,
-      });
-  
-  
-    const molMnO4Adicionado =
-      calcularMols({
-        concentracaoMolL:
-          entrada
-            .concentracaoTitulanteMolL,
-  
-        volumeMl:
-          volumeAdicionadoMl,
-      });
-  
-  
-    /*
-     * =======================================================
-     * NOVO MODELO
-     * =======================================================
-     *
-     * Não zeramos mais artificialmente
-     * Fe²⁺, Fe³⁺, MnO₄⁻ ou Mn²⁺.
-     *
-     * O potencial é encontrado impondo
-     * simultaneamente:
-     *
-     * E(Fe³⁺/Fe²⁺)
-     * =
-     * E(MnO₄⁻/Mn²⁺)
-     *
-     * e o balanço:
-     *
-     * n(Fe³⁺)
-     * =
-     * 5 n(Mn²⁺)
-     */
-  
-    const equilibrio =
-      resolverEquilibrioPermanganometriaFerro({
-        molFeTotal:
-          sistema
-            .molFe2Inicial,
-  
-        molMnTotal:
-          molMnO4Adicionado,
-  
-        volumeTotalMl,
-  
-        concentracaoHPlusMolL:
-          entrada
-            .concentracaoHPlusMolL,
-  
-        temperaturaC,
-      });
-  
-  
-    let parControlador:
-      ResultadoPontoPermanganometria[
-        "parControlador"
-      ];
-  
-  
-    let descricao:
-      string;
-  
-  
-    if (
-      regiao ===
-      "antes_pe"
-    ) {
-      parControlador =
-        "Fe3+/Fe2+";
-  
-  
-      descricao =
-        "Antes do ponto de equivalência, o par Fe³⁺/Fe²⁺ é predominante, mas o potencial é obtido pelo equilíbrio simultâneo com MnO₄⁻/Mn²⁺.";
-      } else if (
-        regiao ===
-        "pe"
-      ) {
-        parControlador =
-          "equivalencia";
-      
-      
-        descricao =
-          "No ponto de equivalência, o potencial é calculado pela média ponderada dos potenciais condicionais dos pares Fe³⁺/Fe²⁺ (1 elétron) e MnO₄⁻/Mn²⁺ (5 elétrons), conforme a metodologia dos slides.";
-    } else {
-      parControlador =
-        "MnO4-/Mn2+";
-  
-  
-      descricao =
-        "Após o ponto de equivalência, o par MnO₄⁻/Mn²⁺ é predominante, mas o potencial continua sendo obtido pelo equilíbrio simultâneo dos dois pares.";
-    }
-  
-  
-    return {
-      volumeAdicionadoMl,
-  
-      volumeTotalMl,
-  
-      volumeEquivalenciaMl:
-        sistema
-          .volumeEquivalenciaMl,
-  
-      regiao,
-  
-      potencialV:
-  regiao ===
-  "pe"
-    ? sistema
-        .potencialEquivalenciaV
-    : equilibrio
-        .potencialV,
-  
-      parControlador,
-  
-      molFe2:
-        equilibrio
-          .molFe2,
-  
-      molFe3:
-        equilibrio
-          .molFe3,
-  
-      molMnO4:
-        equilibrio
-          .molMnO4,
-  
-      molMn2:
-        equilibrio
-          .molMn2,
-  
-      concentracaoFe2MolL:
-        equilibrio
-          .concentracaoFe2MolL,
-  
-      concentracaoFe3MolL:
-        equilibrio
-          .concentracaoFe3MolL,
-  
-      concentracaoMnO4MolL:
-        equilibrio
-          .concentracaoMnO4MolL,
-  
-      concentracaoMn2MolL:
-        equilibrio
-          .concentracaoMn2MolL,
-  
-      descricao,
-    };
+  entrada,
+  volumeAdicionadoMl,
+}: {
+  entrada: EntradaPermanganometriaFerro;
+  volumeAdicionadoMl: number;
+}): ResultadoPontoPermanganometria {
+  validarEntradaPermanganometria(entrada);
+
+  if (!Number.isFinite(volumeAdicionadoMl) || volumeAdicionadoMl < 0) {
+    throw new Error("O volume de titulante adicionado deve ser maior ou igual a zero.");
   }
+
+  const sistema = calcularSistemaPermanganometriaFerro(entrada);
+  const temperaturaC = entrada.temperaturaC ?? 25;
+  const volumeTotalMl = entrada.volumeAnalitoMl + volumeAdicionadoMl;
+  const volumeTotalL = volumeTotalMl / 1000;
+  const regiao = determinarRegiaoTitulacao({
+    volumeAdicionadoMl,
+    volumeEquivalenciaMl: sistema.volumeEquivalenciaMl,
+    toleranciaMl: 1e-9,
+  });
+
+  const molMnO4Adicionado = calcularMols({
+    concentracaoMolL: entrada.concentracaoTitulanteMolL,
+    volumeMl: volumeAdicionadoMl,
+  });
+
+  const molFe2Inicial = sistema.molFe2Inicial;
+  const molMnO4Equivalencia = sistema.molMnO4Equivalencia;
+
+  let molFe2 = 0;
+  let molFe3 = 0;
+  let molMnO4 = 0;
+  let molMn2 = 0;
+  let potencialV: number | null = null;
+
+  if (regiao === "antes_pe") {
+    molFe3 = 5 * molMnO4Adicionado;
+    molFe2 = Math.max(0, molFe2Inicial - molFe3);
+    molMn2 = molMnO4Adicionado;
+
+    if (molFe2 > 0 && molFe3 > 0) {
+      const concentracaoFe2 = molFe2 / volumeTotalL;
+      const concentracaoFe3 = molFe3 / volumeTotalL;
+      const fator = calcularFatorNernst({ temperaturaC, numeroEletrons: 1 });
+      potencialV =
+        PAR_FERRO_III_FERRO_II.potencialPadraoReducao -
+        fator * Math.log10(concentracaoFe2 / concentracaoFe3);
+    }
+  } else if (regiao === "pe") {
+    molFe3 = molFe2Inicial;
+    molMn2 = molMnO4Equivalencia;
+    potencialV = sistema.potencialEquivalenciaV;
+  } else {
+    molFe3 = molFe2Inicial;
+    molMn2 = molMnO4Equivalencia;
+    molMnO4 = Math.max(0, molMnO4Adicionado - molMnO4Equivalencia);
+
+    if (molMnO4 > 0 && molMn2 > 0) {
+      const concentracaoMnO4 = molMnO4 / volumeTotalL;
+      const concentracaoMn2 = molMn2 / volumeTotalL;
+      const quociente =
+        concentracaoMn2 /
+        (concentracaoMnO4 * entrada.concentracaoHPlusMolL ** 8);
+      const fator = calcularFatorNernst({ temperaturaC, numeroEletrons: 5 });
+      potencialV =
+        PAR_PERMANGANATO_MANGANES.potencialPadraoReducao -
+        fator * Math.log10(quociente);
+    }
+  }
+
+  const concentracaoFe2MolL = molFe2 / volumeTotalL;
+  const concentracaoFe3MolL = molFe3 / volumeTotalL;
+  const concentracaoMnO4MolL = molMnO4 / volumeTotalL;
+  const concentracaoMn2MolL = molMn2 / volumeTotalL;
+
+  const parControlador =
+    regiao === "antes_pe"
+      ? "Fe3+/Fe2+"
+      : regiao === "pe"
+        ? "equivalencia"
+        : "MnO4-/Mn2+";
+
+  const descricao =
+    regiao === "antes_pe"
+      ? "Antes do ponto de equivalência, Fe²⁺ permanece em excesso e o potencial é calculado pelo par Fe³⁺/Fe²⁺."
+      : regiao === "pe"
+        ? "No ponto de equivalência, o potencial corresponde à média ponderada dos potenciais dos pares Fe³⁺/Fe²⁺ e MnO₄⁻/Mn²⁺."
+        : "Após o ponto de equivalência, MnO₄⁻ permanece em excesso e o potencial é calculado pelo par MnO₄⁻/Mn²⁺.";
+
+  return {
+    volumeAdicionadoMl,
+    volumeTotalMl,
+    volumeEquivalenciaMl: sistema.volumeEquivalenciaMl,
+    regiao,
+    potencialV,
+    parControlador,
+    molFe2,
+    molFe3,
+    molMnO4,
+    molMn2,
+    concentracaoFe2MolL,
+    concentracaoFe3MolL,
+    concentracaoMnO4MolL,
+    concentracaoMn2MolL,
+    descricao,
+  };
+}

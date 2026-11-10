@@ -74,7 +74,7 @@ const sistemaPeroxido = calcularSistemaPermanganometriaPeroxido(entradaPeroxido)
 const sistemaOxalato = calcularSistemaPermanganometriaOxalato(entradaOxalato);
 const sistemaFerro = calcularSistemaPermanganometriaFerro(condicoes);
 
-teste('Semirreações e potenciais padrão reproduzem exatamente a validação acadêmica', () => {
+teste('Semirreações e potenciais padrão dos sistemas de permanganometria', () => {
   assert.equal(
     PAR_PERMANGANATO_MANGANES.semirreacaoReducao,
     'MnO₄⁻ + 8 H⁺ + 5 e⁻ ⇌ Mn²⁺ + 4 H₂O'
@@ -96,15 +96,15 @@ teste('Semirreações e potenciais padrão reproduzem exatamente a validação a
 teste('Volume de equivalência Fe²⁺/MnO₄⁻ = 50,00 mL', () => {
   proximoDe(sistemaFerro.volumeEquivalenciaMl, 50, 1e-9, 'Veq Fe²⁺');
 });
-teste('PE de Fe²⁺ usa a média ponderada dos potenciais condicionais (1 e 5 elétrons)', () => {
-  const potencialSlides = calcularPotencialEquivalenciaPermanganometria({
+teste('PE de Fe²⁺ usa a média ponderada dos potenciais (1 e 5 elétrons)', () => {
+  const potencialEsperado = calcularPotencialEquivalenciaPermanganometria({
     concentracaoHPlusMolL: 1,
     temperaturaC: 25,
   });
-  proximoDe(potencialSlides, 1.3868333333333334, 1e-12, 'fórmula dos slides Fe²⁺');
-  proximoDe(sistemaFerro.potencialEquivalenciaV, potencialSlides, 1e-12, 'EPE Fe²⁺');
+  proximoDe(potencialEsperado, 1.3868333333333334, 1e-12, 'fórmula do PE Fe²⁺');
+  proximoDe(sistemaFerro.potencialEquivalenciaV, potencialEsperado, 1e-12, 'EPE Fe²⁺');
 });
-teste('Consulta da curva retorna o PE de Fe²⁺ pela metodologia dos slides', () => {
+teste('Consulta da curva retorna o potencial no PE de Fe²⁺', () => {
   const ponto = calcularPontoPermanganometriaFerro({
     entrada: condicoes,
     volumeAdicionadoMl: sistemaFerro.volumeEquivalenciaMl,
@@ -151,7 +151,7 @@ const equilibrioOxalatoPE = resolverEquilibrioPermanganometriaOxalato({
 teste('PE do H₂O₂ usa a média ponderada (2 e 5 elétrons), sem correção de concentração', () => {
   proximoDe(sistemaPeroxido.potencialEquivalenciaV, 1.2734285714285714, 1e-12, 'EPE H₂O₂');
 });
-teste('Consulta da curva retorna o PE do H₂O₂ pela metodologia dos slides', () => {
+teste('Consulta da curva retorna o potencial no PE do H₂O₂', () => {
   const ponto = calcularPontoPermanganometriaPeroxido({
     entrada: entradaPeroxido,
     volumeAdicionadoMl: sistemaPeroxido.volumeEquivalenciaMl,
@@ -167,54 +167,111 @@ const entradaValidacaoPeroxido = {
 };
 const sistemaValidacaoPeroxido = calcularSistemaPermanganometriaPeroxido(entradaValidacaoPeroxido);
 
-teste('Validação acadêmica H₂O₂: PE em 20,00 mL e potencial de 1,2734 V', () => {
-  proximoDe(sistemaValidacaoPeroxido.volumeEquivalenciaMl, 20, 1e-12, 'VPE H₂O₂ validação');
-  proximoDe(sistemaValidacaoPeroxido.potencialEquivalenciaV, 1.2734285714285714, 1e-12, 'EPE H₂O₂ validação');
+teste('Exemplo de H₂O₂: PE em 20,00 mL e potencial de 1,2734 V', () => {
+  proximoDe(sistemaValidacaoPeroxido.volumeEquivalenciaMl, 20, 1e-12, 'VPE H₂O₂');
+  proximoDe(sistemaValidacaoPeroxido.potencialEquivalenciaV, 1.2734285714285714, 1e-12, 'EPE H₂O₂');
 });
 
-teste('Validação acadêmica H₂O₂: antes do PE, 10 mL retorna 0,6820 V e [H₂O₂] = [O₂] = 0,025 M', () => {
+teste('H₂O₂ antes do PE: 10 mL retorna 0,6820 V e [H₂O₂] = [O₂] = 0,025 M', () => {
   const ponto = calcularPontoPermanganometriaPeroxido({
     entrada: entradaValidacaoPeroxido,
     volumeAdicionadoMl: 10,
   });
-  proximoDe(ponto.potencialV, 0.682, 1e-12, 'E antes do PE H₂O₂ validação');
-  proximoDe(ponto.concentracaoH2O2MolL, 0.025, 1e-12, '[H₂O₂] validação');
-  proximoDe(ponto.concentracaoO2MolL, 0.025, 1e-12, '[O₂] validação');
+  proximoDe(ponto.potencialV, 0.682, 1e-12, 'E antes do PE H₂O₂');
+  proximoDe(ponto.concentracaoH2O2MolL, 0.025, 1e-12, '[H₂O₂] exemplo');
+  proximoDe(ponto.concentracaoO2MolL, 0.025, 1e-12, '[O₂] exemplo');
 });
 
-teste('Validação acadêmica H₂O₂: após o PE, 30 mL retorna 1,5064 V', () => {
+teste('H₂O₂ após o PE: 30 mL retorna 1,5064 V', () => {
   const ponto = calcularPontoPermanganometriaPeroxido({
     entrada: entradaValidacaoPeroxido,
     volumeAdicionadoMl: 30,
   });
-  proximoDe(ponto.potencialV, 1.506438252244216, 1e-10, 'E após o PE H₂O₂ validação');
-  proximoDe(ponto.concentracaoMnO4MolL, 0.005, 1e-12, '[MnO₄⁻] validação');
-  proximoDe(ponto.concentracaoMn2MolL, 0.01, 1e-12, '[Mn²⁺] validação');
+  proximoDe(ponto.potencialV, 1.506438252244216, 1e-10, 'E após o PE H₂O₂');
+  proximoDe(ponto.concentracaoMnO4MolL, 0.005, 1e-12, '[MnO₄⁻] exemplo');
+  proximoDe(ponto.concentracaoMn2MolL, 0.01, 1e-12, '[Mn²⁺] exemplo');
 });
+const entradaExemploFerro = {
+  concentracaoAnalitoMolL: 0.1,
+  volumeAnalitoMl: 25,
+  concentracaoTitulanteMolL: 0.02,
+  concentracaoHPlusMolL: 1,
+  temperaturaC: 25,
+};
+
+teste('Fe²⁺: PE em 25,00 mL e potencial de 1,3868 V', () => {
+  const sistema = calcularSistemaPermanganometriaFerro(entradaExemploFerro);
+  proximoDe(sistema.volumeEquivalenciaMl, 25, 1e-12, 'VPE Fe²⁺');
+  proximoDe(sistema.potencialEquivalenciaV, 1.3868333333333334, 1e-12, 'EPE Fe²⁺');
+});
+
+teste('Fe²⁺ antes do PE: 10 mL retorna 0,7606 V e as concentrações de Fe²⁺/Fe³⁺ esperadas', () => {
+  const ponto = calcularPontoPermanganometriaFerro({ entrada: entradaExemploFerro, volumeAdicionadoMl: 10 });
+  proximoDe(ponto.potencialV, 0.7605825556291412, 1e-10, 'E antes do PE Fe²⁺');
+  proximoDe(ponto.concentracaoFe2MolL, 0.04285714285714286, 1e-12, '[Fe²⁺]');
+  proximoDe(ponto.concentracaoFe3MolL, 0.02857142857142857, 1e-12, '[Fe³⁺]');
+});
+
+teste('Fe²⁺ após o PE: 30 mL retorna 1,5017 V e as concentrações de MnO₄⁻/Mn²⁺ esperadas', () => {
+  const ponto = calcularPontoPermanganometriaFerro({ entrada: entradaExemploFerro, volumeAdicionadoMl: 30 });
+  proximoDe(ponto.potencialV, 1.5017298778186188, 1e-10, 'E após o PE Fe²⁺');
+  proximoDe(ponto.concentracaoMnO4MolL, 0.0018181818181818182, 1e-12, '[MnO₄⁻] após Fe²⁺');
+  proximoDe(ponto.concentracaoMn2MolL, 0.00909090909090909, 1e-12, '[Mn²⁺] após Fe²⁺');
+});
+
+const entradaExemploOxalato = {
+  concentracaoAnalitoMolL: 0.1,
+  volumeAnalitoMl: 10,
+  concentracaoTitulanteMolL: 0.02,
+  concentracaoHPlusMolL: 1,
+  atividadeCO2: 1,
+  temperaturaC: 25,
+};
+
+teste('H₂C₂O₄: PE em 20,00 mL e potencial de 0,9386 V', () => {
+  const sistema = calcularSistemaPermanganometriaOxalato(entradaExemploOxalato);
+  proximoDe(sistema.volumeEquivalenciaMl, 20, 1e-12, 'VPE H₂C₂O₄');
+  proximoDe(sistema.potencialEquivalenciaV, 0.9385714285714286, 1e-12, 'EPE H₂C₂O₄');
+});
+
+teste('H₂C₂O₄ antes do PE: 10 mL retorna aproximadamente −0,443 V', () => {
+  const ponto = calcularPontoPermanganometriaOxalato({ entrada: entradaExemploOxalato, volumeAdicionadoMl: 10 });
+  proximoDe(ponto.potencialV, -0.44261158637776254, 1e-10, 'E antes do PE H₂C₂O₄');
+  proximoDe(ponto.concentracaoH2C2O4MolL, 0.025, 1e-12, '[H₂C₂O₄]');
+  proximoDe(ponto.molCO2, 0.001, 1e-12, 'n(CO₂)');
+});
+
+teste('H₂C₂O₄ após o PE: 30 mL retorna 1,5064 V', () => {
+  const ponto = calcularPontoPermanganometriaOxalato({ entrada: entradaExemploOxalato, volumeAdicionadoMl: 30 });
+  proximoDe(ponto.potencialV, 1.506438252244216, 1e-10, 'E após o PE H₂C₂O₄');
+  proximoDe(ponto.concentracaoMnO4MolL, 0.005, 1e-12, '[MnO₄⁻] após H₂C₂O₄');
+  proximoDe(ponto.concentracaoMn2MolL, 0.01, 1e-12, '[Mn²⁺] após H₂C₂O₄');
+});
+
 teste('PE do oxalato usa a média ponderada (2 e 5 elétrons), sem correção de concentração', () => {
-  proximoDe(sistemaOxalato.potencialEquivalenciaV, 0.9387713826040816, 1e-7, 'EPE oxalato');
+  proximoDe(sistemaOxalato.potencialEquivalenciaV, 0.9385714285714286, 1e-7, 'EPE ácido oxálico');
 });
-teste('Consulta da curva retorna o PE do oxalato pela metodologia dos slides', () => {
+teste('Consulta da curva retorna o potencial no PE do ácido oxálico', () => {
   const ponto = calcularPontoPermanganometriaOxalato({
     entrada: entradaOxalato,
     volumeAdicionadoMl: sistemaOxalato.volumeEquivalenciaMl,
   });
-  proximoDe(ponto.potencialV, 0.9387713826040816, 1e-7, 'ponto consultado oxalato');
+  proximoDe(ponto.potencialV, 0.9385714285714286, 1e-7, 'ponto consultado ácido oxálico');
 });
-teste('A função de PE do H₂O₂ reproduz diretamente a metodologia dos slides', () => {
+teste('A função de PE do H₂O₂ usa a média ponderada dos potenciais', () => {
   const aproximado = calcularPotencialEquivalenciaPeroxido({
     concentracaoHPlusMolL: 1,
     temperaturaC: 25,
   });
-  proximoDe(aproximado, 1.2734285714285714, 1e-12, 'fórmula dos slides H₂O₂');
+  proximoDe(aproximado, 1.2734285714285714, 1e-12, 'fórmula do PE H₂O₂');
 });
-teste('A função de PE do oxalato reproduz diretamente a metodologia dos slides', () => {
+teste('A função de PE do ácido oxálico usa a média ponderada dos potenciais', () => {
   const aproximado = calcularPotencialEquivalenciaOxalato({
     concentracaoHPlusMolL: 1,
     atividadeCO2: 1,
     temperaturaC: 25,
   });
-  proximoDe(aproximado, 0.9387713826040816, 1e-7, 'fórmula dos slides oxalato');
+  proximoDe(aproximado, 0.9385714285714286, 1e-7, 'fórmula do PE ácido oxálico');
 });
 teste('PE de H₂O₂ não recebe correção dependente da concentração analítica', () => {
   const outroCenario = calcularSistemaPermanganometriaPeroxido({
@@ -246,8 +303,8 @@ teste('Regiões antes e após o PE mantêm os potenciais de Nernst dos pares pre
   proximoDe(peroxidoAntes.potencialV, 0.682, 1e-12, 'H₂O₂ antes do PE pela concentração estequiométrica de O₂');
   proximoDe(peroxidoAntes.concentracaoO2MolL, 0.025, 1e-12, '[O₂] antes do PE');
   proximoDe(peroxidoDepois.potencialV, 1.506438252244216, 1e-10, 'H₂O₂ após o PE');
-  proximoDe(oxalatoAntes.potencialV, -0.44191187334636023, 1e-10, 'oxalato antes do PE');
-  proximoDe(oxalatoDepois.potencialV, 1.5064382522440471, 1e-10, 'oxalato após o PE');
+  proximoDe(oxalatoAntes.potencialV, -0.44261158637776254, 1e-10, 'ácido oxálico antes do PE');
+  proximoDe(oxalatoDepois.potencialV, 1.5064382522440471, 1e-10, 'ácido oxálico após o PE');
 });
 teste('Balanço de massa do H₂O₂ no PE fecha dentro da tolerância', () => {
   assert.ok(Math.abs(equilibrioPeroxidoPE.erroBalancoEstequiometricoMol) <= 1e-14);
@@ -313,7 +370,7 @@ teste('Nernst não falha por overflow/underflow intermediário de Q', () => {
 });
 
 
-// 4 — Iodometria: metodologia em três regiões conforme os slides 39–42.
+// 4 — Iodometria: cálculo em três regiões.
 const entradaIodo = entradaPadraoIodometria('cloro-ativo');
 const resumoIodo = calcularResumoEstequiometricoIodometria(entradaIodo);
 

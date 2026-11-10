@@ -143,7 +143,7 @@ const ehOxalato =
 
 const nomeAnalito =
   ehOxalato
-    ? "Oxalato total"
+    ? "H₂C₂O₄"
     : ehPeroxido
       ? "H₂O₂"
       : "Fe²⁺";
@@ -813,28 +813,6 @@ const nomeAnalito =
   <>
     <div className="resultCard">
       <span>
-        [Oxalato total]
-      </span>
-
-      <strong>
-        {pontoOxalato
-          ? formatarCientifico(
-              pontoOxalato
-                .concentracaoOxalatoTotalMolL
-            )
-          : "-"}
-      </strong>
-
-      {pontoOxalato && (
-        <small>
-          mol/L
-        </small>
-      )}
-    </div>
-
-
-    <div className="resultCard">
-      <span>
         [H₂C₂O₄]
       </span>
 
@@ -923,14 +901,14 @@ const nomeAnalito =
 
     <div className="resultCard">
       <span>
-        a(CO₂)
+        P(CO₂)
       </span>
 
       <strong>
         {formatarNumero(
           atividadeCO2,
           3
-        )}
+        )} atm
       </strong>
     </div>
   </>
@@ -1265,10 +1243,6 @@ const nomeAnalito =
                     {ehOxalato ? (
   <>
     <th>
-      [Oxalato total]
-    </th>
-
-    <th>
       [H₂C₂O₄]
     </th>
 
@@ -1370,14 +1344,6 @@ const nomeAnalito =
                                   4
                                 )}
                               </strong>
-                            </td>
-                      
-                      
-                            <td>
-                              {formatarCientifico(
-                                pontoOxalatoTabela
-                                  .concentracaoOxalatoTotalMolL
-                              )}
                             </td>
                       
                       

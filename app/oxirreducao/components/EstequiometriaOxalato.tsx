@@ -39,12 +39,12 @@ import type {
           </span>
   
           <h3>
-            C₂O₄²⁻ × MnO₄⁻
+            H₂C₂O₄ × MnO₄⁻
           </h3>
   
           <p>
             O balanceamento eletrônico leva à proporção
-            de 5 mol de oxalato para 2 mol de permanganato.
+            de 5 mol de ácido oxálico para 2 mol de permanganato.
           </p>
         </header>
   
@@ -56,7 +56,7 @@ import type {
             </span>
   
             <strong>
-              C₂O₄²⁻ → 2 CO₂ + 2 e⁻
+              H₂C₂O₄ → 2 CO₂ + 2 H⁺ + 2 e⁻
             </strong>
           </article>
   
@@ -70,7 +70,7 @@ import type {
             </span>
   
             <strong>
-              5 C₂O₄²⁻ → 10 CO₂ + 10 e⁻
+              5 H₂C₂O₄ → 10 CO₂ + 10 H⁺ + 10 e⁻
             </strong>
           </article>
         </div>
@@ -96,7 +96,7 @@ import type {
           </span>
   
           <strong>
-            2 MnO₄⁻ + 5 C₂O₄²⁻ + 16 H⁺ →
+            2 MnO₄⁻ + 5 H₂C₂O₄ + 6 H⁺ ⇌
             2 Mn²⁺ + 10 CO₂ + 8 H₂O
           </strong>
         </div>
@@ -110,11 +110,11 @@ import type {
   
             <div>
               <span>
-                Quantidade inicial de oxalato
+                Quantidade inicial de ácido oxálico
               </span>
   
               <strong>
-                n(C₂O₄²⁻)
+                n(H₂C₂O₄)
               </strong>
   
               <b>
@@ -145,7 +145,7 @@ import type {
   
               <p>
                 n(MnO₄⁻) =
-                n(C₂O₄²⁻) × 2/5
+                n(H₂C₂O₄) × 2/5
               </p>
   
               <b>

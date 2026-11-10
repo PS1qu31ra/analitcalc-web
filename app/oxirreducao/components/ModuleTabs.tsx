@@ -35,7 +35,7 @@ const estudos: {
       "Titulações utilizando permanganato como agente oxidante, com acompanhamento estequiométrico e potenciométrico.",
 
     orientacao:
-      "Sistemas disponíveis: Fe²⁺, H₂O₂ e oxalato.",
+      "Sistemas disponíveis: Fe²⁺, H₂O₂ e ácido oxálico.",
   },
   {
     id:

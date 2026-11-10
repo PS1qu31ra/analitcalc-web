@@ -835,7 +835,7 @@ import {
     
     const nomeSistema =
       ehOxalato
-        ? "Oxalato/MnO₄⁻"
+        ? "Ácido oxálico/MnO₄⁻"
         : ehPeroxido
           ? "H₂O₂/MnO₄⁻"
           : "Fe²⁺/MnO₄⁻";
@@ -843,7 +843,7 @@ import {
     
     const proporcaoEstequiometrica =
       ehOxalato
-        ? "5 C₂O₄²⁻ : 2 MnO₄⁻"
+        ? "5 H₂C₂O₄ : 2 MnO₄⁻"
         : ehPeroxido
           ? "5 H₂O₂ : 2 MnO₄⁻"
           : "5 Fe²⁺ : 1 MnO₄⁻";

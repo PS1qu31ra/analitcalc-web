@@ -46,10 +46,9 @@ import type {
             </h3>
   
             <p>
-  O potencial é calculado pelo equilíbrio simultâneo entre
-  os pares O₂/H₂O₂ e MnO₄⁻/Mn²⁺ em todos os volumes da
-  titulação. Antes e depois do PE muda apenas o par
-  predominante no controle do potencial.
+  Antes do PE, aplica-se Nernst ao par O₂/H₂O₂. No PE,
+  utiliza-se a média ponderada dos potenciais dos pares
+  redox. Após o PE, aplica-se Nernst ao par MnO₄⁻/Mn²⁺.
 </p>
           </div>
   

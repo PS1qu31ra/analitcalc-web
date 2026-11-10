@@ -145,7 +145,7 @@ export default function EfeitoConcentracaoRedox({
   
   const rotuloAnalito =
     ehOxalato
-      ? "Oxalato total"
+      ? "H₂C₂O₄ total"
       : ehPeroxido
         ? "H₂O₂"
         : "Fe²⁺";

@@ -21,12 +21,12 @@ const permanganometria_1 = require("./permanganometria");
  * 5 O₂ +
  * 8 H₂O
  */
-exports.REACAO_PERMANGANATO_PEROXIDO = "2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O";
+exports.REACAO_PERMANGANATO_PEROXIDO = "2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ ⇌ 2 Mn²⁺ + 5 O₂ + 8 H₂O";
 const COEFICIENTE_H2O2 = 5;
 const COEFICIENTE_MNO4 = 2;
 const H2O2_POR_MNO4 = COEFICIENTE_H2O2 / COEFICIENTE_MNO4;
 /* =========================================================
- * VALIDAÇÃO
+ * VERIFICAÇÃO DOS DADOS DE ENTRADA
  * ======================================================= */
 function validarEntrada(entrada) {
     const valoresPositivos = [
@@ -60,10 +60,9 @@ function validarEntrada(entrada) {
  *
  * E' = E° + (2,303 RT / F) log[H⁺]
  *
- * A atividade padrão de O₂ é considerada unitária apenas
- * para o cálculo formal no PE, como no roteiro de validação.
- * Antes do PE, a equação de Nernst utiliza a concentração
- * de O₂ efetivamente formada pela estequiometria.
+ * Para o cálculo formal no PE, considera-se atividade unitária
+ * de O₂. Antes do PE, a equação de Nernst utiliza a concentração
+ * de O₂ formada pela estequiometria.
  */
 function calcularPotencialFormalPeroxido({ concentracaoHPlusMolL, temperaturaC = 25, }) {
     if (!Number.isFinite(concentracaoHPlusMolL) ||
@@ -85,8 +84,8 @@ exports.calcularPotencialFormalPeroxido = calcularPotencialFormalPeroxido;
  * POTENCIAL NO PE
  * ======================================================= */
 /**
- * Metodologia dos slides: média ponderada pelos elétrons
- * dos pares O₂/H₂O₂ (2 e⁻) e MnO₄⁻/Mn²⁺ (5 e⁻).
+ * Média ponderada pelos números de elétrons dos pares
+ * O₂/H₂O₂ (2 e⁻) e MnO₄⁻/Mn²⁺ (5 e⁻).
  */
 function calcularPotencialEquivalenciaPeroxido({ concentracaoHPlusMolL, temperaturaC = 25, }) {
     const potencialFormalPeroxido = calcularPotencialFormalPeroxido({
@@ -209,7 +208,7 @@ function calcularPontoPermanganometriaPeroxido({ entrada, volumeAdicionadoMl, })
         }
     }
     else if (regiao === "pe") {
-        // No PE: usar diretamente a média ponderada dos slides.
+        // No PE: usar diretamente a média ponderada dos potenciais dos pares.
         molH2O2 = 0;
         molO2 = molH2O2Inicial;
         molMnO4 = 0;
@@ -244,7 +243,7 @@ function calcularPontoPermanganometriaPeroxido({ entrada, volumeAdicionadoMl, })
     const descricao = regiao === "antes_pe"
         ? "Antes do PE, o potencial é calculado pela equação de Nernst do par O₂/H₂O₂, usando as concentrações de H₂O₂ restante e O₂ formado pelo balanço estequiométrico."
         : regiao === "pe"
-            ? "No PE, o potencial é a média ponderada dos potenciais padrão dos pares O₂/H₂O₂ (2 elétrons) e MnO₄⁻/Mn²⁺ (5 elétrons), conforme a validação."
+            ? "No PE, o potencial é a média ponderada dos potenciais dos pares O₂/H₂O₂ (2 elétrons) e MnO₄⁻/Mn²⁺ (5 elétrons)."
             : "Após o PE, o potencial é calculado pela equação de Nernst do par MnO₄⁻/Mn²⁺, usando as concentrações estequiométricas do titulante em excesso e do Mn²⁺ formado.";
     return {
         volumeAdicionadoMl,

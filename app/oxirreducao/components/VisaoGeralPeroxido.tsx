@@ -122,7 +122,7 @@ import type {
           </span>
   
           <strong>
-            2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O
+            2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ ⇌ 2 Mn²⁺ + 5 O₂ + 8 H₂O
           </strong>
         </div>
   

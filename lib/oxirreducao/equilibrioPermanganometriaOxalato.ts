@@ -516,7 +516,7 @@ import {
     validarPositivo(
       entrada
         .molOxalatoTotalInicial,
-      "A quantidade total de oxalato"
+      "A quantidade total de espécies do ácido oxálico"
     );
   
   
@@ -722,7 +722,7 @@ import {
 
     if (residuoInferior > 0 || residuoSuperior < 0) {
       throw new Error(
-        'Não foi possível localizar o equilíbrio eletroquímico do sistema oxalato/MnO₄⁻.'
+        'Não foi possível localizar o equilíbrio eletroquímico do sistema ácido oxálico/MnO₄⁻.'
       );
     }
 

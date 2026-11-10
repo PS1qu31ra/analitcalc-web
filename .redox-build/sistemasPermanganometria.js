@@ -12,7 +12,7 @@ exports.SISTEMA_FERRO_II = {
     descricao: "Determinação de Fe²⁺ por oxidação a Fe³⁺ utilizando permanganato em meio ácido.",
     titulante: "KMnO₄",
     status: "disponivel",
-    observacao: "Sistema inicial validado no motor de permanganometria.",
+    observacao: "Titulação de Fe²⁺ com permanganato em meio ácido.",
 };
 exports.SISTEMA_PEROXIDO_HIDROGENIO = {
     id: "peroxido-hidrogenio",
@@ -26,10 +26,10 @@ exports.SISTEMA_PEROXIDO_HIDROGENIO = {
 };
 exports.SISTEMA_OXALATO = {
     id: "oxalato",
-    nome: "Oxalato",
-    formulaAnalito: "C₂O₄²⁻",
-    nomeCompleto: "Oxalato — C₂O₄²⁻",
-    descricao: "Determinação de oxalato por oxidação com permanganato em meio ácido.",
+    nome: "Ácido oxálico",
+    formulaAnalito: "H₂C₂O₄",
+    nomeCompleto: "Ácido oxálico — H₂C₂O₄",
+    descricao: "Determinação de ácido oxálico por oxidação com permanganato em meio ácido.",
     titulante: "KMnO₄",
     status: "disponivel",
     observacao: "Sistema completo com estequiometria, potencial redox, curva potenciométrica, derivadas, efeito da concentração, simulação em tempo real e avaliação do erro experimental.",

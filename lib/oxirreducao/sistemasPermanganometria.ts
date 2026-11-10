@@ -64,7 +64,7 @@ export const SISTEMA_FERRO_II:
     "disponivel",
 
   observacao:
-    "Sistema inicial validado no motor de permanganometria.",
+    "Titulação de Fe²⁺ com permanganato em meio ácido.",
 };
 
 
@@ -102,16 +102,16 @@ export const SISTEMA_OXALATO:
     "oxalato",
 
   nome:
-    "Oxalato",
+    "Ácido oxálico",
 
   formulaAnalito:
-    "C₂O₄²⁻",
+    "H₂C₂O₄",
 
   nomeCompleto:
-    "Oxalato — C₂O₄²⁻",
+    "Ácido oxálico — H₂C₂O₄",
 
   descricao:
-    "Determinação de oxalato por oxidação com permanganato em meio ácido.",
+    "Determinação de ácido oxálico por oxidação com permanganato em meio ácido.",
 
   titulante:
     "KMnO₄",

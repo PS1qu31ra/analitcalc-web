@@ -39,11 +39,11 @@ import type {
           </span>
   
           <h3>
-            Permanganometria do oxalato
+            Permanganometria do ácido oxálico
           </h3>
   
           <p>
-            O oxalato é oxidado a CO₂ enquanto o permanganato
+            O ácido oxálico é oxidado a CO₂ enquanto o permanganato
             é reduzido a Mn²⁺ em meio ácido.
           </p>
         </header>
@@ -56,7 +56,7 @@ import type {
             </span>
   
             <strong>
-              C₂O₄²⁻
+              H₂C₂O₄
             </strong>
   
             <p>
@@ -75,7 +75,7 @@ import type {
             </strong>
   
             <p>
-              Produto da oxidação do oxalato.
+              Produto da oxidação do ácido oxálico.
             </p>
           </article>
   
@@ -105,7 +105,7 @@ import type {
             </strong>
   
             <p>
-              5 C₂O₄²⁻ para 2 MnO₄⁻.
+              5 H₂C₂O₄ para 2 MnO₄⁻.
             </p>
           </article>
         </div>
@@ -117,7 +117,7 @@ import type {
           </span>
   
           <strong>
-            2 MnO₄⁻ + 5 C₂O₄²⁻ + 16 H⁺ →
+            2 MnO₄⁻ + 5 H₂C₂O₄ + 6 H⁺ ⇌
             2 Mn²⁺ + 10 CO₂ + 8 H₂O
           </strong>
         </div>
@@ -195,7 +195,7 @@ import type {
           </strong>
   
           <p>
-            A reação entre permanganato e oxalato apresenta
+            A reação entre permanganato e ácido oxálico apresenta
             comportamento autocatalítico. O Mn²⁺ produzido
             durante a reação favorece sua progressão, de modo
             que as condições experimentais e a temperatura têm
@@ -205,18 +205,18 @@ import type {
   
   
         <div className="oxirreducaoEducationalNote">
-  <strong>
-    Modelo potenciométrico
-  </strong>
+          <strong>
+            Modelo potenciométrico
+          </strong>
 
-  <p>
-    A curva E × V utiliza equilíbrio redox simultâneo e
-    especiação ácido-base do oxalato. A concentração
-    analítica total é distribuída entre H₂C₂O₄,
-    HC₂O₄⁻ e C₂O₄²⁻ antes do cálculo do potencial pelo
-    par CO₂/H₂C₂O₄.
-  </p>
-</div>
+          <p>
+            Antes do ponto de equivalência, o potencial é calculado
+            pelo par CO₂/H₂C₂O₄. No ponto de equivalência, utiliza-se
+            a média ponderada dos potenciais dos dois pares redox.
+            Após o ponto de equivalência, o par MnO₄⁻/Mn²⁺ determina
+            o potencial da solução.
+          </p>
+        </div>
       </section>
     );
   }

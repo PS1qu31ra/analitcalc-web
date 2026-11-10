@@ -178,7 +178,7 @@ function calcularResiduo(entrada) {
 }
 function resolverEquilibrioPermanganometriaOxalato(entrada) {
     validarPositivo(entrada
-        .molOxalatoTotalInicial, "A quantidade total de oxalato");
+        .molOxalatoTotalInicial, "A quantidade total de espécies do ácido oxálico");
     validarPositivo(entrada
         .volumeTotalMl, "O volume total");
     validarPositivo(entrada
@@ -279,7 +279,7 @@ function resolverEquilibrioPermanganometriaOxalato(entrada) {
         }
     }
     if (residuoInferior > 0 || residuoSuperior < 0) {
-        throw new Error('Não foi possível localizar o equilíbrio eletroquímico do sistema oxalato/MnO₄⁻.');
+        throw new Error('Não foi possível localizar o equilíbrio eletroquímico do sistema ácido oxálico/MnO₄⁻.');
     }
     for (let iteracao = 0; iteracao < 200; iteracao += 1) {
         const meio = (limiteInferior + limiteSuperior) / 2;

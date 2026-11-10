@@ -43,7 +43,7 @@ import {
           </h3>
   
           <p>
-            Na permanganometria do oxalato, o sistema redutor
+            Na permanganometria do ácido oxálico, o sistema redutor
             é tratado termodinamicamente pelo par
             CO₂/H₂C₂O₄ em meio ácido, enquanto o permanganato
             é reduzido a Mn²⁺.
@@ -185,28 +185,23 @@ import {
           </strong>
   
           <p>
-            Cada unidade de oxalato fornece dois elétrons
+            Cada mol de H₂C₂O₄ fornece dois elétrons
             ao ser oxidada a CO₂. Cada MnO₄⁻ recebe cinco
             elétrons. O mínimo múltiplo comum é dez
             elétrons, originando a proporção de
-            5 oxalatos para 2 permanganatos.
+            5 mol de ácido oxálico para 2 mol de permanganato.
           </p>
         </div>
   
   
         <div className="oxirreducaoEducationalNote">
           <strong>
-            Oxalato total × espécie redox
+            Espécie considerada
           </strong>
   
           <p>
-            A concentração informada na calculadora
-            representa o oxalato analítico total. Em meio
-            ácido, porém, parte desse material encontra-se
-            protonada como H₂C₂O₄. O futuro cálculo da
-            curva E × V levará essa especiação ácido-base
-            em consideração antes de aplicar a equação de
-            Nernst.
+            O analito é representado como ácido oxálico
+            (H₂C₂O₄), que é oxidado a CO₂ durante a titulação.
           </p>
         </div>
   

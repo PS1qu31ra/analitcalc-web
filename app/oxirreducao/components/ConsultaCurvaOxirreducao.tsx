@@ -1094,69 +1094,16 @@ export default function ConsultaCurvaOxirreducao(
 
           especies: [
             {
-              rotulo:
-                "[Oxalato total]",
-
-              valor:
-                `${formatarCientifico(
-                  ponto
-                    .concentracaoOxalatoTotalMolL
-                )} mol/L`,
+              rotulo: "[H₂C₂O₄]",
+              valor: `${formatarCientifico(ponto.concentracaoH2C2O4MolL)} mol/L`,
             },
-
             {
-              rotulo:
-                "[H₂C₂O₄]",
-
-              valor:
-                `${formatarCientifico(
-                  ponto
-                    .concentracaoH2C2O4MolL
-                )} mol/L`,
+              rotulo: "[MnO₄⁻]",
+              valor: `${formatarCientifico(ponto.concentracaoMnO4MolL)} mol/L`,
             },
-
             {
-              rotulo:
-                "[HC₂O₄⁻]",
-
-              valor:
-                `${formatarCientifico(
-                  ponto
-                    .concentracaoHC2O4MolL
-                )} mol/L`,
-            },
-
-            {
-              rotulo:
-                "[C₂O₄²⁻]",
-
-              valor:
-                `${formatarCientifico(
-                  ponto
-                    .concentracaoC2O4MolL
-                )} mol/L`,
-            },
-
-            {
-              rotulo:
-                "[MnO₄⁻]",
-
-              valor:
-                `${formatarCientifico(
-                  ponto
-                    .concentracaoMnO4MolL
-                )} mol/L`,
-            },
-
-            {
-              rotulo:
-                "[Mn²⁺]",
-
-              valor:
-                `${formatarCientifico(
-                  ponto
-                    .concentracaoMn2MolL
-                )} mol/L`,
+              rotulo: "[Mn²⁺]",
+              valor: `${formatarCientifico(ponto.concentracaoMn2MolL)} mol/L`,
             },
           ],
         });
