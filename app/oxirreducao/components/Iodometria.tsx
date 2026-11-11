@@ -33,8 +33,8 @@ import IodometriaTabs, {
 } from "./IodometriaTabs";
 
 import SeletorSistemaIodometria from "./SeletorSistemaIodometria";
-import GraficoIodometria from "./GraficoIodometria";
 import DerivadasIodometria from "./DerivadasIodometria";
+import EfeitoConcentracaoIodometria from "./EfeitoConcentracaoIodometria";
 
 import SimulacaoTempoRealIodometriaChart from "./SimulacaoTempoRealIodometriaChart";
 
@@ -126,7 +126,15 @@ function VisaoGeralIodometria({
           <span>Reagente auxiliar</span>
           <strong>KI</strong>
           <p>
-            Fornece I⁻ em excesso para gerar quantitativamente as espécies de iodo.
+            Fornece o I⁻ necessário para a geração quantitativa de I₃⁻.
+          </p>
+        </article>
+
+        <article>
+          <span>Concentração mínima de KI</span>
+          <strong>{formatarNumero(resultado.concentracaoKIMinimaMolL, 4)} mol/L</strong>
+          <p>
+            Limite estequiométrico calculado automaticamente. Na prática, utilizar KI em concentração superior para manter I⁻ em excesso.
           </p>
         </article>
 
@@ -255,20 +263,26 @@ function SemirreacoesIodometria({
             <span>Formação da espécie titulada em excesso de KI</span>
             <strong>{EQUILIBRIO_TRIIODeto}</strong>
             <small>
-              O iodo gerado é representado como I₃⁻. A concentração inicial de KI serve para verificar o excesso e fechar o balanço de iodeto; o motor não calcula [I₂] livre nem aplica Kf de especiação.
+              O AnalitCalc informa a quantidade mínima estequiométrica de KI.
+              O excesso operacional utilizado em laboratório não é presumido
+              pelo motor, pois depende da quantidade real de solução de KI adicionada.
             </small>
           </div>
           <div className="reactionWideCard">
-            <span>Antes do PE — Nernst do par da amostra</span>
+            <span>Equação de Nernst — par I₃⁻/I⁻</span>
             <strong>E = E°(I₃⁻/I⁻) − (0,0592/2) log([I⁻]³/[I₃⁻])</strong>
-            <small>E° = {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C; as concentrações vêm do balanço estequiométrico.</small>
+            <small>E° = {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C.</small>
           </div>
           <div className="reactionWideCard">
-            <span>No PE — média ponderada dos potenciais padrão</span>
-            <strong>E<sub>PE</sub> = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V</strong>
+            <span>Critério de equilíbrio em cada volume</span>
+            <strong>E(I₃⁻/I⁻) = E(S₄O₆²⁻/S₂O₃²⁻)</strong>
+            <small>
+              O motor resolve numericamente a extensão da reação até que os
+              dois pares apresentem o mesmo potencial.
+            </small>
           </div>
           <div className="reactionWideCard">
-            <span>Após o PE — Nernst do par do titulante</span>
+            <span>Equação de Nernst — par S₄O₆²⁻/S₂O₃²⁻</span>
             <strong>E = E°(S₄O₆²⁻/S₂O₃²⁻) − (0,0592/2) log([S₂O₃²⁻]²/[S₄O₆²⁻])</strong>
             <small>E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V a 25 °C.</small>
           </div>
@@ -474,7 +488,10 @@ function CurvaIodometria({
         <h2>Curva potenciométrica da iodometria</h2>
 
         <p>
-          O motor segue as três regiões da metodologia dos slides: Nernst do par I₃⁻/I⁻ antes do PE, média ponderada dos potenciais padrão no PE e Nernst do par S₄O₆²⁻/S₂O₃²⁻ após o PE. As concentrações são calculadas por estequiometria e diluição.
+          Em todos os volumes, o potencial é obtido pela resolução simultânea
+          das equações de Nernst dos pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻,
+          respeitando os balanços de matéria da reação. Assim, a curva passa
+          continuamente pela região do ponto de equivalência.
         </p>
 
         <div className="resultGrid">
@@ -509,244 +526,14 @@ function CurvaIodometria({
 
       <div className="explanationBox">
         <p>
-          O KI é informado pela concentração inicial de I⁻ e deve estar em excesso para a reação global gerar I₃⁻. Em cada volume, o iodeto é calculado pelo balanço estequiométrico: iodeto remanescente após a geração + três mols de I⁻ regenerados por mol de I₃⁻ reduzido. Antes do PE aplica-se Nernst ao par I₃⁻/I⁻; no PE utiliza-se a média ponderada dos dois pares, conforme os slides; após o PE aplica-se Nernst ao par S₄O₆²⁻/S₂O₃²⁻. As concentrações são aproximações de atividades e os potenciais padrão são referências a 25 °C.
+          A concentração mínima de KI é calculada automaticamente pela
+          estequiometria da geração de I₃⁻. A curva é resolvida pelo equilíbrio
+          simultâneo dos pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, com balanços de matéria
+          em cada volume. O excesso operacional de KI não é presumido; a
+          quantidade experimental utilizada pode alterar as atividades e o
+          potencial medido. Os potenciais padrão são referências a 25 °C.
         </p>
       </div>
-    </section>
-  );
-}
-
-
-function EfeitoConcentracaoIodometria({
-  resultadoBase,
-}: {
-  resultadoBase: ResultadoCurvaIodometria;
-}) {
-  const [
-    concentracaoAnalito,
-    setConcentracaoAnalito,
-  ] = useState("");
-
-  const [
-    concentracaoTios,
-    setConcentracaoTios,
-  ] = useState("");
-
-  const [
-    simulacao,
-    setSimulacao,
-  ] = useState<ResultadoCurvaIodometria | null>(
-    null
-  );
-
-  const [erro, setErro] = useState("");
-
-  function aplicarFatorAnalito(fator: number) {
-    const atual = converterNumero(concentracaoAnalito);
-    const referencia =
-      Number.isFinite(atual) && atual > 0
-        ? atual
-        : resultadoBase.entrada.concentracaoAnalitoMolL;
-
-    setConcentracaoAnalito(numeroParaCampo(referencia * fator));
-    setErro("");
-  }
-
-  function aplicarFatorTios(fator: number) {
-    const atual = converterNumero(concentracaoTios);
-    const referencia =
-      Number.isFinite(atual) && atual > 0
-        ? atual
-        : resultadoBase.entrada.concentracaoTiossulfatoMolL;
-
-    setConcentracaoTios(numeroParaCampo(referencia * fator));
-    setErro("");
-  }
-
-  useEffect(() => {
-    setConcentracaoAnalito("");
-    setConcentracaoTios("");
-    setSimulacao(null);
-    setErro("");
-  }, [resultadoBase]);
-
-  function simular() {
-    const ca = converterNumero(concentracaoAnalito);
-    const ct = converterNumero(concentracaoTios);
-
-    if (
-      !Number.isFinite(ca) ||
-      !Number.isFinite(ct) ||
-      ca <= 0 ||
-      ct <= 0
-    ) {
-      setErro("Informe concentrações positivas e válidas.");
-      return;
-    }
-
-    const entrada: EntradaIodometria = {
-      ...resultadoBase.entrada,
-      concentracaoAnalitoMolL: ca,
-      concentracaoTiossulfatoMolL: ct,
-    };
-
-    try {
-      setSimulacao(
-        gerarCurvaIodometria({ entrada })
-      );
-      setErro("");
-    } catch (error) {
-      setSimulacao(null);
-      setErro(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível gerar a simulação."
-      );
-    }
-  }
-
-  return (
-    <section className="oxirreducaoTabPanel">
-      <div className="resultsPanel">
-        <span className="eyebrow">
-          Sensibilidade estequiométrica
-        </span>
-        <h2>Efeito da concentração</h2>
-        <p>
-          Altere a concentração do analito e do Na₂S₂O₃. O volume da amostra, a concentração inicial de iodeto e a temperatura permanecem iguais à condição principal. O excesso de I⁻ é recalculado e verificado automaticamente. Como sugestão, teste metade ou o dobro de uma concentração por vez para observar o efeito isolado no PE.
-        </p>
-
-        <div className="oxirreducaoMainGrid">
-          <div className="oxirreducaoForm">
-            <label>
-              Concentração do analito
-              <div className="oxirreducaoInputUnit">
-                <input
-                  value={concentracaoAnalito}
-                  placeholder={`Ex.: ${numeroParaCampo(resultadoBase.entrada.concentracaoAnalitoMolL)}`}
-                  onChange={(event) => {
-                    setConcentracaoAnalito(event.target.value);
-                    setErro("");
-                  }}
-                  inputMode="decimal"
-                />
-                <span>mol/L</span>
-              </div>
-              <small>
-                Referência original: {numeroParaCampo(resultadoBase.entrada.concentracaoAnalitoMolL)} mol/L
-              </small>
-            </label>
-
-            <label>
-              Concentração de Na₂S₂O₃
-              <div className="oxirreducaoInputUnit">
-                <input
-                  value={concentracaoTios}
-                  placeholder={`Ex.: ${numeroParaCampo(resultadoBase.entrada.concentracaoTiossulfatoMolL)}`}
-                  onChange={(event) => {
-                    setConcentracaoTios(event.target.value);
-                    setErro("");
-                  }}
-                  inputMode="decimal"
-                />
-                <span>mol/L</span>
-              </div>
-              <small>
-                Referência original: {numeroParaCampo(resultadoBase.entrada.concentracaoTiossulfatoMolL)} mol/L
-              </small>
-            </label>
-
-            <div className="oxirreducaoConcentracaoQuickActions">
-              <section>
-                <header>
-                  <div>
-                    <span>Analito</span>
-                    <strong>Ajuste rápido</strong>
-                  </div>
-                  <small>Concentração</small>
-                </header>
-                <div className="oxirreducaoConcentracaoQuickButtons">
-                  <button type="button" onClick={() => aplicarFatorAnalito(2)}>×2</button>
-                  <button type="button" onClick={() => aplicarFatorAnalito(5)}>×5</button>
-                  <button type="button" onClick={() => aplicarFatorAnalito(0.5)}>÷2</button>
-                  <button type="button" onClick={() => aplicarFatorAnalito(0.2)}>÷5</button>
-                </div>
-              </section>
-
-              <section>
-                <header>
-                  <div>
-                    <span>Na₂S₂O₃</span>
-                    <strong>Ajuste rápido</strong>
-                  </div>
-                  <small>Concentração</small>
-                </header>
-                <div className="oxirreducaoConcentracaoQuickButtons">
-                  <button type="button" onClick={() => aplicarFatorTios(2)}>×2</button>
-                  <button type="button" onClick={() => aplicarFatorTios(5)}>×5</button>
-                  <button type="button" onClick={() => aplicarFatorTios(0.5)}>÷2</button>
-                  <button type="button" onClick={() => aplicarFatorTios(0.2)}>÷5</button>
-                </div>
-              </section>
-            </div>
-
-            {erro && (
-              <div className="oxirreducaoError">
-                {erro}
-              </div>
-            )}
-
-            <button
-              type="button"
-              className="primaryButton"
-              onClick={simular}
-            >
-              Aplicar novas concentrações
-            </button>
-          </div>
-
-          <div className="resultsPanel">
-            <div className="resultGrid">
-              <div className="resultCard">
-                <span>PE original</span>
-                <strong>{formatarNumero(resultadoBase.volumeEquivalenciaMl, 3)} mL</strong>
-              </div>
-
-              <div className="resultCard">
-                <span>PE simulado</span>
-                <strong>
-                  {simulacao
-                    ? `${formatarNumero(simulacao.volumeEquivalenciaMl, 3)} mL`
-                    : "-"}
-                </strong>
-              </div>
-
-              <div className="resultCard">
-                <span>ΔPE</span>
-                <strong>
-                  {simulacao
-                    ? `${formatarNumero(simulacao.volumeEquivalenciaMl - resultadoBase.volumeEquivalenciaMl, 3)} mL`
-                    : "-"}
-                </strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {simulacao && (
-        <div className="resultsPanel">
-          <GraficoIodometria
-            resultado={resultadoBase}
-            curvaComparacao={simulacao}
-          />
-          <div className="explanationBox">
-            <p>
-              Linha contínua: condição original. Linha tracejada: condição simulada. Pela relação estequiométrica, o PE cresce com a concentração do analito e diminui com o aumento da concentração de tiossulfato.
-            </p>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
@@ -1330,10 +1117,10 @@ function ErroExperimentalIodometria({
       !Number.isFinite(
         volumeNumerico
       ) ||
-      volumeNumerico < 0
+      volumeNumerico <= 0
     ) {
       setErroEntrada(
-        "Informe um PF experimental válido."
+        "Informe um PF experimental maior que 0 mL para aplicar a equação de Nernst."
       );
 
       return;
@@ -1445,7 +1232,7 @@ function ErroExperimentalIodometria({
             Compare o ponto final observado
             experimentalmente com o ponto de equivalência
             estequiométrico e com o PF teórico determinado
-            pelas derivadas da curva iodimétrica.
+            pelas derivadas da curva iodométrica.
           </p>
         </div>
       </header>
@@ -1462,7 +1249,7 @@ function ErroExperimentalIodometria({
           </span>
 
           <h6>
-            Sistema iodimétrico avaliado
+            Sistema iodométrico avaliado
           </h6>
         </div>
 
@@ -1553,7 +1340,7 @@ function ErroExperimentalIodometria({
 
           <p>
             Digite o volume em que a titulação
-            iodimétrica foi considerada encerrada
+            iodométrica foi considerada encerrada
             experimentalmente.
           </p>
 
@@ -2177,7 +1964,7 @@ function GraficoErroExperimentalIodometria({
   ) {
     return (
       <div className="oxirreducaoEmptyChart">
-        Não foi possível gerar a curva iodimétrica.
+        Não foi possível gerar a curva iodométrica.
       </div>
     );
   }
@@ -2730,6 +2517,8 @@ function GraficoErroExperimentalIodometria({
   );
 }
 
+const TEMPERATURA_FIXA_IODOMETRIA_C = 25;
+
 export default function Iodometria() {
   const [
     sistemaAtivo,
@@ -2748,10 +2537,6 @@ export default function Iodometria() {
   const [volumeAmostra, setVolumeAmostra] = useState("");
 
   const [concentracaoTios, setConcentracaoTios] = useState("");
-
-  const [concentracaoIodeto, setConcentracaoIodeto] = useState("");
-
-  const [temperatura, setTemperatura] = useState("");
 
   const [resultado, setResultado] =
     useState<ResultadoCurvaIodometria | null>(null);
@@ -2772,8 +2557,6 @@ export default function Iodometria() {
     setConcentracaoAnalito("");
     setVolumeAmostra("");
     setConcentracaoTios("");
-    setConcentracaoIodeto("");
-    setTemperatura("");
   }
 
   function alterarSistema(
@@ -2798,8 +2581,6 @@ export default function Iodometria() {
       concentracaoAnalito,
       volumeAmostra,
       concentracaoTios,
-      concentracaoIodeto,
-      temperatura,
     ];
 
     const entradaCompleta = camposObrigatorios.every((valor) => {
@@ -2827,14 +2608,7 @@ export default function Iodometria() {
         converterNumero(
           concentracaoTios
         ),
-      concentracaoIodetoInicialMolL:
-        converterNumero(
-          concentracaoIodeto
-        ),
-      temperaturaC:
-        converterNumero(
-          temperatura
-        ),
+      temperaturaC: TEMPERATURA_FIXA_IODOMETRIA_C,
     };
 
     try {
@@ -2846,7 +2620,7 @@ export default function Iodometria() {
       setResultado(novoResultado);
       setErro("");
       setMensagem(
-        "Sistema iodimétrico calculado com sucesso."
+        "Sistema iodométrico calculado com sucesso."
       );
       setJaCalculou(true);
       setDadosAlterados(false);
@@ -2855,7 +2629,7 @@ export default function Iodometria() {
       setErro(
         error instanceof Error
           ? error.message
-          : "Não foi possível calcular o sistema iodimétrico."
+          : "Não foi possível calcular o sistema iodométrico."
       );
     }
   }
@@ -2891,12 +2665,12 @@ export default function Iodometria() {
 
   const derivadas = useMemo(
     () =>
-      resultadoDenso
+      resultado
         ? calcularDerivadasIodometria(
-            resultadoDenso.pontosValidos
+            resultado.pontosValidos
           )
         : null,
-    [resultadoDenso]
+    [resultado]
   );
 
   const oxigenioMgL =
@@ -3008,52 +2782,27 @@ export default function Iodometria() {
               </div>
             </label>
 
-            <label>
-              Concentração inicial de I⁻ (KI)
-              <div className="oxirreducaoInputUnit">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={concentracaoIodeto}
-                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.concentracaoIodetoInicialMolL)}`}
-                  required
-                  onChange={(event) => {
-                    setConcentracaoIodeto(event.target.value);
-                    setDadosAlterados(true);
-                    setJaCalculou(false);
-                    setResultado(null);
-                    setMensagem("");
-                    setErro("");
-                  }}
-                />
-                <span>mol/L</span>
-              </div>
-              <small>
-                Concentração inicial de iodeto fornecida pelo KI. Deve ser suficiente para consumir o analito e ainda deixar I⁻ em excesso para formar I₃⁻. Em cada ponto, o motor calcula o iodeto pelas relações estequiométricas das reações. O volume da amostra representa o volume inicial total da mistura, inclusive o KI adicionado.
-              </small>
-            </label>
+            <div className="explanationBox">
+              <p>
+                A concentração mínima de KI não precisa ser informada. A plataforma calcula automaticamente o limite estequiométrico a partir da concentração do analito e apresenta o resultado na Visão geral. Na prática, deve-se utilizar KI em excesso.
+              </p>
+            </div>
 
-            <label>
-              Temperatura
-              <div className="oxirreducaoInputUnit">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={temperatura}
-                  placeholder={`Ex.: ${numeroParaCampo(entradaReferencia.temperaturaC)}`}
-                  required
-                  onChange={(event) => {
-                    setTemperatura(event.target.value);
-                    setDadosAlterados(true);
-                    setJaCalculou(false);
-                    setResultado(null);
-                    setMensagem("");
-                    setErro("");
-                  }}
-                />
-                <span>°C</span>
+            <div
+              className="oxirreducaoFixedConditions"
+              aria-label="Condições fixas da iodometria"
+            >
+              <div
+                className="oxirreducaoFixedCondition"
+                style={{ gridColumn: "1 / -1" }}
+              >
+                <span>Temperatura</span>
+                <strong>{TEMPERATURA_FIXA_IODOMETRIA_C} °C</strong>
               </div>
-            </label>
+              <p className="oxirreducaoFixedConditionsNote">
+                Condição padronizada para todos os sistemas de iodometria.
+              </p>
+            </div>
 
             {erro && (
               <div className="oxirreducaoError">
@@ -3128,16 +2877,20 @@ export default function Iodometria() {
 
             <div className="resultGrid">
               <div className="resultCard">
-                <span>[I⁻] inicial na mistura</span>
-                <strong>{formatarNumero(resultado.entrada.concentracaoIodetoInicialMolL, 4)} mol/L</strong>
+                <span>Concentração mínima de KI</span>
+                <strong>{formatarNumero(resultado.concentracaoKIMinimaMolL, 4)} mol/L</strong>
+                <small>Limite estequiométrico na mistura inicial</small>
               </div>
               <div className="resultCard">
-                <span>[I⁻] remanescente após gerar I₃⁻</span>
-                <strong>{formatarCientifico(resultado.molIodetoDisponivelAposGeracao / (resultado.entrada.volumeAmostraMl / 1000))} mol/L</strong>
+                <span>Quantidade mínima de KI</span>
+                <strong>{formatarCientifico(resultado.molKIMinimo)} mol</strong>
+                <small>{formatarNumero(resultado.molKIMinimo * 1000, 3)} mmol</small>
               </div>
             </div>
             <div className="explanationBox">
-              <p>{sistema.observacao} O I⁻ em cada ponto resulta do balanço estequiométrico e da diluição; o modelo não resolve uma especiação adicional I₂/I₃⁻.</p>
+              <p>
+                {sistema.observacao} Como 1 mol de KI fornece 1 mol de I⁻, o valor exibido é o mínimo estequiométrico para a mistura inicial. Para garantir excesso de iodeto, utilize concentração superior. A concentração da solução-estoque de KI depende do volume efetivamente adicionado.
+              </p>
             </div>
           </div>
           ) : (

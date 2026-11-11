@@ -37,6 +37,7 @@ const {
   buscarSistemaIodometria: buscarSistemaIodometriaCore,
   calcularResumoEstequiometricoIodometria,
   calcularPotencialEquivalenciaIodometria,
+  calcularMediaFormalPotenciaisPadraoIodometria,
   localizarRegiaoIodometriaPorBuscaBinaria,
   E0_I3_I_25C,
   E0_TETRATIONATO_TIOS,
@@ -340,15 +341,6 @@ teste('Curva E = V³ localiza o cruzamento real de E″ em V = 0', () => {
   const resultado = calcularDerivadasRedox(cubica);
   proximoDe(resultado.volumePFSegundaDerivadaMl, 0, 1e-12, 'cruzamento E″');
 });
-teste('Curva iodimétrica padrão mantém derivada independente e ponto de cruzamento', () => {
-  const curva = gerarCurvaIodometria({ entrada: entradaPadraoIodometria('cloro-ativo') });
-  const derivadas = calcularDerivadasIodometria(curva.pontosValidos);
-  assert.ok(Number.isFinite(derivadas.volumePFPrimeiraDerivadaMl));
-  assert.ok(Number.isFinite(derivadas.volumePFSegundaDerivadaMl));
-  assert.ok(Math.abs(derivadas.volumePFPrimeiraDerivadaMl - derivadas.volumePFSegundaDerivadaMl) < 0.1);
-});
-
-// 4 — Nernst em espaço logarítmico.
 teste('Nernst mantém resultado convencional para atividades ordinárias', () => {
   const resultado = calcularPotencialNernst({
     par: PAR_FERRO_III_FERRO_II,
@@ -370,7 +362,7 @@ teste('Nernst não falha por overflow/underflow intermediário de Q', () => {
 });
 
 
-// 4 — Iodometria: cálculo em três regiões.
+// 4 — Iodometria: equilíbrio redox acoplado e curva contínua.
 const entradaIodo = entradaPadraoIodometria('cloro-ativo');
 const resumoIodo = calcularResumoEstequiometricoIodometria(entradaIodo);
 
@@ -378,63 +370,75 @@ teste('I₃⁻/I⁻ usa E° = +0,536 V, sem recorrer a 0,621 V', () => {
   proximoDe(E0_I3_I_25C, 0.536, 1e-15, 'E° I₃⁻/I⁻');
 });
 
-teste('PE iodimétrico usa a média ponderada dos dois pares de 2 elétrons', () => {
-  const esperado = (2 * 0.536 + 2 * 0.080) / 4;
-  proximoDe(calcularPotencialEquivalenciaIodometria(25), esperado, 1e-15, 'EPE iodometria');
-  proximoDe(calcularPotencialEquivalenciaIodometria(25), 0.308, 1e-15, 'EPE = 0,308 V');
+teste('A média formal dos E° é identificada separadamente do potencial real no PE', () => {
+  proximoDe(
+    calcularMediaFormalPotenciaisPadraoIodometria(),
+    0.308,
+    1e-15,
+    'média formal dos potenciais padrão'
+  );
+  proximoDe(
+    calcularPotencialEquivalenciaIodometria(entradaIodo),
+    0.4633316269829023,
+    1e-10,
+    'potencial de equilíbrio no PE'
+  );
 });
 
-teste('Busca binária identifica antes, faixa do PE e após o PE', () => {
+teste('Busca binária identifica antes, PE e após o PE', () => {
   assert.equal(localizarRegiaoIodometriaPorBuscaBinaria(10, 25), 'antes_pe');
   assert.equal(localizarRegiaoIodometriaPorBuscaBinaria(25, 25), 'pe');
   assert.equal(localizarRegiaoIodometriaPorBuscaBinaria(30, 25), 'apos_pe');
 });
 
-teste('Estequiometria do cloro consome 3 I⁻ por Cl₂ para formar I₃⁻', () => {
+teste('Estequiometria do cloro calcula automaticamente o KI mínimo: 3 I⁻ por Cl₂', () => {
   proximoDe(resumoIodo.molAnalitoInicial, 0.00025, 1e-15, 'mol Cl₂');
   proximoDe(resumoIodo.molI3Gerado, 0.00025, 1e-15, 'mol I₃⁻ gerado');
-  proximoDe(resumoIodo.molIodetoInicial, 0.0025, 1e-15, 'mol I⁻ inicial');
-  proximoDe(resumoIodo.molIodetoConsumido, 0.00075, 1e-15, 'mol I⁻ consumido');
-  proximoDe(resumoIodo.molIodetoDisponivelAposGeracao, 0.00175, 1e-15, 'mol I⁻ remanescente');
+  proximoDe(resumoIodo.molKIMinimo, 0.00075, 1e-15, 'mol KI mínimo');
+  proximoDe(resumoIodo.concentracaoKIMinimaMolL, 0.03, 1e-15, '[KI] mínima');
 });
 
-teste('Antes do PE aplica Nernst ao par da amostra I₃⁻/I⁻ com concentrações estequiométricas', () => {
+teste('Antes do PE reproduz a validação em 10 mL e fecha o equilíbrio dos dois pares', () => {
   const ponto = calcularPontoIodometria({
     entrada: entradaIodo,
     volumeAdicionadoMl: 10,
   });
-  proximoDe(ponto.concentracaoI3MolL, 0.004285714285714286, 1e-15, '[I₃⁻] em 10 mL');
-  proximoDe(ponto.concentracaoIodetoMolL, 0.05857142857142857, 1e-15, '[I⁻] em 10 mL');
-  proximoDe(ponto.potencialV, 0.5753373866318335, 1e-12, 'E em 10 mL');
+  proximoDe(ponto.concentracaoI3MolL, 0.004285714285714286, 1e-9, '[I₃⁻] em 10 mL');
+  proximoDe(ponto.concentracaoIodetoMolL, 0.008571428571428572, 1e-9, '[I⁻] em 10 mL');
+  proximoDe(ponto.potencialV, 0.6494527620744784, 1e-9, 'E em 10 mL');
   assert.equal(ponto.regiao, 'antes_pe');
+  assert.ok(ponto.concentracaoTiossulfatoMolL > 0);
+  assert.ok(ponto.concentracaoTetrationatoMolL > 0);
 });
 
-teste('No PE o motor usa diretamente a média ponderada, sem resolver equilíbrio acoplado', () => {
+teste('No PE os dois pares redox permanecem em equilíbrio com concentrações residuais finitas', () => {
   const ponto = calcularPontoIodometria({
     entrada: entradaIodo,
     volumeAdicionadoMl: 25,
   });
   assert.equal(ponto.regiao, 'pe');
-  proximoDe(ponto.potencialV, 0.308, 1e-15, 'EPE');
-  proximoDe(ponto.concentracaoI3MolL, 0, 1e-15, '[I₃⁻] no PE');
-  proximoDe(ponto.concentracaoTiossulfatoMolL, 0, 1e-15, '[S₂O₃²⁻] no PE');
+  proximoDe(ponto.potencialV, 0.4633316269829023, 1e-10, 'EPE');
+  assert.ok(ponto.concentracaoI3MolL > 0);
+  assert.ok(ponto.concentracaoIodetoMolL > 0);
+  assert.ok(ponto.concentracaoTiossulfatoMolL > 0);
+  assert.ok(ponto.concentracaoTetrationatoMolL > 0);
 });
 
-teste('Após o PE aplica Nernst ao par do titulante S₄O₆²⁻/S₂O₃²⁻', () => {
+teste('Após o PE reproduz a validação em 30 mL', () => {
   const ponto = calcularPontoIodometria({
     entrada: entradaIodo,
     volumeAdicionadoMl: 30,
   });
   assert.equal(ponto.regiao, 'apos_pe');
-  proximoDe(ponto.concentracaoIodetoMolL, 0.045454545454545456, 1e-15, '[I⁻] em 30 mL');
-  proximoDe(ponto.concentracaoI3MolL, 0, 1e-15, '[I₃⁻] em 30 mL');
-  proximoDe(ponto.concentracaoTiossulfatoMolL, 0.0018181818181818182, 1e-15, '[S₂O₃²⁻] em 30 mL');
-  proximoDe(ponto.concentracaoTetrationatoMolL, 0.004545454545454545, 1e-15, '[S₄O₆²⁻] em 30 mL');
-  proximoDe(ponto.potencialV, 0.17289375986572197, 1e-12, 'E em 30 mL');
+  proximoDe(ponto.concentracaoIodetoMolL, 0.013636363636363637, 1e-10, '[I⁻] formado em 30 mL');
+  proximoDe(ponto.concentracaoTiossulfatoMolL, 0.0018181818181818182, 1e-10, '[S₂O₃²⁻] em 30 mL');
+  proximoDe(ponto.concentracaoTetrationatoMolL, 0.004545454545454545, 1e-10, '[S₄O₆²⁻] em 30 mL');
+  proximoDe(ponto.potencialV, 0.17289375986572197, 1e-10, 'E em 30 mL');
+  assert.ok(ponto.concentracaoI3MolL > 0);
 });
 
 teste('Balanços de I₃⁻, I⁻, tiossulfato e tetrationato fecham antes, no e após o PE', () => {
-  for (const volume of [0, 10, 25, 30]) {
+  for (const volume of [10, 25, 30]) {
     const ponto = calcularPontoIodometria({
       entrada: entradaIodo,
       volumeAdicionadoMl: volume,
@@ -446,47 +450,49 @@ teste('Balanços de I₃⁻, I⁻, tiossulfato e tetrationato fecham antes, no e
     proximoDe(
       ponto.molI3 + molI3Reduzido,
       resumoIodo.molI3Gerado,
-      1e-14,
+      1e-12,
       `balanço I₃⁻ em ${volume} mL`
     );
     proximoDe(
       ponto.molIodeto,
-      resumoIodo.molIodetoDisponivelAposGeracao + 3 * molI3Reduzido,
-      1e-14,
+      3 * molI3Reduzido,
+      1e-12,
       `balanço I⁻ em ${volume} mL`
     );
     proximoDe(
       ponto.molTetrationato,
       molI3Reduzido,
-      1e-14,
+      1e-12,
       `balanço S₄O₆²⁻ em ${volume} mL`
     );
     proximoDe(
       ponto.molTiossulfato + 2 * ponto.molTetrationato,
       molTiossulfatoAdicionado,
-      1e-14,
+      1e-12,
       `balanço S₂O₃²⁻ em ${volume} mL`
     );
   }
 });
 
-teste('KI inicial é usado para verificar excesso e o iodeto residual é calculado por estequiometria', () => {
+teste('A quantidade e a concentração mínima de KI são calculadas sem campo de entrada', () => {
   const entrada = entradaPadraoIodometria('cloro-ativo');
   const resumo = calcularResumoEstequiometricoIodometria(entrada);
-  const antes = calcularPontoIodometria({ entrada, volumeAdicionadoMl: 0 });
-  const depois = calcularPontoIodometria({ entrada, volumeAdicionadoMl: 30 });
 
-  proximoDe(antes.molIodeto, 0.00175, 1e-15, 'I⁻ após geração');
-  proximoDe(depois.molIodeto, resumo.molIodetoInicial, 1e-15, 'I⁻ regenerado após PE');
-  proximoDe(depois.concentracaoIodetoMolL, 0.045454545454545456, 1e-15, 'concentração de I⁻ após PE');
+  assert.equal(Object.hasOwn(entrada, 'concentracaoIodetoInicialMolL'), false);
+  proximoDe(resumo.molKIMinimo, 0.00075, 1e-15, 'quantidade mínima de KI');
+  proximoDe(resumo.concentracaoKIMinimaMolL, 0.03, 1e-15, 'concentração mínima de KI');
 });
 
-teste('KI 0,010 mol/L é insuficiente para gerar I₃⁻ quantitativamente a partir de Cl₂ 0,010 mol/L', () => {
-  const entrada = {
-    ...entradaPadraoIodometria('cloro-ativo'),
-    concentracaoIodetoInicialMolL: 0.01,
-  };
-  assert.throws(() => gerarCurvaIodometria({ entrada }), /KI insuficiente/);
+teste('Em 0 mL o potencial não é inventado; a curva começa no primeiro volume positivo', () => {
+  const entrada = entradaPadraoIodometria('cloro-ativo');
+  assert.throws(
+    () => calcularPontoIodometria({ entrada, volumeAdicionadoMl: 0 }),
+    /0,00 mL/
+  );
+
+  const curva = gerarCurvaIodometria({ entrada });
+  assert.ok(curva.pontos[0].volumeAdicionadoMl > 0);
+  assert.ok(curva.pontosValidos.every((ponto) => Number.isFinite(ponto.potencialV)));
 });
 
 teste('Consumo de iodeto inclui a formação de I₃⁻ nos seis sistemas', () => {
@@ -502,7 +508,7 @@ teste('Consumo de iodeto inclui a formação de I₃⁻ nos seis sistemas', () =
     const entrada = entradaPadraoIodometria(sistemaId);
     const resumo = calcularResumoEstequiometricoIodometria(entrada);
     proximoDe(
-      resumo.molIodetoConsumido,
+      resumo.molKIMinimo,
       fator * resumo.molAnalitoInicial,
       1e-14,
       `consumo de I⁻ em ${sistemaId}`
@@ -510,7 +516,7 @@ teste('Consumo de iodeto inclui a formação de I₃⁻ nos seis sistemas', () =
   }
 });
 
-teste('Os seis sistemas iodimétricos geram potenciais finitos antes, no e após o PE', () => {
+teste('Os seis sistemas iodimétricos geram curvas contínuas e potenciais finitos', () => {
   const sistemas = [
     'cloro-ativo',
     'cobre-ii',
@@ -522,7 +528,7 @@ teste('Os seis sistemas iodimétricos geram potenciais finitos antes, no e após
   for (const sistemaId of sistemas) {
     const entrada = entradaPadraoIodometria(sistemaId);
     const curva = gerarCurvaIodometria({ entrada });
-    for (const fracao of [0, 0.5, 1, 1.5, 2]) {
+    for (const fracao of [0.1, 0.5, 1, 1.5, 2]) {
       const ponto = calcularPontoIodometria({
         entrada,
         volumeAdicionadoMl: curva.volumeEquivalenciaMl * fracao,
@@ -532,16 +538,53 @@ teste('Os seis sistemas iodimétricos geram potenciais finitos antes, no e após
         `${sistemaId}: potencial inválido em ${fracao} × PE`
       );
     }
-    proximoDe(curva.potencialEquivalenciaV, 0.308, 1e-15, `EPE ${sistemaId}`);
+    proximoDe(
+      curva.potencialEquivalenciaV,
+      calcularPotencialEquivalenciaIodometria(entrada),
+      1e-10,
+      `EPE ${sistemaId}`
+    );
   }
 });
 
-teste('A derivada da curva iodimétrica continua localizando a região de maior variação', () => {
+teste('A curva permanece contínua e monotônica na vizinhança do PE', () => {
+  const antes = calcularPontoIodometria({
+    entrada: entradaIodo,
+    volumeAdicionadoMl: 24.99,
+  });
+  const pe = calcularPontoIodometria({
+    entrada: entradaIodo,
+    volumeAdicionadoMl: 25,
+  });
+  const depois = calcularPontoIodometria({
+    entrada: entradaIodo,
+    volumeAdicionadoMl: 25.01,
+  });
+  assert.ok(antes.potencialV > pe.potencialV);
+  assert.ok(pe.potencialV > depois.potencialV);
+  assert.ok(antes.potencialV - pe.potencialV < 0.1);
+  assert.ok(pe.potencialV - depois.potencialV < 0.2);
+});
+
+teste('As derivadas da curva iodimétrica são finitas e localizam o PF próximo ao PE', () => {
   const curva = gerarCurvaIodometria({ entrada: entradaIodo });
   const derivadas = calcularDerivadasIodometria(curva.pontosValidos);
   assert.ok(Number.isFinite(derivadas.volumePFPrimeiraDerivadaMl));
   assert.ok(Number.isFinite(derivadas.volumePFSegundaDerivadaMl));
-  assert.ok(Math.abs(derivadas.volumePFPrimeiraDerivadaMl - curva.volumeEquivalenciaMl) < 0.2);
+  assert.ok(Math.abs(derivadas.volumePFPrimeiraDerivadaMl - curva.volumeEquivalenciaMl) < 0.1);
+  assert.ok(Math.abs(derivadas.volumePFSegundaDerivadaMl - curva.volumeEquivalenciaMl) < 0.1);
+  assert.ok(derivadas.primeiraDerivada.every((ponto) => Number.isFinite(ponto.primeiraDerivada)));
+  assert.ok(derivadas.segundaDerivada.every((ponto) => Number.isFinite(ponto.segundaDerivada)));
+  assert.ok(Math.max(...derivadas.primeiraDerivada.map((ponto) => Math.abs(ponto.primeiraDerivada))) < 3);
+  assert.ok(Math.max(...derivadas.segundaDerivada.map((ponto) => Math.abs(ponto.segundaDerivada))) < 20);
+});
+
+teste('A curva iodimétrica deduplica o volume do PE quando coincide numericamente com um ponto da malha', () => {
+  const entrada = entradaPadraoIodometria('iodato');
+  const curva = gerarCurvaIodometria({ entrada });
+  const volumes = curva.pontos.map((ponto) => ponto.volumeAdicionadoMl);
+  const diferencas = volumes.slice(1).map((volume, indice) => volume - volumes[indice]);
+  assert.ok(diferencas.every((delta) => delta > 1e-6));
 });
 
 teste('A busca do motor iodimétrico rejeita identificador desconhecido', () => {

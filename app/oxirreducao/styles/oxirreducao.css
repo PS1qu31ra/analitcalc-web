@@ -3846,3 +3846,104 @@
   }
 }
 
+
+/* =========================================================
+   DERIVADAS IODOMÉTRICAS — RAMOS PRÉ E PÓS-PE
+========================================================= */
+
+.oxirreducaoDerivativeCurveBefore {
+  fill: none;
+  stroke: #991b1b;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.oxirreducaoDerivativeCurveAfter {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.oxirreducaoDerivativePFLine {
+  stroke: #2563eb;
+  stroke-width: 1.8;
+  stroke-dasharray: 4 5;
+  opacity: 0.85;
+}
+
+.oxirreducaoDerivativeTransitionBand {
+  fill: rgba(180, 83, 9, 0.09);
+  stroke: rgba(180, 83, 9, 0.28);
+  stroke-width: 1;
+}
+
+.oxirreducaoDerivativeTransitionLabel {
+  fill: #92400e;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.oxirreducaoDerivativeLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 18px;
+  margin-top: 12px;
+  color: #52525b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.oxirreducaoDerivativeLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.oxirreducaoDerivativeLegend i {
+  display: inline-block;
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+}
+
+.oxirreducaoDerivativeLegendBefore {
+  background: #991b1b;
+}
+
+.oxirreducaoDerivativeLegendAfter {
+  background: #2563eb;
+}
+
+.oxirreducaoDerivativeLegendPE {
+  background: #b45309;
+  height: 0 !important;
+  border-top: 2px dashed #b45309;
+}
+
+.oxirreducaoDerivativeLegendPF {
+  background: #2563eb;
+  height: 0 !important;
+  border-top: 2px dashed #2563eb;
+}
+
+.oxirreducaoDerivativeLegendTransition {
+  height: 10px !important;
+  background: rgba(180, 83, 9, 0.16);
+  border: 1px solid rgba(180, 83, 9, 0.35);
+}
+
+@media (max-width: 640px) {
+  .oxirreducaoDerivativeSection {
+    padding: 14px;
+  }
+
+  .oxirreducaoDerivativeLegend {
+    justify-content: flex-start;
+    gap: 9px 13px;
+  }
+}

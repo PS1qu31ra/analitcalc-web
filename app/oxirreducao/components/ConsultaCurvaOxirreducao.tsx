@@ -865,6 +865,19 @@ export default function ConsultaCurvaOxirreducao(
 
 
     if (
+      props.modo === "iodometria" &&
+      volume === 0
+    ) {
+      setErro(
+        "Em 0,00 mL ainda não há I⁻ formado pela reação com tiossulfato; a equação de Nernst pré-PE não fornece potencial finito."
+      );
+
+      setConsulta(null);
+      return;
+    }
+
+
+    if (
       volume >
       volumeMaximo
     ) {

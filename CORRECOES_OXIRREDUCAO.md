@@ -40,29 +40,44 @@ Esta versão aplica correções no núcleo matemático da permanganometria, iodo
 - `log10QuocienteReacao` foi adicionado ao resultado. `quocienteReacao` é limitado à faixa representável por `Number` apenas para manter um valor finito de exibição.
 - O fator de Nernst utiliza `Math.LN10` em vez da aproximação decimal `2.303`.
 
-### 4. Iodometria — metodologia dos slides 39–42
+### 4. Iodometria — alinhamento com a validação (páginas 29–31)
 
-O motor iodimétrico foi reorganizado para seguir o procedimento apresentado nos slides da orientadora, com cálculo separado em três regiões:
+O motor iodométrico foi ajustado para reproduzir os balanços e os potenciais apresentados na validação acadêmica para cloro ativo.
 
-- **Antes do PE:** o potencial é calculado pela equação de Nernst do par da amostra `I₃⁻/I⁻`:
-  `E = E°(I₃⁻/I⁻) − (0,0592/2) log([I⁻]³/[I₃⁻])`.
-- **No PE:** aplica-se a média ponderada dos potenciais padrão, conforme os slides 40–41. Como os dois pares titulométricos envolvem dois elétrons:
-  `EPE = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V`.
-- **Após o PE:** o potencial é calculado pela equação de Nernst do par do titulante `S₄O₆²⁻/S₂O₃²⁻`:
-  `E = E°(S₄O₆²⁻/S₂O₃²⁻) − (0,0592/2) log([S₂O₃²⁻]²/[S₄O₆²⁻])`.
+**Dados de referência:**
 
-Outras alterações:
+- `C(Cl₂) = 0,010 mol/L`;
+- `V(amostra) = 25,00 mL`;
+- `C(Na₂S₂O₃) = 0,020 mol/L`;
+- `E°(I₃⁻/I⁻) = +0,536 V`;
+- `E°(S₄O₆²⁻/S₂O₃²⁻) = +0,080 V`;
+- temperatura de `25 °C`.
 
-- O potencial padrão do par `I₃⁻/I⁻` é fixado em `+0,536 V`, conforme a referência adotada pela orientadora. O valor `+0,621 V` não é utilizado.
-- O potencial padrão do par `S₄O₆²⁻/S₂O₃²⁻` permanece em `+0,080 V`.
-- O motor não resolve mais o equilíbrio de especiação `I₂(aq) + I⁻ ⇌ I₃⁻` nem calcula `I₂` livre. Em excesso de KI, o iodo gerado é representado diretamente como `I₃⁻`.
-- As concentrações de `I₃⁻`, `I⁻`, `S₂O₃²⁻` e `S₄O₆²⁻` são calculadas por estequiometria e diluição em cada volume.
-- A concentração inicial de iodeto fornecida pelo KI é usada para verificar se existe iodeto suficiente para gerar `I₃⁻` e para fechar o balanço estequiométrico do iodeto remanescente. Ela não é tratada como concentração livre calculada por equilíbrio de especiação.
-- A reação de titulação considerada é `I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻`.
-- O consumo de iodeto na geração do triiodeto inclui também o iodeto incorporado ao `I₃⁻`: 3 mol por mol de Cl₂, 2,5 por Cu²⁺, 6 por O₂ no equivalente global do método de Winkler, 3 por H₂O₂, 3 por ClO⁻ e 8 por IO₃⁻.
-- O potencial no PE é calculado diretamente pela expressão ponderada dos slides; não é obtido por média de potenciais numéricos do equilíbrio acoplado.
-- A busca binária proposta foi preservada para localizar, entre os limites ordenados da curva, se o volume consultado pertence à região anterior, à faixa do PE ou à região posterior. Depois da classificação, o motor aplica o balanço e a equação de Nernst correspondentes.
-- A interface mostra as três equações por região, os potenciais padrão adotados e as concentrações estequiométricas de triiodeto, iodeto, tiossulfato e tetrationato.
+**Correção do potencial antes do PE:**
+
+- O iodeto utilizado na equação de Nernst é calculado a partir da reação `I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻`.
+- O cálculo não soma o excesso de KI ao termo de `[I⁻]` da equação pré-PE, pois a validação das páginas 30–31 calcula `[I⁻]` exclusivamente a partir do iodeto formado pela reação com tiossulfato.
+- Para `V(Na₂S₂O₃) = 10,00 mL`, o motor retorna `[I₃⁻] = 0,0042857 mol/L`, `[I⁻] = 0,0085714 mol/L` e `E = 0,64945 V`, que corresponde a `0,649 V` com três casas decimais na validação.
+- Em `25,00 mL`, o PE permanece em `0,308 V`, pela média ponderada dos dois pares de dois elétrons.
+- Em `30,00 mL`, o potencial permanece em aproximadamente `0,1729 V`, calculado pelo par `S₄O₆²⁻/S₂O₃²⁻`.
+
+**Cálculo automático da necessidade de KI:**
+
+- O campo de concentração inicial de KI foi removido da entrada.
+- A quantidade mínima estequiométrica é calculada por `n(KI)min = n(analito) × coeficiente estequiométrico de I⁻`.
+- A concentração mínima é `C(KI)min = n(KI)min / V(amostra)`. Para cloro ativo com `C(Cl₂) = 0,010 mol/L`, o limite estequiométrico é `0,030 mol/L` e a quantidade mínima em 25,00 mL é `0,00075 mol` (`0,75 mmol`).
+- O valor é um limite estequiométrico, não uma concentração com excesso. Na prática, deve-se usar KI acima desse limite.
+- O resultado representa a concentração na mistura inicial, tomando `V(amostra)` como volume de referência. A concentração da solução-estoque de KI não pode ser calculada sem informar também o volume de solução de KI adicionado.
+
+**Ponto inicial da curva:**
+
+- Em `0,00 mL`, o modelo de validação ainda não apresenta I⁻ produzido pela reação com tiossulfato; portanto, a expressão pré-PE de Nernst não fornece potencial finito.
+- A curva gerada começa no primeiro volume positivo. Uma consulta manual em `0,00 mL` retorna uma mensagem de concentração insuficiente para aplicar Nernst, em vez de criar um potencial artificial.
+
+- O potencial padrão `+0,536 V` para `I₃⁻/I⁻` é mantido; `+0,621 V` não é utilizado.
+- O potencial no PE continua sendo `EPE = (2 × 0,536 + 2 × 0,080) / 4 = 0,308 V`.
+- Após o PE, a equação de Nernst do par do titulante continua sendo aplicada a `[S₂O₃²⁻]` e `[S₄O₆²⁻]`.
+- A curva e as derivadas mantêm a identificação do ponto final por dados calculados, sem inserção artificial de cruzamentos.
 
 ## Testes de regressão
 
@@ -84,12 +99,12 @@ A suíte cobre:
 - cálculo no PE pela média ponderada;
 - cálculo pós-PE pelo par do titulante;
 - balanços de matéria de I₃⁻, I⁻, S₂O₃²⁻ e S₄O₆²⁻;
-- suficiência do KI e consumo de iodeto nos seis sistemas;
+- cálculo automático da quantidade e concentração mínima de KI nos seis sistemas;
 - busca binária para classificar a região de cada volume consultado;
 - localização das derivadas e rejeição de identificadores inválidos;
 - notação científica sem o caractere `e` de programação.
 
-**Resultado desta entrega: 39 testes aprovados.**
+**Resultado desta entrega: 49 testes aprovados.**
 
 ## Limitações que permanecem explícitas
 

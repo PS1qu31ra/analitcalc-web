@@ -464,16 +464,6 @@ export type EntradaIodometria = {
   concentracaoTiossulfatoMolL:
     number;
 
-  /**
-   * Concentração inicial analítica de I⁻ na mistura antes da geração de I₃⁻.
-   * Multiplicada pelo volume inicial da mistura (volumeAmostraMl). Não é
-   * necessariamente a concentração do frasco de KI se ele foi adicionado
-   * com outro volume. O valor verifica o excesso de iodeto e participa do
-   * balanço estequiométrico; não é usado como concentração livre direta.
-   */
-  concentracaoIodetoInicialMolL:
-    number;
-
   temperaturaC:
     number;
 };
@@ -488,17 +478,17 @@ export type PontoIodometria = {
   potencialV: number;
   regiao: RegiaoIodometria;
 
-  /** Quantidade de I₃⁻ remanescente, calculada pela estequiometria. */
+  /** Quantidade de I₃⁻ remanescente no equilíbrio redox. */
   molI3: number;
 
-  /** Iodeto livre calculado pelo balanço de geração de I₃⁻ e sua redução. */
+  /** Iodeto formado pela redução parcial de I₃⁻. */
   molIodeto: number;
   molIodetoLivre: number;
 
-  /** Tiossulfato não reagido; só existe em excesso após o PE. */
+  /** Tiossulfato remanescente no equilíbrio redox. */
   molTiossulfato: number;
 
-  /** Tetrationato formado pela reação com I₃⁻. */
+  /** Tetrationato formado no equilíbrio redox. */
   molTetrationato: number;
 
   concentracaoIodetoMolL: number;
@@ -527,8 +517,12 @@ export type ResultadoCurvaIodometria = {
   molI3Gerado:
     number;
 
-  // Iodeto remanescente após a reação global que gera I₃⁻.
-  molIodetoDisponivelAposGeracao:
+  /** Quantidade mínima estequiométrica de KI (1 mol KI fornece 1 mol I⁻). */
+  molKIMinimo:
+    number;
+
+  /** Concentração mínima estequiométrica de KI na mistura inicial. */
+  concentracaoKIMinimaMolL:
     number;
 
   molTiossulfatoEquivalencia:
@@ -559,7 +553,6 @@ function validarEntrada(entrada: EntradaIodometria) {
     entrada.concentracaoAnalitoMolL,
     entrada.volumeAmostraMl,
     entrada.concentracaoTiossulfatoMolL,
-    entrada.concentracaoIodetoInicialMolL,
   ];
 
   if (valores.some((valor) => !Number.isFinite(valor) || valor <= 0)) {
@@ -574,11 +567,14 @@ function validarEntrada(entrada: EntradaIodometria) {
 }
 
 /**
- * Resumo estequiométrico da geração de I₃⁻.
+ * Resumo estequiométrico da geração de I₃⁻ e da necessidade de KI.
  *
- * O KI é informado como concentração inicial. Primeiro verificamos se há
- * iodeto suficiente para a reação global que gera I₃⁻. O excedente é obtido
- * por balanço de matéria; não há resolução de equilíbrio de especiação I₂/I₃⁻ neste modelo.
+ * Como cada mol de KI fornece um mol de I⁻, a quantidade mínima de KI é
+ * calculada pelo consumo estequiométrico de iodeto do sistema selecionado.
+ * A concentração apresentada corresponde à mistura inicial, considerando
+ * o volume informado em volumeAmostraMl. Na prática, deve-se trabalhar com
+ * KI em excesso; a concentração da solução-estoque depende do volume de KI
+ * adicionado e não pode ser determinada sem esse dado adicional.
  */
 export function calcularResumoEstequiometricoIodometria(
   entrada: EntradaIodometria
@@ -594,33 +590,13 @@ export function calcularResumoEstequiometricoIodometria(
   const molI3Gerado =
     molAnalitoInicial * sistema.molI3PorMolAnalito;
 
-  const molIodetoInicial =
-    entrada.concentracaoIodetoInicialMolL * volumeAmostraL;
-
-  // Consumo global inclui o iodeto oxidado e o iodeto que complexa o iodo
-  // molecular para formar I₃⁻. Ex.: Cl₂ + 3 I⁻ → 2 Cl⁻ + I₃⁻.
-  const molIodetoConsumido =
+  // Consumo global de I⁻ inclui o iodeto oxidado e o incorporado ao I₃⁻.
+  // Ex.: Cl₂ + 3 I⁻ → 2 Cl⁻ + I₃⁻.
+  const molKIMinimo =
     molAnalitoInicial * sistema.molIodetoConsumidoPorMolAnalito;
 
-  const molIodetoDisponivelAposGeracao =
-    molIodetoInicial - molIodetoConsumido;
-
-  if (
-    molIodetoDisponivelAposGeracao <= 0 ||
-    molIodetoDisponivelAposGeracao <= molIodetoInicial * 1e-13
-  ) {
-    const concentracaoMinima =
-      sistema.molIodetoConsumidoPorMolAnalito *
-      entrada.concentracaoAnalitoMolL;
-
-    throw new RangeError(
-      `KI insuficiente para gerar I₃⁻ quantitativamente no sistema ${sistema.nome}. ` +
-      `A concentração inicial de I⁻ deve ser maior que ${concentracaoMinima.toLocaleString(
-        "pt-BR",
-        { maximumFractionDigits: 10 }
-      )} mol/L, para que reste iodeto em excesso.`
-    );
-  }
+  const concentracaoKIMinimaMolL =
+    molKIMinimo / volumeAmostraL;
 
   const molTiossulfatoEquivalencia =
     molAnalitoInicial * sistema.molTiossulfatoPorMolAnalito;
@@ -634,9 +610,8 @@ export function calcularResumoEstequiometricoIodometria(
     sistema,
     molAnalitoInicial,
     molI3Gerado,
-    molIodetoInicial,
-    molIodetoConsumido,
-    molIodetoDisponivelAposGeracao,
+    molKIMinimo,
+    concentracaoKIMinimaMolL,
     molTiossulfatoEquivalencia,
     volumeEquivalenciaMl,
   };
@@ -662,16 +637,37 @@ function calcularFatorNernstDoisEletrons(temperaturaC: number) {
  *
  * Para I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, a = b = 2.
  */
+/**
+ * Calcula o potencial real de equilíbrio no ponto estequiométrico.
+ *
+ * Diferentemente da média aritmética dos potenciais padrão, o potencial no
+ * PE é obtido resolvendo simultaneamente as equações de Nernst dos pares
+ * I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, respeitando os balanços de matéria da reação:
+ *
+ * I₃⁻ + 2 S₂O₃²⁻ ⇌ 3 I⁻ + S₄O₆²⁻
+ *
+ * O resultado depende das concentrações analíticas e do volume da mistura.
+ */
 export function calcularPotencialEquivalenciaIodometria(
-  temperaturaC = 25
+  entrada: EntradaIodometria
 ) {
-  if (!Number.isFinite(temperaturaC) || temperaturaC <= -273.15) {
-    throw new Error("Informe uma temperatura fisicamente válida.");
-  }
+  const resumo = calcularResumoEstequiometricoIodometria(entrada);
+  return calcularPontoIodometria({
+    entrada,
+    volumeAdicionadoMl: resumo.volumeEquivalenciaMl,
+  }).potencialV;
+}
 
+/**
+ * A média ponderada usada na versão anterior da validação é mantida apenas
+ * como referência matemática dos potenciais padrão. Ela não é usada como
+ * potencial do PE porque não satisfaz, em geral, as duas equações de Nernst
+ * com os coeficientes estequiométricos reais dos pares I₃⁻/I⁻ e
+ * S₄O₆²⁻/S₂O₃²⁻.
+ */
+export function calcularMediaFormalPotenciaisPadraoIodometria() {
   const a = ELETRONS_PAR_I3_I;
   const b = ELETRONS_PAR_TETRATIONATO_TIOS;
-
   return (
     a * E0_I3_I_25C +
     b * E0_TETRATIONATO_TIOS
@@ -731,15 +727,308 @@ export function localizarRegiaoIodometriaPorBuscaBinaria(
 }
 
 /**
- * Calcula um ponto da curva pela metodologia de três regiões dos slides:
+ * Resolve o potencial de um ponto da curva pela igualdade dos potenciais
+ * dos dois pares redox. Os balanços estequiométricos determinam as quantidades
+ * de I₃⁻, I⁻, S₂O₃²⁻ e S₄O₆²⁻ em cada volume adicionado.
  *
- * Antes do PE: Nernst do par da amostra I₃⁻/I⁻.
- * No PE: média ponderada dos potenciais padrão.
- * Após o PE: Nernst do par do titulante S₄O₆²⁻/S₂O₃²⁻.
+ * A curva não troca abruptamente de equação no PE: o equilíbrio dos dois
+ * pares é resolvido em toda a faixa, inclusive na equivalência.
+ */
+type EspeciesEquilibrioIodometria = {
+  potencialV: number;
+  potencialParI3IodetoV: number;
+  potencialParTetrationatoTiossulfatoV: number;
+  molI3: number;
+  molIodeto: number;
+  molTiossulfato: number;
+  molTetrationato: number;
+  concentracaoI3MolL: number;
+  concentracaoIodetoMolL: number;
+  concentracaoTiossulfatoMolL: number;
+  concentracaoTetrationatoMolL: number;
+};
+
+/** Soma dois valores positivos representados em log₁₀, sem overflow. */
+function log10Soma(logA: number, logB: number) {
+  if (logA === Number.NEGATIVE_INFINITY) return logB;
+  if (logB === Number.NEGATIVE_INFINITY) return logA;
+  const maior = Math.max(logA, logB);
+  return maior + Math.log10(
+    Math.pow(10, logA - maior) +
+    Math.pow(10, logB - maior)
+  );
+}
+
+/** Calcula log₁₀(1 − 10ˣ) com estabilidade quando x está próximo de zero. */
+function log10UmMenosDezElevado(x: number) {
+  const diferenca = -Math.expm1(x * Math.LN10);
+  if (!(diferenca > 0)) return Number.NEGATIVE_INFINITY;
+  return Math.log10(diferenca);
+}
+
+function converterLogMolsParaNumero(logMols: number) {
+  if (logMols === Number.NEGATIVE_INFINITY || logMols < -323) return 0;
+  if (logMols > 308) return Number.POSITIVE_INFINITY;
+  return Math.pow(10, logMols);
+}
+
+/**
+ * Resolve o equilíbrio dos dois pares redox para um volume de titulante.
  *
- * Todas as concentrações são obtidas por balanços estequiométricos e
- * divididas pelo volume total. O KI inicial só fornece o balanço de I⁻
- * remanescente e verifica se existe excesso para a geração de I₃⁻.
+ * Em vez de aplicar uma equação de Nernst isolada antes do PE e outra depois,
+ * o motor calcula a extensão de reação que torna iguais os potenciais dos
+ * pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻. Os quatro componentes são obtidos pelos
+ * balanços de matéria:
+ *
+ * I₃⁻ + 2 S₂O₃²⁻ ⇌ 3 I⁻ + S₄O₆²⁻
+ *
+ * A busca é feita em logaritmo da fração de reagentes remanescentes para
+ * manter precisão mesmo quando a reação é praticamente quantitativa.
+ *
+ * O modelo usa o requisito estequiométrico mínimo de KI calculado pelo
+ * sistema. O excesso operacional de KI usado em laboratório não é inferido,
+ * pois sua quantidade depende do volume/concentração da solução-estoque.
+ */
+function resolverEquilibrioIodometria({
+  entrada,
+  volumeAdicionadoMl,
+  molI3Inicial,
+  volumeEquivalenciaMl,
+}: {
+  entrada: EntradaIodometria;
+  volumeAdicionadoMl: number;
+  molI3Inicial: number;
+  volumeEquivalenciaMl: number;
+}): EspeciesEquilibrioIodometria {
+  if (volumeAdicionadoMl <= 0) {
+    throw new RangeError(
+      "Em 0,00 mL ainda não há tiossulfato/tetrationato para definir o equilíbrio entre os dois pares redox."
+    );
+  }
+
+  const volumeTotalL =
+    (entrada.volumeAmostraMl + volumeAdicionadoMl) / 1000;
+  const volumeTiossulfatoL = volumeAdicionadoMl / 1000;
+  const molTiossulfatoAdicionado =
+    entrada.concentracaoTiossulfatoMolL * volumeTiossulfatoL;
+
+  const extensaoMaxima = Math.min(
+    molI3Inicial,
+    molTiossulfatoAdicionado / 2
+  );
+
+  if (!(extensaoMaxima > 0)) {
+    throw new RangeError(
+      "Não há quantidade positiva de titulante para resolver o equilíbrio iodimétrico."
+    );
+  }
+
+  const logExtensaoMaxima = Math.log10(extensaoMaxima);
+  const logVolumeTotal = Math.log10(volumeTotalL);
+  const estaAntesOuNoPE =
+    volumeAdicionadoMl <= volumeEquivalenciaMl;
+
+  // Antes/no PE, o tiossulfato é o reagente limitante.
+  // Após o PE, o triiodeto é o reagente limitante.
+  const baseI3 = estaAntesOuNoPE
+    ? molI3Inicial - extensaoMaxima
+    : 0;
+  const coeficienteI3 = estaAntesOuNoPE
+    ? extensaoMaxima
+    : molI3Inicial;
+
+  const excessoTiossulfato = estaAntesOuNoPE
+    ? 0
+    : molTiossulfatoAdicionado - 2 * molI3Inicial;
+  const coeficienteTiossulfato = estaAntesOuNoPE
+    ? molTiossulfatoAdicionado
+    : 2 * molI3Inicial;
+
+  const logBaseI3 = baseI3 > 0
+    ? Math.log10(baseI3)
+    : Number.NEGATIVE_INFINITY;
+  const logCoeficienteI3 = Math.log10(coeficienteI3);
+  const logBaseTiossulfato = excessoTiossulfato > 0
+    ? Math.log10(excessoTiossulfato)
+    : Number.NEGATIVE_INFINITY;
+  const logCoeficienteTiossulfato =
+    Math.log10(coeficienteTiossulfato);
+
+  const fatorNernst =
+    calcularFatorNernstDoisEletrons(entrada.temperaturaC);
+
+  const avaliarFracaoRemanescente = (logFracao: number) => {
+    const logUmMenosFracao =
+      log10UmMenosDezElevado(logFracao);
+
+    // Balanços em mol, calculados em espaço logarítmico.
+    const logMolI3 = log10Soma(
+      logBaseI3,
+      logCoeficienteI3 + logFracao
+    );
+
+    const logMolIodeto =
+      Math.log10(3) +
+      logExtensaoMaxima +
+      logUmMenosFracao;
+
+    const logMolTiossulfato = log10Soma(
+      logBaseTiossulfato,
+      logCoeficienteTiossulfato + logFracao
+    );
+
+    const logMolTetrationato =
+      logExtensaoMaxima +
+      logUmMenosFracao;
+
+    // Concentrações = quantidade de matéria / volume total.
+    const logI3 = logMolI3 - logVolumeTotal;
+    const logIodeto = logMolIodeto - logVolumeTotal;
+    const logTiossulfato =
+      logMolTiossulfato - logVolumeTotal;
+    const logTetrationato =
+      logMolTetrationato - logVolumeTotal;
+
+    // Q(I₃⁻/I⁻) = [I⁻]³/[I₃⁻].
+    const logQIodo =
+      3 * logIodeto - logI3;
+
+    // Q(S₄O₆²⁻/S₂O₃²⁻) = [S₂O₃²⁻]²/[S₄O₆²⁻].
+    const logQTiossulfato =
+      2 * logTiossulfato - logTetrationato;
+
+    const potencialParI3IodetoV =
+      E0_I3_I_25C - fatorNernst * logQIodo;
+
+    const potencialParTetrationatoTiossulfatoV =
+      E0_TETRATIONATO_TIOS -
+      fatorNernst * logQTiossulfato;
+
+    return {
+      residuo:
+        potencialParI3IodetoV -
+        potencialParTetrationatoTiossulfatoV,
+      potencialParI3IodetoV,
+      potencialParTetrationatoTiossulfatoV,
+      logMolI3,
+      logMolIodeto,
+      logMolTiossulfato,
+      logMolTetrationato,
+      logI3,
+      logIodeto,
+      logTiossulfato,
+      logTetrationato,
+    };
+  };
+
+  // A raiz fica entre uma extensão praticamente nula e a extensão máxima.
+  let limiteInferior = -300;
+  let limiteSuperior = -1e-12;
+  const residuoInferior =
+    avaliarFracaoRemanescente(limiteInferior).residuo;
+  const residuoSuperior =
+    avaliarFracaoRemanescente(limiteSuperior).residuo;
+
+  if (
+    !Number.isFinite(residuoInferior) ||
+    !Number.isFinite(residuoSuperior) ||
+    residuoInferior > 0 ||
+    residuoSuperior < 0
+  ) {
+    throw new Error(
+      "Não foi possível delimitar o equilíbrio eletroquímico da iodometria."
+    );
+  }
+
+  for (let iteracao = 0; iteracao < 80; iteracao += 1) {
+    const meio =
+      (limiteInferior + limiteSuperior) / 2;
+    const residuoMeio =
+      avaliarFracaoRemanescente(meio).residuo;
+
+    if (residuoMeio > 0) {
+      limiteSuperior = meio;
+    } else {
+      limiteInferior = meio;
+    }
+  }
+
+  const logFracaoEquilibrio =
+    (limiteInferior + limiteSuperior) / 2;
+  const equilibrio =
+    avaliarFracaoRemanescente(logFracaoEquilibrio);
+
+  const potencialV =
+    (
+      equilibrio.potencialParI3IodetoV +
+      equilibrio.potencialParTetrationatoTiossulfatoV
+    ) / 2;
+
+  const molI3 =
+    converterLogMolsParaNumero(equilibrio.logMolI3);
+  const molIodeto =
+    converterLogMolsParaNumero(equilibrio.logMolIodeto);
+  const molTiossulfato =
+    converterLogMolsParaNumero(equilibrio.logMolTiossulfato);
+  const molTetrationato =
+    converterLogMolsParaNumero(equilibrio.logMolTetrationato);
+
+  const concentracaoI3MolL =
+    converterLogMolsParaNumero(
+      equilibrio.logI3
+    );
+  const concentracaoIodetoMolL =
+    converterLogMolsParaNumero(
+      equilibrio.logIodeto
+    );
+  const concentracaoTiossulfatoMolL =
+    converterLogMolsParaNumero(
+      equilibrio.logTiossulfato
+    );
+  const concentracaoTetrationatoMolL =
+    converterLogMolsParaNumero(
+      equilibrio.logTetrationato
+    );
+
+  const valores = [
+    potencialV,
+    molI3,
+    molIodeto,
+    molTiossulfato,
+    molTetrationato,
+    concentracaoI3MolL,
+    concentracaoIodetoMolL,
+    concentracaoTiossulfatoMolL,
+    concentracaoTetrationatoMolL,
+  ];
+
+  if (valores.some((valor) => !Number.isFinite(valor))) {
+    throw new Error(
+      "O resolvedor de equilíbrio produziu um resultado não finito."
+    );
+  }
+
+  return {
+    potencialV,
+    potencialParI3IodetoV:
+      equilibrio.potencialParI3IodetoV,
+    potencialParTetrationatoTiossulfatoV:
+      equilibrio.potencialParTetrationatoTiossulfatoV,
+    molI3,
+    molIodeto,
+    molTiossulfato,
+    molTetrationato,
+    concentracaoI3MolL,
+    concentracaoIodetoMolL,
+    concentracaoTiossulfatoMolL,
+    concentracaoTetrationatoMolL,
+  };
+}
+
+/**
+ * Calcula um ponto da curva pela resolução simultânea dos dois pares redox.
+ * Em cada volume, a extensão da reação é encontrada por busca binária até
+ * que os potenciais de Nernst dos pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻ coincidam.
  */
 export function calcularPontoIodometria({
   entrada,
@@ -754,30 +1043,16 @@ export function calcularPontoIodometria({
     throw new Error("O volume adicionado deve ser maior ou igual a zero.");
   }
 
-  const resumo = calcularResumoEstequiometricoIodometria(entrada);
-  const volumeTotalL =
-    (entrada.volumeAmostraMl + volumeAdicionadoMl) / 1000;
+  const resumo =
+    calcularResumoEstequiometricoIodometria(entrada);
 
-  const molTiossulfatoAdicionado =
-    entrada.concentracaoTiossulfatoMolL *
-    (volumeAdicionadoMl / 1000);
-
-  // I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻
-  const molI3Reduzido =
-    Math.min(
-      resumo.molI3Gerado,
-      molTiossulfatoAdicionado / 2
-    );
-
-  const molI3Remanescente =
-    Math.max(resumo.molI3Gerado - molI3Reduzido, 0);
-
-  // Cada mol de I₃⁻ reduzido devolve três mols de I⁻ à solução.
-  const molIodeto =
-    resumo.molIodetoDisponivelAposGeracao +
-    3 * molI3Reduzido;
-
-  const molTetrationato = molI3Reduzido;
+  const equilibrio =
+    resolverEquilibrioIodometria({
+      entrada,
+      volumeAdicionadoMl,
+      molI3Inicial: resumo.molI3Gerado,
+      volumeEquivalenciaMl: resumo.volumeEquivalenciaMl,
+    });
 
   const regiao =
     localizarRegiaoIodometriaPorBuscaBinaria(
@@ -785,91 +1060,23 @@ export function calcularPontoIodometria({
       resumo.volumeEquivalenciaMl
     );
 
-  const molTiossulfato =
-    regiao === "apos_pe"
-      ? Math.max(
-          molTiossulfatoAdicionado -
-            resumo.molTiossulfatoEquivalencia,
-          0
-        )
-      : 0;
-
-  const concentracaoI3MolL =
-    molI3Remanescente / volumeTotalL;
-
-  const concentracaoIodetoMolL =
-    molIodeto / volumeTotalL;
-
-  const concentracaoTiossulfatoMolL =
-    molTiossulfato / volumeTotalL;
-
-  const concentracaoTetrationatoMolL =
-    molTetrationato / volumeTotalL;
-
-  const fatorNernst =
-    calcularFatorNernstDoisEletrons(entrada.temperaturaC);
-
-  let potencialV: number;
-
-  if (regiao === "pe") {
-    potencialV =
-      calcularPotencialEquivalenciaIodometria(
-        entrada.temperaturaC
-      );
-  } else if (regiao === "antes_pe") {
-    // I₃⁻ + 2e⁻ ⇌ 3I⁻
-    // E = E° - (0,0592/2) log([I⁻]³ / [I₃⁻])
-    if (concentracaoI3MolL <= 0 || concentracaoIodetoMolL <= 0) {
-      throw new RangeError(
-        "Não há concentrações positivas de I₃⁻ e I⁻ para aplicar Nernst antes do PE."
-      );
-    }
-
-    const log10Q =
-      3 * Math.log10(concentracaoIodetoMolL) -
-      Math.log10(concentracaoI3MolL);
-
-    potencialV =
-      E0_I3_I_25C - fatorNernst * log10Q;
-  } else {
-    // S₄O₆²⁻ + 2e⁻ ⇌ 2S₂O₃²⁻
-    // E = E° - (0,0592/2) log([S₂O₃²⁻]² / [S₄O₆²⁻])
-    if (
-      concentracaoTiossulfatoMolL <= 0 ||
-      concentracaoTetrationatoMolL <= 0
-    ) {
-      throw new RangeError(
-        "Não há concentrações positivas de tiossulfato e tetrationato para aplicar Nernst após o PE."
-      );
-    }
-
-    const log10Q =
-      2 * Math.log10(concentracaoTiossulfatoMolL) -
-      Math.log10(concentracaoTetrationatoMolL);
-
-    potencialV =
-      E0_TETRATIONATO_TIOS - fatorNernst * log10Q;
-  }
-
-  if (!Number.isFinite(potencialV)) {
-    throw new RangeError(
-      "Não foi possível calcular um potencial finito para este ponto da titulação."
-    );
-  }
-
   return {
     volumeAdicionadoMl,
-    potencialV,
+    potencialV: equilibrio.potencialV,
     regiao,
-    molI3: molI3Remanescente,
-    molIodeto,
-    molIodetoLivre: molIodeto,
-    molTiossulfato,
-    molTetrationato,
-    concentracaoIodetoMolL,
-    concentracaoI3MolL,
-    concentracaoTiossulfatoMolL,
-    concentracaoTetrationatoMolL,
+    molI3: equilibrio.molI3,
+    molIodeto: equilibrio.molIodeto,
+    molIodetoLivre: equilibrio.molIodeto,
+    molTiossulfato: equilibrio.molTiossulfato,
+    molTetrationato: equilibrio.molTetrationato,
+    concentracaoIodetoMolL:
+      equilibrio.concentracaoIodetoMolL,
+    concentracaoI3MolL:
+      equilibrio.concentracaoI3MolL,
+    concentracaoTiossulfatoMolL:
+      equilibrio.concentracaoTiossulfatoMolL,
+    concentracaoTetrationatoMolL:
+      equilibrio.concentracaoTetrationatoMolL,
   };
 }
 
@@ -885,14 +1092,14 @@ function adicionarVolumeUnico(
     Number.isFinite(
       volume
     ) &&
-    volume >= 0 &&
+    volume > 0 &&
     volume <=
       volumeMaximoMl
   ) {
     conjunto.add(
       Number(
         volume.toFixed(
-          9
+          6
         )
       )
     );
@@ -934,8 +1141,8 @@ export function gerarCurvaIodometria({
       .passoBaseMl ??
     Math.max(
       volumePE /
-        80,
-      0.1
+        50,
+      0.02
     );
 
   const passoProximoPEMl =
@@ -943,14 +1150,14 @@ export function gerarCurvaIodometria({
       .passoProximoPEMl ??
     Math.max(
       volumePE /
-        500,
-      0.01
+        250,
+      0.002
     );
 
   const faixaDensaFracao =
     configuracao
       .faixaDensaFracao ??
-    0.08;
+    0.12;
 
   const faixaDensa =
     Math.max(
@@ -1059,9 +1266,13 @@ export function gerarCurvaIodometria({
       resumo
         .molI3Gerado,
 
-    molIodetoDisponivelAposGeracao:
+    molKIMinimo:
       resumo
-        .molIodetoDisponivelAposGeracao,
+        .molKIMinimo,
+
+    concentracaoKIMinimaMolL:
+      resumo
+        .concentracaoKIMinimaMolL,
 
     molTiossulfatoEquivalencia:
       resumo
@@ -1091,44 +1302,36 @@ export function gerarCurvaIodometria({
   };
 }
 
-export type PontoPrimeiraDerivadaIodometria = {
-  volumeMl:
-    number;
+export type SegmentoDerivadaIodometria = "antes_pe" | "apos_pe";
 
-  primeiraDerivada:
-    number;
+export type PontoPrimeiraDerivadaIodometria = {
+  volumeMl: number;
+  primeiraDerivada: number;
 };
 
 export type PontoSegundaDerivadaIodometria = {
-  volumeMl:
-    number;
-
-  segundaDerivada:
-    number;
+  volumeMl: number;
+  segundaDerivada: number;
 };
 
 export type ResultadoDerivadasIodometria = {
-  primeiraDerivada:
-    PontoPrimeiraDerivadaIodometria[];
-
-  segundaDerivada:
-    PontoSegundaDerivadaIodometria[];
-
-  volumePFPrimeiraDerivadaMl:
-    number;
-
-  valorExtremoPrimeiraDerivada:
-    number;
-
-  volumePFSegundaDerivadaMl:
-    number | null;
+  primeiraDerivada: PontoPrimeiraDerivadaIodometria[];
+  segundaDerivada: PontoSegundaDerivadaIodometria[];
+  volumePFPrimeiraDerivadaMl: number;
+  valorExtremoPrimeiraDerivada: number;
+  volumePFSegundaDerivadaMl: number | null;
 };
 
+/**
+ * As derivadas são calculadas sobre a curva contínua de equilíbrio.
+ * Como o potencial diminui durante a titulação, o ponto final pela primeira
+ * derivada é localizado pelo vale (maior magnitude negativa) de dE/dV.
+ * A segunda derivada é calculada independentemente e seu PF só é informado
+ * quando há cruzamento real por zero.
+ */
 export function calcularDerivadasIodometria(
   pontosEntrada: PontoIodometria[]
 ): ResultadoDerivadasIodometria {
-  // O potencial cai durante a titulação iodimétrica; por isso localizamos
-  // o extremo de maior magnitude de dE/dV (o vale), não o maior valor algébrico.
   const resultado = calcularDerivadasRedox(
     pontosEntrada.map((ponto) => ({
       volumeAdicionadoMl: ponto.volumeAdicionadoMl,
@@ -1146,9 +1349,12 @@ export function calcularDerivadasIodometria(
       volumeMl: ponto.volumeMl,
       segundaDerivada: ponto.segundaDerivada,
     })),
-    volumePFPrimeiraDerivadaMl: resultado.volumePFPrimeiraDerivadaMl,
-    valorExtremoPrimeiraDerivada: resultado.valorMaximoPrimeiraDerivada,
-    volumePFSegundaDerivadaMl: resultado.volumePFSegundaDerivadaMl,
+    volumePFPrimeiraDerivadaMl:
+      resultado.volumePFPrimeiraDerivadaMl,
+    valorExtremoPrimeiraDerivada:
+      resultado.valorMaximoPrimeiraDerivada,
+    volumePFSegundaDerivadaMl:
+      resultado.volumePFSegundaDerivadaMl,
   };
 }
 
@@ -1174,9 +1380,6 @@ export function entradaPadraoIodometria(
     concentracaoTiossulfatoMolL:
       sistema
         .concentracaoTiossulfatoPadraoMolL,
-
-    concentracaoIodetoInicialMolL:
-      0.1,
 
     temperaturaC:
       25,

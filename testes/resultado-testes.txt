@@ -1,0 +1,51 @@
+✓ Semirreações e potenciais padrão dos sistemas de permanganometria
+✓ Volume de equivalência Fe²⁺/MnO₄⁻ = 50,00 mL
+✓ PE de Fe²⁺ usa a média ponderada dos potenciais (1 e 5 elétrons)
+✓ Consulta da curva retorna o potencial no PE de Fe²⁺
+✓ Resolvedor de especiação de Fe²⁺ mantém o balanço eletrônico
+✓ Volume de equivalência H₂O₂/MnO₄⁻ = 100,00 mL
+✓ Volume de equivalência oxalato/MnO₄⁻ = 100,00 mL
+✓ PE do H₂O₂ usa a média ponderada (2 e 5 elétrons), sem correção de concentração
+✓ Consulta da curva retorna o potencial no PE do H₂O₂
+✓ Exemplo de H₂O₂: PE em 20,00 mL e potencial de 1,2734 V
+✓ H₂O₂ antes do PE: 10 mL retorna 0,6820 V e [H₂O₂] = [O₂] = 0,025 M
+✓ H₂O₂ após o PE: 30 mL retorna 1,5064 V
+✓ Fe²⁺: PE em 25,00 mL e potencial de 1,3868 V
+✓ Fe²⁺ antes do PE: 10 mL retorna 0,7606 V e as concentrações de Fe²⁺/Fe³⁺ esperadas
+✓ Fe²⁺ após o PE: 30 mL retorna 1,5017 V e as concentrações de MnO₄⁻/Mn²⁺ esperadas
+✓ H₂C₂O₄: PE em 20,00 mL e potencial de 0,9386 V
+✓ H₂C₂O₄ antes do PE: 10 mL retorna aproximadamente −0,443 V
+✓ H₂C₂O₄ após o PE: 30 mL retorna 1,5064 V
+✓ PE do oxalato usa a média ponderada (2 e 5 elétrons), sem correção de concentração
+✓ Consulta da curva retorna o potencial no PE do ácido oxálico
+✓ A função de PE do H₂O₂ usa a média ponderada dos potenciais
+✓ A função de PE do ácido oxálico usa a média ponderada dos potenciais
+✓ PE de H₂O₂ não recebe correção dependente da concentração analítica
+✓ PE do oxalato não recebe correção dependente da concentração analítica
+✓ Regiões antes e após o PE mantêm os potenciais de Nernst dos pares predominantes
+✓ Balanço de massa do H₂O₂ no PE fecha dentro da tolerância
+✓ Balanço de massa do oxalato no PE fecha dentro da tolerância
+✓ Curva E = V² não recebe ponto final artificial pela segunda derivada
+✓ Máximo algébrico da primeira derivada também funciona quando a curva é descendente
+✓ Curva E = V³ localiza o cruzamento real de E″ em V = 0
+✓ Curva iodimétrica padrão mantém derivada independente e ponto de cruzamento
+✓ Nernst mantém resultado convencional para atividades ordinárias
+✓ Nernst não falha por overflow/underflow intermediário de Q
+✓ I₃⁻/I⁻ usa E° = +0,536 V, sem recorrer a 0,621 V
+✓ PE iodimétrico usa a média ponderada dos dois pares de 2 elétrons
+✓ Busca binária identifica antes, faixa do PE e após o PE
+✓ Estequiometria do cloro calcula automaticamente o KI mínimo: 3 I⁻ por Cl₂
+✓ Antes do PE reproduz a validação: [I₃⁻] = 0,004286 M, [I⁻] = 0,008571 M e E ≈ 0,649 V
+✓ No PE o motor usa diretamente a média ponderada, sem resolver equilíbrio acoplado
+✓ Após o PE aplica Nernst ao par do titulante S₄O₆²⁻/S₂O₃²⁻
+✓ Balanços de I₃⁻, I⁻, tiossulfato e tetrationato fecham antes, no e após o PE
+✓ A quantidade e a concentração mínima de KI são calculadas sem campo de entrada
+✓ A curva não cria potencial artificial em 0 mL quando [I⁻] ainda é zero
+✓ Consumo de iodeto inclui a formação de I₃⁻ nos seis sistemas
+✓ Os seis sistemas iodimétricos geram potenciais finitos antes, no e após o PE
+✓ A derivada da curva iodimétrica continua localizando a região de maior variação
+✓ A busca do motor iodimétrico rejeita identificador desconhecido
+✓ Identificador iodimétrico desconhecido gera erro explícito
+✓ Notação científica apresentada sem e de programação
+
+49 testes aprovados.
