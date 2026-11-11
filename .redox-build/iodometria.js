@@ -383,37 +383,24 @@ function calcularFatorNernstDoisEletrons(temperaturaC) {
         (kelvin(temperaturaC) / 298.15));
 }
 /**
- * Potencial no PE pelo desenvolvimento dos slides 40–41:
+ * Potencial FORMAL no PE adotado na validação acadêmica:
+ * média ponderada dos potenciais padrão (2 elétrons em cada par).
  *
- * E_PE = (a E°A + b E°B) / (a + b)
+ * E_PE(formal) = [2 E°(I₃⁻/I⁻) + 2 E°(S₄O₆²⁻/S₂O₃²⁻)] / 4.
  *
- * Para I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, a = b = 2.
- */
-/**
- * Calcula o potencial real de equilíbrio no ponto estequiométrico.
- *
- * Diferentemente da média aritmética dos potenciais padrão, o potencial no
- * PE é obtido resolvendo simultaneamente as equações de Nernst dos pares
- * I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, respeitando os balanços de matéria da reação:
- *
- * I₃⁻ + 2 S₂O₃²⁻ ⇌ 3 I⁻ + S₄O₆²⁻
- *
- * O resultado depende das concentrações analíticas e do volume da mistura.
+ * IMPORTANTE: esta média é uma convenção da validação, NÃO é o resultado
+ * da resolução simultânea de Nernst. Ela não é inserida como um ponto
+ * intermediário na série contínua E × V, evitando saltos artificiais nas
+ * derivadas. A curva e as derivadas continuam provenientes do equilíbrio.
  */
 function calcularPotencialEquivalenciaIodometria(entrada) {
-    const resumo = calcularResumoEstequiometricoIodometria(entrada);
-    return calcularPontoIodometria({
-        entrada,
-        volumeAdicionadoMl: resumo.volumeEquivalenciaMl,
-    }).potencialV;
+    validarEntrada(entrada);
+    return calcularMediaFormalPotenciaisPadraoIodometria();
 }
 exports.calcularPotencialEquivalenciaIodometria = calcularPotencialEquivalenciaIodometria;
 /**
- * A média ponderada usada na versão anterior da validação é mantida apenas
- * como referência matemática dos potenciais padrão. Ela não é usada como
- * potencial do PE porque não satisfaz, em geral, as duas equações de Nernst
- * com os coeficientes estequiométricos reais dos pares I₃⁻/I⁻ e
- * S₄O₆²⁻/S₂O₃²⁻.
+ * Média formal dos potenciais padrão, ponderada pelos elétrons dos pares.
+ * Para os dois sistemas de 2 elétrons: (2 × 0,536 + 2 × 0,080)/4 = 0,308 V.
  */
 function calcularMediaFormalPotenciaisPadraoIodometria() {
     const a = exports.ELETRONS_PAR_I3_I;
@@ -639,9 +626,16 @@ function resolverEquilibrioIodometria({ entrada, volumeAdicionadoMl, molI3Inicia
     };
 }
 /**
- * Calcula um ponto da curva pela resolução simultânea dos dois pares redox.
- * Em cada volume, a extensão da reação é encontrada por busca binária até
- * que os potenciais de Nernst dos pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻ coincidam.
+ * Calcula um ponto da titulação respeitando a validação fornecida:
+ * - antes do PE: potencial da região I₃⁻/I⁻;
+ * - exatamente no PE: média ponderada formal dos potenciais padrão;
+ * - depois do PE: potencial da região S₄O₆²⁻/S₂O₃²⁻.
+ *
+ * O resolvedor de equilíbrio é preservado nos pontos antes/depois do PE,
+ * pois reproduz as concentrações e os potenciais apresentados na validação.
+ * No PE, aplicam-se a média formal e os balanços estequiométricos exatos
+ * mostrados no documento: I₃⁻ = 0; S₂O₃²⁻ = 0; I⁻ = 3 n(I₃⁻ inicial);
+ * S₄O₆²⁻ = n(I₃⁻ inicial).
  */
 function calcularPontoIodometria({ entrada, volumeAdicionadoMl, }) {
     validarEntrada(entrada);
@@ -649,13 +643,34 @@ function calcularPontoIodometria({ entrada, volumeAdicionadoMl, }) {
         throw new Error("O volume adicionado deve ser maior ou igual a zero.");
     }
     const resumo = calcularResumoEstequiometricoIodometria(entrada);
+    const regiao = localizarRegiaoIodometriaPorBuscaBinaria(volumeAdicionadoMl, resumo.volumeEquivalenciaMl);
+    if (regiao === "pe") {
+        const volumeTotalL = (entrada.volumeAmostraMl + resumo.volumeEquivalenciaMl) / 1000;
+        const molI3 = 0;
+        const molIodeto = 3 * resumo.molI3Gerado;
+        const molTiossulfato = 0;
+        const molTetrationato = resumo.molI3Gerado;
+        return {
+            volumeAdicionadoMl,
+            potencialV: calcularMediaFormalPotenciaisPadraoIodometria(),
+            regiao,
+            molI3,
+            molIodeto,
+            molIodetoLivre: molIodeto,
+            molTiossulfato,
+            molTetrationato,
+            concentracaoIodetoMolL: molIodeto / volumeTotalL,
+            concentracaoI3MolL: 0,
+            concentracaoTiossulfatoMolL: 0,
+            concentracaoTetrationatoMolL: molTetrationato / volumeTotalL,
+        };
+    }
     const equilibrio = resolverEquilibrioIodometria({
         entrada,
         volumeAdicionadoMl,
         molI3Inicial: resumo.molI3Gerado,
         volumeEquivalenciaMl: resumo.volumeEquivalenciaMl,
     });
-    const regiao = localizarRegiaoIodometriaPorBuscaBinaria(volumeAdicionadoMl, resumo.volumeEquivalenciaMl);
     return {
         volumeAdicionadoMl,
         potencialV: equilibrio.potencialV,
@@ -730,10 +745,6 @@ function gerarCurvaIodometria({ entrada, configuracao = {}, }) {
         entrada,
         volumeAdicionadoMl,
     }));
-    const pontoPE = calcularPontoIodometria({
-        entrada,
-        volumeAdicionadoMl: volumePE,
-    });
     return {
         entrada,
         sistema: resumo
@@ -749,8 +760,9 @@ function gerarCurvaIodometria({ entrada, configuracao = {}, }) {
         molTiossulfatoEquivalencia: resumo
             .molTiossulfatoEquivalencia,
         volumeEquivalenciaMl: volumePE,
-        potencialEquivalenciaV: pontoPE
-            .potencialV,
+        // Referência formal da validação; não substituir o ponto contínuo
+        // da curva por este valor, pois isso geraria picos espúrios em dE/dV.
+        potencialEquivalenciaV: calcularPotencialEquivalenciaIodometria(entrada),
         volumeMaximoMl,
         pontos,
         pontosValidos: pontos.filter((ponto) => Number.isFinite(ponto
@@ -759,14 +771,14 @@ function gerarCurvaIodometria({ entrada, configuracao = {}, }) {
 }
 exports.gerarCurvaIodometria = gerarCurvaIodometria;
 /**
- * As derivadas são calculadas sobre a curva contínua de equilíbrio.
- * Como o potencial diminui durante a titulação, o ponto final pela primeira
- * derivada é localizado pelo vale (maior magnitude negativa) de dE/dV.
- * A segunda derivada é calculada independentemente e seu PF só é informado
- * quando há cruzamento real por zero.
+ * As derivadas são calculadas nos ramos de Nernst antes e depois do PE.
+ * O ponto exato do PE é uma referência formal (média ponderada) da validação;
+ * ele é excluído da diferenciação para não criar um pico numérico artificial
+ * na transição entre os critérios de cálculo.
  */
 function calcularDerivadasIodometria(pontosEntrada) {
-    const resultado = (0, derivadas_1.calcularDerivadasRedox)(pontosEntrada.map((ponto) => ({
+    const pontosParaDerivar = pontosEntrada.filter((ponto) => ponto.regiao !== "pe");
+    const resultado = (0, derivadas_1.calcularDerivadasRedox)(pontosParaDerivar.map((ponto) => ({
         volumeAdicionadoMl: ponto.volumeAdicionadoMl,
         potencialV: ponto.potencialV,
     })), true);

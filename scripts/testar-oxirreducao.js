@@ -478,7 +478,7 @@ teste('Todas as semirreações do par I₃⁻/I⁻ são exibidas no sentido de r
   }
 });
 
-teste('A média formal dos E° é identificada separadamente do potencial real no PE', () => {
+teste('O PE formal usa a média ponderada dos E° (2 e 2 elétrons)', () => {
   proximoDe(
     calcularMediaFormalPotenciaisPadraoIodometria(),
     0.308,
@@ -487,10 +487,31 @@ teste('A média formal dos E° é identificada separadamente do potencial real n
   );
   proximoDe(
     calcularPotencialEquivalenciaIodometria(entradaIodo),
-    0.4633316269829023,
-    1e-10,
-    'potencial de equilíbrio no PE'
+    0.308,
+    1e-15,
+    'potencial formal no PE'
   );
+});
+
+teste('Os seis sistemas usam a média ponderada no volume estequiométrico de PE', () => {
+  const sistemas = [
+    'cloro-ativo',
+    'cobre-ii',
+    'oxigenio-dissolvido',
+    'peroxido-hidrogenio',
+    'hipoclorito',
+    'iodato',
+  ];
+  for (const sistemaId of sistemas) {
+    const entrada = entradaPadraoIodometria(sistemaId);
+    const resumo = calcularResumoEstequiometricoIodometria(entrada);
+    const ponto = calcularPontoIodometria({
+      entrada,
+      volumeAdicionadoMl: resumo.volumeEquivalenciaMl,
+    });
+    assert.equal(ponto.regiao, 'pe', `${sistemaId}: região PE`);
+    proximoDe(ponto.potencialV, 0.308, 1e-15, `${sistemaId}: EPE`);
+  }
 });
 
 teste('Busca binária identifica antes, PE e após o PE', () => {
@@ -519,17 +540,22 @@ teste('Antes do PE reproduz a validação em 10 mL e fecha o equilíbrio dos doi
   assert.ok(ponto.concentracaoTetrationatoMolL > 0);
 });
 
-teste('No PE os dois pares redox permanecem em equilíbrio com concentrações residuais finitas', () => {
+teste('No PE aplica a média ponderada e os balanços estequiométricos da validação', () => {
   const ponto = calcularPontoIodometria({
     entrada: entradaIodo,
     volumeAdicionadoMl: 25,
   });
   assert.equal(ponto.regiao, 'pe');
-  proximoDe(ponto.potencialV, 0.4633316269829023, 1e-10, 'EPE');
-  assert.ok(ponto.concentracaoI3MolL > 0);
-  assert.ok(ponto.concentracaoIodetoMolL > 0);
-  assert.ok(ponto.concentracaoTiossulfatoMolL > 0);
-  assert.ok(ponto.concentracaoTetrationatoMolL > 0);
+  proximoDe(ponto.potencialV, 0.308, 1e-15, 'EPE pela média ponderada');
+  proximoDe(calcularPotencialEquivalenciaIodometria(entradaIodo), 0.308, 1e-15, 'EPE formal');
+  proximoDe(ponto.molI3, 0, 1e-15, 'mol I₃⁻ residual no PE');
+  proximoDe(ponto.molIodeto, 0.00075, 1e-15, 'mol I⁻ no PE');
+  proximoDe(ponto.molTiossulfato, 0, 1e-15, 'mol S₂O₃²⁻ residual no PE');
+  proximoDe(ponto.molTetrationato, 0.00025, 1e-15, 'mol S₄O₆²⁻ no PE');
+  proximoDe(ponto.concentracaoI3MolL, 0, 1e-15, '[I₃⁻] no PE');
+  proximoDe(ponto.concentracaoIodetoMolL, 0.015, 1e-15, '[I⁻] no PE');
+  proximoDe(ponto.concentracaoTiossulfatoMolL, 0, 1e-15, '[S₂O₃²⁻] no PE');
+  proximoDe(ponto.concentracaoTetrationatoMolL, 0.005, 1e-15, '[S₄O₆²⁻] no PE');
 });
 
 teste('Após o PE reproduz a validação em 30 mL', () => {
@@ -655,10 +681,21 @@ teste('Os seis sistemas iodimétricos geram curvas contínuas e potenciais finit
   }
 });
 
-teste('A curva permanece contínua e monotônica na vizinhança do PE', () => {
+teste('O ponto de PE na curva e o resumo usam a mesma média ponderada de 0,308 V', () => {
+  const curva = gerarCurvaIodometria({ entrada: entradaIodo });
+  proximoDe(curva.potencialEquivalenciaV, 0.308, 1e-15, 'resumo EPE');
+  const pontoPE = curva.pontosValidos.find(
+    (ponto) => Math.abs(ponto.volumeAdicionadoMl - curva.volumeEquivalenciaMl) < 1e-8
+  );
+  assert.ok(pontoPE, 'curva deve conter o volume de equivalência');
+  proximoDe(pontoPE.potencialV, 0.308, 1e-15, 'ponto E × V no PE');
+  assert.equal(pontoPE.regiao, 'pe');
+});
+
+teste('Antes e depois do PE preservam os potenciais de Nernst da validação; o PE usa a média', () => {
   const antes = calcularPontoIodometria({
     entrada: entradaIodo,
-    volumeAdicionadoMl: 24.99,
+    volumeAdicionadoMl: 10,
   });
   const pe = calcularPontoIodometria({
     entrada: entradaIodo,
@@ -666,12 +703,11 @@ teste('A curva permanece contínua e monotônica na vizinhança do PE', () => {
   });
   const depois = calcularPontoIodometria({
     entrada: entradaIodo,
-    volumeAdicionadoMl: 25.01,
+    volumeAdicionadoMl: 30,
   });
-  assert.ok(antes.potencialV > pe.potencialV);
-  assert.ok(pe.potencialV > depois.potencialV);
-  assert.ok(antes.potencialV - pe.potencialV < 0.1);
-  assert.ok(pe.potencialV - depois.potencialV < 0.2);
+  proximoDe(antes.potencialV, 0.649, 0.0005, 'Nernst antes do PE');
+  proximoDe(pe.potencialV, 0.308, 1e-15, 'média ponderada no PE');
+  proximoDe(depois.potencialV, 0.1729, 0.0001, 'Nernst depois do PE');
 });
 
 teste('As derivadas da curva iodimétrica são finitas e localizam o PF próximo ao PE', () => {

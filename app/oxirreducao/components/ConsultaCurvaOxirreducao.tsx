@@ -98,6 +98,9 @@ type ResultadoGrafico = {
 
       potencialV:
         number | null;
+
+      regiao?:
+        "antes_pe" | "pe" | "apos_pe";
     }[];
 };
 
@@ -207,6 +210,7 @@ function GraficoCurvaConsultavel({
   resultado,
   consulta,
   rotuloEixoX,
+  modo,
 }: {
   resultado:
     ResultadoGrafico;
@@ -216,6 +220,9 @@ function GraficoCurvaConsultavel({
 
   rotuloEixoX:
     string;
+
+  modo:
+    Props["modo"];
 }) {
   const largura =
     1000;
@@ -261,6 +268,14 @@ function GraficoCurvaConsultavel({
             ponto.potencialV
           )
       );
+
+
+  // O ponto exato do PE é a média formal da validação; o traçado da curva
+  // mantém os ramos de Nernst e apresenta esse valor como marcador separado.
+  const pontosLinha =
+    modo === "iodometria"
+      ? pontos.filter((ponto) => ponto.regiao !== "pe")
+      : pontos;
 
 
   if (
@@ -360,7 +375,7 @@ function GraficoCurvaConsultavel({
 
 
   const polyline =
-    pontos
+    pontosLinha
       .map(
         (
           ponto
@@ -642,7 +657,7 @@ function GraficoCurvaConsultavel({
               .volumeEquivalenciaMl,
             2
           )}{" "}
-          mL
+          mL{modo === "iodometria" ? " · média ponderada" : ""}
         </text>
 
 
@@ -1149,7 +1164,7 @@ export default function ConsultaCurvaOxirreducao(
             ? "I₃⁻ / I⁻"
             : ponto.regiao ===
                 "pe"
-              ? "Equivalência"
+              ? "Média ponderada (2 e⁻ / 2 e⁻)"
               : "S₄O₆²⁻ / S₂O₃²⁻";
 
 
@@ -1159,7 +1174,7 @@ export default function ConsultaCurvaOxirreducao(
             ? "Ainda há I₃⁻ disponível para reação com o tiossulfato. O potencial é calculado pelo par I₃⁻/I⁻ da amostra."
             : ponto.regiao ===
                 "pe"
-              ? "O volume consultado coincide com o ponto de equivalência estequiométrico da titulação iodimétrica."
+              ? "No volume exato do PE, a validação adota a média ponderada dos potenciais padrão: [2 × 0,536 + 2 × 0,080] / 4 = 0,308 V. Os balanços estequiométricos indicam consumo completo de I₃⁻ e S₂O₃²⁻."
               : "O tiossulfato está em excesso; o potencial é calculado pelo par S₄O₆²⁻/S₂O₃²⁻ do titulante.";
 
 
@@ -1259,6 +1274,9 @@ export default function ConsultaCurvaOxirreducao(
         rotuloEixoX={
           rotuloEixoX
         }
+        modo={
+          props.modo
+        }
       />
 
 
@@ -1270,7 +1288,9 @@ export default function ConsultaCurvaOxirreducao(
 
         <span>
           <i className="legendLine pe" />
-          Ponto de equivalência
+          {props.modo === "iodometria"
+            ? "PE — média formal dos E°"
+            : "Ponto de equivalência"}
         </span>
 
         <span>
@@ -1377,7 +1397,10 @@ export default function ConsultaCurvaOxirreducao(
 
             <div className="resultCard">
               <span>
-                Potencial E
+                {props.modo === "iodometria" &&
+                consulta.regiao === "Ponto de equivalência"
+                  ? "Potencial formal no PE"
+                  : "Potencial E"}
               </span>
 
               <strong>

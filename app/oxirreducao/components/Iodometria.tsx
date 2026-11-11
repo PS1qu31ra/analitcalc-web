@@ -519,8 +519,8 @@ function SemirreacoesIodometria({
         <p className="redoxDerivationFootnote">
           O potencial padrão global expressa a tendência termodinâmica da
           reação nas condições padrão a 25 °C. Ele não corresponde ao
-          potencial medido no ponto de equivalência, que é calculado pelo
-          equilíbrio e pelas equações de Nernst.
+          potencial formal no PE, calculado nesta validação pela média
+          ponderada dos E° dos dois pares de 2 elétrons.
         </p>
       </div>
 
@@ -836,10 +836,11 @@ function CurvaIodometria({
         <h2>Curva potenciométrica da iodometria</h2>
 
         <p>
-          Em todos os volumes, o potencial é obtido pela resolução simultânea
-          das equações de Nernst dos pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻,
-          respeitando os balanços de matéria da reação. Assim, a curva passa
-          continuamente pela região do ponto de equivalência.
+          A linha E × V e suas derivadas utilizam a resolução contínua das
+          equações de Nernst. O potencial formal no PE exibido nos resultados
+          (0,308 V) segue a média ponderada escolhida na validação acadêmica.
+          É uma referência separada da curva de equilíbrio, não um ponto
+          interpolado da linha; por isso, não cria picos artificiais nas derivadas.
         </p>
 
         <div className="resultGrid">
@@ -849,7 +850,7 @@ function CurvaIodometria({
           </div>
 
           <div className="resultCard">
-            <span>Potencial no PE</span>
+            <span>Potencial formal no PE (média 2 e⁻ / 2 e⁻)</span>
             <strong>{formatarNumero(resultado.potencialEquivalenciaV, 3)} V</strong>
           </div>
 
@@ -877,7 +878,9 @@ function CurvaIodometria({
           A concentração mínima de KI é calculada automaticamente pela
           estequiometria da geração de I₃⁻. A curva é resolvida pelo equilíbrio
           simultâneo dos pares I₃⁻/I⁻ e S₄O₆²⁻/S₂O₃²⁻, com balanços de matéria
-          em cada volume. O excesso operacional de KI não é presumido; a
+          em cada volume. A referência formal do PE segue a média ponderada
+          dos potenciais padrão (2 e⁻/2 e⁻), independentemente da linha contínua.
+          O excesso operacional de KI não é presumido; a
           quantidade experimental utilizada pode alterar as atividades e o
           potencial medido. Os potenciais padrão são referências a 25 °C.
         </p>
@@ -3206,7 +3209,7 @@ export default function Iodometria() {
               </div>
 
               <div className="resultCard">
-                <span>Potencial no PE</span>
+                <span>Potencial formal no PE (média 2 e⁻ / 2 e⁻)</span>
                 <strong>{formatarNumero(resultado.potencialEquivalenciaV, 3)} V</strong>
               </div>
 

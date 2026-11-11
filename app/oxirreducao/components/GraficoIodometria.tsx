@@ -47,12 +47,20 @@ export default function GraficoIodometria({
       Number.isFinite(ponto.potencialV)
   );
 
+  const pontosLinha = pontos.filter(
+    (ponto) => ponto.regiao !== "pe"
+  );
+
   const pontosComparacao =
     curvaComparacao?.pontosValidos.filter(
       (ponto) =>
         ponto.potencialV !== null &&
         Number.isFinite(ponto.potencialV)
     ) ?? [];
+
+  const pontosComparacaoLinha = pontosComparacao.filter(
+    (ponto) => ponto.regiao !== "pe"
+  );
 
   const todosPontos = [
     ...pontos,
@@ -231,7 +239,7 @@ export default function GraficoIodometria({
         />
 
         <polyline
-          points={montarPolyline(pontos)}
+          points={montarPolyline(pontosLinha)}
           fill="none"
           className="oxirreducaoChartCurve"
         />
@@ -239,7 +247,7 @@ export default function GraficoIodometria({
         {curvaComparacao &&
           pontosComparacao.length > 0 && (
             <polyline
-              points={montarPolyline(pontosComparacao)}
+              points={montarPolyline(pontosComparacaoLinha)}
               fill="none"
               stroke="currentColor"
               strokeOpacity="0.42"
@@ -260,7 +268,7 @@ export default function GraficoIodometria({
           y={margemSuperior + 22}
           className="oxirreducaoChartPELabel"
         >
-          PE = {formatarNumero(resultado.volumeEquivalenciaMl, 2)} mL
+          PE = {formatarNumero(resultado.volumeEquivalenciaMl, 2)} mL · E formal (média)
         </text>
 
         {pontosAdicionados.map((ponto, indice) => (
