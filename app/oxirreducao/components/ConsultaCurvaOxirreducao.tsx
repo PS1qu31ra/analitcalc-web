@@ -1429,11 +1429,17 @@ export default function ConsultaCurvaOxirreducao(
 
             <div className="resultCard">
               <span>
-                Sistema predominante
+                {props.modo === "iodometria" &&
+                consulta.regiao === "Ponto de equivalência"
+                  ? "Critério aplicado"
+                  : "Sistema predominante"}
               </span>
 
               <strong>
-                {consulta.controlador}
+                {props.modo === "iodometria" &&
+                consulta.regiao === "Ponto de equivalência"
+                  ? "Média ponderada dos E°"
+                  : consulta.controlador}
               </strong>
             </div>
 
