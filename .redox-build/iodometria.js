@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.entradaPadraoIodometria = exports.calcularDerivadasIodometria = exports.gerarCurvaIodometria = exports.calcularPontoIodometria = exports.localizarRegiaoIodometriaPorBuscaBinaria = exports.calcularMediaFormalPotenciaisPadraoIodometria = exports.calcularPotencialEquivalenciaIodometria = exports.calcularResumoEstequiometricoIodometria = exports.buscarSistemaIodometria = exports.sistemasIodometria = exports.TEXTO_INDICADOR_AMIDO = exports.SEMIRREACAO_TIOS = exports.SEMIRREACAO_IODO = exports.EQUILIBRIO_TRIIODeto = exports.REACAO_TIOS = exports.FATOR_NERNST_25C = exports.ELETRONS_PAR_TETRATIONATO_TIOS = exports.ELETRONS_PAR_I3_I = exports.E0_TETRATIONATO_TIOS = exports.E0_I3_I_25C = void 0;
+exports.entradaPadraoIodometria = exports.calcularDerivadasIodometria = exports.gerarCurvaIodometria = exports.calcularPontoIodometria = exports.localizarRegiaoIodometriaPorBuscaBinaria = exports.calcularMediaFormalPotenciaisPadraoIodometria = exports.calcularPotencialEquivalenciaIodometria = exports.calcularResumoEstequiometricoIodometria = exports.buscarSistemaIodometria = exports.sistemasIodometria = exports.TEXTO_INDICADOR_AMIDO = exports.SEMIRREACAO_TIOS = exports.SEMIRREACAO_IODO = exports.EQUILIBRIO_TRIIODeto = exports.REACAO_TIOS = exports.FATOR_NERNST_25C = exports.ELETRONS_PAR_TETRATIONATO_TIOS = exports.ELETRONS_PAR_I3_I = exports.E0_IO3_I_25C = exports.E0_HCLO_CL_25C = exports.E0_H2O2_H2O_25C = exports.E0_CL2_CL_25C = exports.E0_TETRATIONATO_TIOS = exports.E0_I3_I_25C = void 0;
 const derivadas_1 = require("./derivadas");
 /**
  * Potencial padrão de redução adotado para o par triiodeto/iodeto:
@@ -16,6 +16,24 @@ exports.E0_I3_I_25C = 0.536;
  * S₄O₆²⁻ + 2 e⁻ ⇌ 2 S₂O₃²⁻.
  */
 exports.E0_TETRATIONATO_TIOS = 0.080;
+/** Potenciais padrão de redução transcritos do Apêndice 5 de Skoog et al. */
+exports.E0_CL2_CL_25C = 1.359;
+exports.E0_H2O2_H2O_25C = 1.776;
+/**
+ * Potencial derivado para HClO/Cl⁻ a partir de duas linhas da tabela:
+ * HClO + H⁺ + e⁻ ⇌ ½ Cl₂ + H₂O       E° = +1,630 V
+ * Cl₂ + 2 e⁻ ⇌ 2 Cl⁻                 E° = +1,359 V
+ * Multiplica-se a primeira por 2; somam-se as reações e divide-se o
+ * resultado por 2. E° global = [2(1,630) + 2(1,359)] / 4 = +1,4945 V.
+ */
+exports.E0_HCLO_CL_25C = (1.630 + exports.E0_CL2_CL_25C) / 2;
+/**
+ * Potencial derivado para IO₃⁻/I⁻ a partir de duas linhas da tabela:
+ * IO₃⁻ + 6 H⁺ + 5 e⁻ ⇌ ½ I₂(s) + 3 H₂O   E° = +1,196 V
+ * ½ I₂(s) + e⁻ ⇌ I⁻                      E° = +0,5355 V
+ * E° global = [5(1,196) + 1(0,5355)] / 6 = +1,0859167 V.
+ */
+exports.E0_IO3_I_25C = (5 * 1.196 + 0.5355) / 6;
 /** Número de elétrons de cada par na etapa titulométrica. */
 exports.ELETRONS_PAR_I3_I = 2;
 exports.ELETRONS_PAR_TETRATIONATO_TIOS = 2;
@@ -25,6 +43,7 @@ exports.REACAO_TIOS = "I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻";
 exports.EQUILIBRIO_TRIIODeto = "I₂ + I⁻ ⇌ I₃⁻";
 exports.SEMIRREACAO_IODO = "I₃⁻ + 2 e⁻ ⇌ 3 I⁻";
 exports.SEMIRREACAO_TIOS = "S₄O₆²⁻ + 2 e⁻ ⇌ 2 S₂O₃²⁻";
+const OBSERVACAO_PAR_I3_I_REDUCAO = "O potencial padrão é apresentado no sentido de redução, conforme a tabela de referência. Na reação global de geração do iodo, o iodeto atua como redutor e é oxidado.";
 exports.TEXTO_INDICADOR_AMIDO = "O amido é empregado próximo ao ponto final porque a amilose organiza-se em uma estrutura helicoidal capaz de formar um complexo de inclusão tridimensional com espécies de iodo, especialmente I₃⁻, produzindo coloração azul intensa. À medida que o iodo é consumido pelo tiossulfato, a coloração desaparece.";
 exports.sistemasIodometria = [
     {
@@ -40,14 +59,14 @@ exports.sistemasIodometria = [
                 titulo: "Redução do analito",
                 equacao: "Cl₂ + 2 e⁻ ⇌ 2 Cl⁻",
                 eletrons: 2,
-                potencialPadraoV: 1.35827,
+                potencialPadraoV: exports.E0_CL2_CL_25C,
             },
             {
-                titulo: "Oxidação do iodeto",
-                equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
+                titulo: "Redução do triiodeto",
+                equacao: "I₃⁻ + 2 e⁻ ⇌ 3 I⁻",
                 eletrons: 2,
                 potencialPadraoV: exports.E0_I3_I_25C,
-                observacao: "O valor exibido é o E° de redução do par I₃⁻/I⁻; a semirreação está escrita no sentido de oxidação para compor a reação global.",
+                observacao: "O potencial padrão é apresentado no sentido de redução, conforme a tabela de referência. Na reação global de geração do iodo, o iodeto atua como redutor e é oxidado.",
             },
         ],
         etapasPreTitulacao: [
@@ -87,10 +106,11 @@ exports.sistemasIodometria = [
                 observacao: "O potencial considera a formação de CuI(s), que desloca a reação para a formação de Cu(I).",
             },
             {
-                titulo: "Oxidação do iodeto",
-                equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
+                titulo: "Redução do triiodeto",
+                equacao: "I₃⁻ + 2 e⁻ ⇌ 3 I⁻",
                 eletrons: 2,
                 potencialPadraoV: exports.E0_I3_I_25C,
+                observacao: OBSERVACAO_PAR_I3_I_REDUCAO,
             },
         ],
         etapasPreTitulacao: [
@@ -130,10 +150,11 @@ exports.sistemasIodometria = [
                 observacao: "É uma referência termodinâmica. No método de Winkler, o O₂ não é titulado diretamente com iodeto: ele é inicialmente fixado por manganês.",
             },
             {
-                titulo: "Oxidação do iodeto equivalente",
-                equacao: "6 I⁻ ⇌ 2 I₃⁻ + 4 e⁻",
+                titulo: "Redução do triiodeto equivalente",
+                equacao: "2 I₃⁻ + 4 e⁻ ⇌ 6 I⁻",
                 eletrons: 4,
                 potencialPadraoV: exports.E0_I3_I_25C,
+                observacao: OBSERVACAO_PAR_I3_I_REDUCAO,
             },
         ],
         etapasPreTitulacao: [
@@ -173,13 +194,14 @@ exports.sistemasIodometria = [
                 titulo: "Redução do peróxido",
                 equacao: "H₂O₂ + 2 H⁺ + 2 e⁻ ⇌ 2 H₂O",
                 eletrons: 2,
-                potencialPadraoV: 1.763,
+                potencialPadraoV: exports.E0_H2O2_H2O_25C,
             },
             {
-                titulo: "Oxidação do iodeto",
-                equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
+                titulo: "Redução do triiodeto",
+                equacao: "I₃⁻ + 2 e⁻ ⇌ 3 I⁻",
                 eletrons: 2,
                 potencialPadraoV: exports.E0_I3_I_25C,
+                observacao: OBSERVACAO_PAR_I3_I_REDUCAO,
             },
         ],
         etapasPreTitulacao: [
@@ -215,14 +237,15 @@ exports.sistemasIodometria = [
                 titulo: "Redução da espécie de cloro(I)",
                 equacao: "HClO + H⁺ + 2 e⁻ ⇌ Cl⁻ + H₂O",
                 eletrons: 2,
-                potencialPadraoV: 1.482,
-                observacao: "O E° = 1,482 V corresponde ao par HClO/Cl⁻. Na iodometria em meio ácido, ClO⁻ é protonado a HClO antes da transferência eletrônica.",
+                potencialPadraoV: exports.E0_HCLO_CL_25C,
+                observacao: "Potencial derivado das semirreações do Skoog: HClO + H⁺ + e⁻ ⇌ ½ Cl₂ + H₂O (+1,630 V; 1 e⁻) e Cl₂ + 2 e⁻ ⇌ 2 Cl⁻ (+1,359 V; 2 e⁻). Multiplica-se a primeira por 2, somam-se as equações e divide-se a global por 2. Pela aditividade de ΔG°, E° = +1,4945 V (exibido como +1,495 V). ClO⁻ é protonado a HClO em meio ácido.",
             },
             {
-                titulo: "Oxidação do iodeto",
-                equacao: "3 I⁻ ⇌ I₃⁻ + 2 e⁻",
+                titulo: "Redução do triiodeto",
+                equacao: "I₃⁻ + 2 e⁻ ⇌ 3 I⁻",
                 eletrons: 2,
                 potencialPadraoV: exports.E0_I3_I_25C,
+                observacao: OBSERVACAO_PAR_I3_I_REDUCAO,
             },
         ],
         etapasPreTitulacao: [
@@ -258,14 +281,15 @@ exports.sistemasIodometria = [
                 titulo: "Redução do iodato a iodeto",
                 equacao: "IO₃⁻ + 6 H⁺ + 6 e⁻ ⇌ I⁻ + 3 H₂O",
                 eletrons: 6,
-                potencialPadraoV: 1.085,
-                observacao: "O potencial é apresentado como referência para o par IO₃⁻/I⁻ em meio ácido.",
+                potencialPadraoV: exports.E0_IO3_I_25C,
+                observacao: "Potencial derivado das semirreações do Skoog: IO₃⁻ + 6 H⁺ + 5 e⁻ ⇌ ½ I₂(s) + 3 H₂O (+1,196 V; 5 e⁻) e I₂(s) + 2 e⁻ ⇌ 2 I⁻ (+0,5355 V; 2 e⁻). Multiplica-se a segunda por ½ para obter ½ I₂(s) + e⁻ ⇌ I⁻. Pela aditividade de ΔG°, E° = +1,0859167 V (exibido como +1,086 V).",
             },
             {
-                titulo: "Oxidação do iodeto",
-                equacao: "9 I⁻ ⇌ 3 I₃⁻ + 6 e⁻",
+                titulo: "Redução do triiodeto equivalente",
+                equacao: "3 I₃⁻ + 6 e⁻ ⇌ 9 I⁻",
                 eletrons: 6,
                 potencialPadraoV: exports.E0_I3_I_25C,
+                observacao: OBSERVACAO_PAR_I3_I_REDUCAO,
             },
         ],
         etapasPreTitulacao: [

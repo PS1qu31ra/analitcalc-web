@@ -57,3 +57,27 @@ Em 0,00 mL ainda não há tiossulfato/tetrationato para definir o equilíbrio en
 ## Outros sistemas iodimétricos
 
 O mesmo resolvedor é aplicado aos seis sistemas cadastrados. A quantidade inicial de I₃⁻ e o volume de equivalência continuam determinados pela estequiometria específica de cada analito.
+
+
+## Dedução dos potenciais padrão globais apresentada na interface
+
+A aba **Semirreações** agora explicita a construção das reações globais por soma de semirreações. Para a etapa de geração de I₃⁻, mantém-se a redução do analito e inverte-se a redução do par I₃⁻/I⁻, de modo que o iodeto seja oxidado. O número de elétrons é balanceado antes da soma.
+
+| Sistema | E°red do analito | E°red(I₃⁻/I⁻) | E°global = E°cátodo − E°ânodo |
+|---|---:|---:|---:|
+| Cl₂ | +1,359 V | +0,536 V | +0,823 V |
+| Cu²⁺/CuI(s) | +0,860 V | +0,536 V | +0,324 V |
+| H₂O₂ | +1,776 V | +0,536 V | +1,240 V |
+| HClO/Cl⁻ | +1,4945 V | +0,536 V | +0,9585 V |
+| IO₃⁻/I⁻ | +1,0859167 V | +0,536 V | +0,5499167 V |
+
+No método de Winkler, o O₂ não é tratado como oxidante direto do I⁻. O oxigênio é fixado por espécies de manganês e, após acidificação, ocorre a liberação do iodo. Por isso, a interface apresenta E°(O₂/H₂O) como referência termodinâmica, mas não calcula um potencial global direto O₂/I⁻.
+
+Para a etapa titulométrica comum:
+
+- Redução: `I₃⁻ + 2 e⁻ ⇌ 3 I⁻` — E°red = +0,536 V.
+- Oxidação (semirreação invertida): `2 S₂O₃²⁻ → S₄O₆²⁻ + 2 e⁻` — E°ox = −0,080 V.
+- Reação global: `I₃⁻ + 2 S₂O₃²⁻ → 3 I⁻ + S₄O₆²⁻`.
+- Potencial padrão global: `E° = 0,536 − 0,080 = +0,456 V`.
+
+Esses potenciais globais são referências termodinâmicas a 25 °C. Não devem ser confundidos com o potencial instantâneo da curva nem com o potencial no ponto de equivalência, obtidos pelo equilíbrio e pelas equações de Nernst.

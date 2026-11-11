@@ -41,6 +41,9 @@ const {
   localizarRegiaoIodometriaPorBuscaBinaria,
   E0_I3_I_25C,
   E0_TETRATIONATO_TIOS,
+  E0_HCLO_CL_25C,
+  E0_IO3_I_25C,
+  sistemasIodometria: sistemasIodometriaCore,
 } = require('../.redox-build/iodometria.js');
 const { buscarSistemaIodometria } = require('../.redox-build/sistemasIodometria.js');
 
@@ -368,6 +371,111 @@ const resumoIodo = calcularResumoEstequiometricoIodometria(entradaIodo);
 
 teste('I₃⁻/I⁻ usa E° = +0,536 V, sem recorrer a 0,621 V', () => {
   proximoDe(E0_I3_I_25C, 0.536, 1e-15, 'E° I₃⁻/I⁻');
+});
+
+teste('Potenciais padrão da iodometria conferem com o Apêndice 5 de Skoog et al.', () => {
+  const obterSemirreacao = (sistemaId, titulo) => {
+    const sistema = sistemasIodometriaCore.find((item) => item.id === sistemaId);
+    assert.ok(sistema, `Sistema não encontrado: ${sistemaId}`);
+    const semirreacao = sistema.semirreacoes.find((item) => item.titulo === titulo);
+    assert.ok(semirreacao, `Semirreação não encontrada: ${sistemaId} / ${titulo}`);
+    return semirreacao;
+  };
+
+  proximoDe(
+    obterSemirreacao('cloro-ativo', 'Redução do analito').potencialPadraoV,
+    1.359, 1e-15, 'E° Cl₂/Cl⁻'
+  );
+  proximoDe(
+    obterSemirreacao('cobre-ii', 'Redução de Cu²⁺ com precipitação').potencialPadraoV,
+    0.86, 1e-15, 'E° Cu²⁺/CuI'
+  );
+  proximoDe(
+    obterSemirreacao('oxigenio-dissolvido', 'Referência termodinâmica do O₂').potencialPadraoV,
+    1.229, 1e-15, 'E° O₂/H₂O'
+  );
+  proximoDe(
+    obterSemirreacao('peroxido-hidrogenio', 'Redução do peróxido').potencialPadraoV,
+    1.776, 1e-15, 'E° H₂O₂/H₂O'
+  );
+  proximoDe(
+    obterSemirreacao('hipoclorito', 'Redução da espécie de cloro(I)').potencialPadraoV,
+    (1.630 + 1.359) / 2, 1e-15, 'E° derivado HClO/Cl⁻'
+  );
+  proximoDe(
+    obterSemirreacao('iodato', 'Redução do iodato a iodeto').potencialPadraoV,
+    (5 * 1.196 + 0.5355) / 6, 1e-15, 'E° derivado IO₃⁻/I⁻'
+  );
+  proximoDe(E0_I3_I_25C, 0.536, 1e-15, 'E° I₃⁻/I⁻');
+  proximoDe(E0_TETRATIONATO_TIOS, 0.080, 1e-15, 'E° S₄O₆²⁻/S₂O₃²⁻');
+});
+
+teste('Dedução dos potenciais HClO/Cl⁻ e IO₃⁻/I⁻ reproduz as semirreações do Skoog', () => {
+  proximoDe(
+    E0_HCLO_CL_25C,
+    (2 * 1.630 + 2 * 1.359) / 4,
+    1e-15,
+    'E° derivado HClO/Cl⁻ com 2 elétrons em cada etapa ajustada'
+  );
+  proximoDe(
+    E0_IO3_I_25C,
+    (5 * 1.196 + 1 * 0.5355) / 6,
+    1e-15,
+    'E° derivado IO₃⁻/I⁻ com 5 + 1 elétrons'
+  );
+  const observacaoHclo = buscarSistemaIodometriaCore('hipoclorito').semirreacoes[0].observacao;
+  assert.match(observacaoHclo, /Cl₂ \+ 2 e⁻/);
+  assert.match(observacaoHclo, /multiplica-se a primeira por 2/i);
+  const observacaoIodato = buscarSistemaIodometriaCore('iodato').semirreacoes[0].observacao;
+  assert.match(observacaoIodato, /multiplica-se a segunda por ½/i);
+});
+
+teste('Potenciais padrão globais da geração de I₃⁻ e da titulação conferem', () => {
+  const potencialGlobalGeracao = (sistemaId) => {
+    const sistema = sistemasIodometriaCore.find((item) => item.id === sistemaId);
+    assert.ok(sistema, `Sistema não encontrado: ${sistemaId}`);
+    return (
+      sistema.semirreacoes[0].potencialPadraoV -
+      sistema.semirreacoes[1].potencialPadraoV
+    );
+  };
+
+  proximoDe(potencialGlobalGeracao('cloro-ativo'), 0.823, 1e-12, 'E° global Cl₂/I⁻');
+  proximoDe(potencialGlobalGeracao('cobre-ii'), 0.324, 1e-12, 'E° global Cu²⁺/I⁻');
+  proximoDe(potencialGlobalGeracao('peroxido-hidrogenio'), 1.240, 1e-12, 'E° global H₂O₂/I⁻');
+  proximoDe(potencialGlobalGeracao('hipoclorito'), 0.9585, 1e-12, 'E° global HClO/I⁻');
+  proximoDe(
+    potencialGlobalGeracao('iodato'),
+    (5 * 1.196 + 0.5355) / 6 - E0_I3_I_25C,
+    1e-12,
+    'E° global IO₃⁻/I⁻'
+  );
+  proximoDe(
+    E0_I3_I_25C - E0_TETRATIONATO_TIOS,
+    0.456,
+    1e-12,
+    'E° global I₃⁻/S₂O₃²⁻'
+  );
+});
+
+teste('Todas as semirreações do par I₃⁻/I⁻ são exibidas no sentido de redução', () => {
+  const esperadas = [
+    ['cloro-ativo', 'I₃⁻ + 2 e⁻ ⇌ 3 I⁻', 2],
+    ['cobre-ii', 'I₃⁻ + 2 e⁻ ⇌ 3 I⁻', 2],
+    ['oxigenio-dissolvido', '2 I₃⁻ + 4 e⁻ ⇌ 6 I⁻', 4],
+    ['peroxido-hidrogenio', 'I₃⁻ + 2 e⁻ ⇌ 3 I⁻', 2],
+    ['hipoclorito', 'I₃⁻ + 2 e⁻ ⇌ 3 I⁻', 2],
+    ['iodato', '3 I₃⁻ + 6 e⁻ ⇌ 9 I⁻', 6],
+  ];
+
+  for (const [sistemaId, equacao, eletrons] of esperadas) {
+    const sistema = sistemasIodometriaCore.find((item) => item.id === sistemaId);
+    const semirreacao = sistema.semirreacoes.find((item) => item.titulo.includes('Redução do triiodeto'));
+    assert.ok(semirreacao, `${sistemaId}: semirreação de redução do triiodeto ausente`);
+    assert.equal(semirreacao.equacao, equacao, `${sistemaId}: equação`);
+    assert.equal(semirreacao.eletrons, eletrons, `${sistemaId}: número de elétrons`);
+    proximoDe(semirreacao.potencialPadraoV, 0.536, 1e-15, `${sistemaId}: E° I₃⁻/I⁻`);
+  }
 });
 
 teste('A média formal dos E° é identificada separadamente do potencial real no PE', () => {

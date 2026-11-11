@@ -6460,3 +6460,343 @@ section.container.calculatorSection + section.container.calculatorSection {
     grid-template-columns: 1fr;
   }
 }
+
+
+
+/* Dedução didática dos potenciais globais da iodometria */
+.redoxDerivationIntro {
+  margin: 14px 0 0;
+  color: #475467;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.redoxHalfReactionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.redoxHalfReactionCard {
+  min-width: 0;
+  padding: 22px 24px;
+  border: 1px solid #e4e7ec;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  text-align: left;
+}
+
+.redoxHalfReactionCard span,
+.redoxGlobalReactionCard > span,
+.redoxPotentialResult > span,
+.redoxDerivationNotice > span {
+  display: block;
+  margin-bottom: 12px;
+  color: #667085;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.045em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.redoxHalfReactionCard strong {
+  display: block;
+  color: #101828;
+  font-size: clamp(1rem, 1.45vw, 1.2rem);
+  font-weight: 850;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.redoxHalfReactionCard small {
+  display: block;
+  margin-top: 10px;
+  color: #475467;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.redoxGlobalReactionCard {
+  width: 100%;
+  margin-top: 16px;
+  padding: 24px 28px;
+  border: 1px solid #d8e1ec;
+  border-radius: 20px;
+  background: #f7f9fc;
+  text-align: center;
+}
+
+.redoxGlobalReactionCard > strong {
+  display: block;
+  color: #101828;
+  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+  font-weight: 900;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.redoxPotentialResult {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #d8e1ec;
+}
+
+.redoxPotentialResult > span {
+  margin-bottom: 0;
+}
+
+.redoxPotentialResult strong {
+  display: block;
+  color: #172b4d;
+  font-size: clamp(1rem, 1.65vw, 1.28rem);
+  font-weight: 900;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.redoxDerivationFootnote {
+  margin: 14px 0 0;
+  color: #667085;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.redoxDerivationNotice {
+  margin-top: 18px;
+  padding: 22px 24px;
+  border: 1px solid #e4e7ec;
+  border-radius: 20px;
+  background: #fafbfc;
+}
+
+.redoxDerivationNotice > strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #101828;
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.redoxDerivationNotice p {
+  margin: 0 0 18px;
+  color: #475467;
+  line-height: 1.65;
+}
+
+.redoxDerivationNotice > strong:last-child {
+  margin: 0;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .redoxHalfReactionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .redoxHalfReactionCard,
+  .redoxGlobalReactionCard,
+  .redoxDerivationNotice {
+    padding: 18px;
+  }
+
+  .redoxGlobalReactionCard > strong {
+    font-size: 1.05rem;
+  }
+
+  .redoxPotentialResult strong {
+    font-size: 1rem;
+  }
+}
+
+
+/* Dedução explícita dos potenciais derivados diretamente do Skoog */
+.redoxSourceDerivationPanel {
+  margin-top: 22px;
+}
+
+.redoxSourceReactionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.redoxSourceReactionCard {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e4e7ec;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+
+.redoxSourceReactionCard header,
+.redoxReactionCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.redoxSourceReactionCard header > span:first-child,
+.redoxReactionCardHeader > span:first-child {
+  color: #667085;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.redoxOperationBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid #f0d5d5;
+  border-radius: 999px;
+  background: #fff4f4;
+  color: #a00000;
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.redoxOperationBadge--neutral {
+  border-color: #e4e7ec;
+  background: #f8fafc;
+  color: #475467;
+}
+
+.redoxOperationBadge--inverted {
+  border-color: #c7d7fe;
+  background: #eff4ff;
+  color: #3538cd;
+}
+
+.redoxSourceReactionCard > strong {
+  display: block;
+  color: #101828;
+  font-size: clamp(1rem, 1.45vw, 1.18rem);
+  font-weight: 850;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.redoxSourceReactionCard > small {
+  display: block;
+  margin-top: 9px;
+  color: #475467;
+  font-size: 0.86rem;
+}
+
+.redoxAdjustedReaction {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e4e7ec;
+}
+
+.redoxAdjustedReaction > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #667085;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.redoxAdjustedReaction > strong {
+  display: block;
+  color: #172b4d;
+  font-size: 0.98rem;
+  font-weight: 850;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.redoxAlgebraPanel {
+  display: grid;
+  gap: 11px;
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid #d8e1ec;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.redoxAlgebraPanel > span:first-child {
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.redoxAlgebraPanel > p {
+  margin: 0;
+  color: #101828;
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.redoxAlgebraPanel > small {
+  color: #667085;
+  font-size: 0.82rem;
+}
+
+.redoxAlgebraRule {
+  width: 100%;
+  height: 1px;
+  margin: 3px 0;
+  background: #cbd5e1;
+}
+
+.redoxDerivationResult {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.redoxDerivationResult > span {
+  color: #667085;
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.redoxDerivationResult > strong {
+  color: #101828;
+  font-size: clamp(1rem, 1.55vw, 1.2rem);
+  font-weight: 900;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.redoxReactionCardHeader {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 760px) {
+  .redoxSourceReactionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .redoxSourceReactionCard,
+  .redoxAlgebraPanel {
+    padding: 17px;
+  }
+}

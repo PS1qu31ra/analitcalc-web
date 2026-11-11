@@ -194,6 +194,52 @@ function SemirreacoesIodometria({
   resultado: ResultadoCurvaIodometria;
 }) {
   const sistema = resultado.sistema;
+  const semiAnalito = sistema.semirreacoes[0];
+  const semiIodo = sistema.semirreacoes[1];
+
+  const inverterSemirreacao = (equacao: string) => {
+    const partes = equacao.split("⇌");
+    if (partes.length !== 2) return equacao;
+    return `${partes[1].trim()} → ${partes[0].trim()}`;
+  };
+
+  const mdc = (a: number, b: number): number => {
+    let x = Math.abs(a);
+    let y = Math.abs(b);
+    while (y !== 0) {
+      const resto = x % y;
+      x = y;
+      y = resto;
+    }
+    return x || 1;
+  };
+
+  const eletronsComuns =
+    (semiAnalito.eletrons * semiIodo.eletrons) /
+    mdc(semiAnalito.eletrons, semiIodo.eletrons);
+
+  const fatorAnalito = eletronsComuns / semiAnalito.eletrons;
+  const fatorIodo = eletronsComuns / semiIodo.eletrons;
+
+  const equacaoOxidacaoIodeto = inverterSemirreacao(
+    semiIodo.equacao
+  );
+
+  const potencialGlobalGeracao =
+    semiAnalito.potencialPadraoV !== null &&
+    semiIodo.potencialPadraoV !== null
+      ? semiAnalito.potencialPadraoV -
+        semiIodo.potencialPadraoV
+      : null;
+
+  const metodoWinkler = sistema.id === "oxigenio-dissolvido";
+
+  const equacaoOxidacaoTiossulfato = inverterSemirreacao(
+    SEMIRREACAO_TIOS
+  );
+
+  const potencialGlobalTitulacao =
+    E0_I3_I_25C - E0_TETRATIONATO_TIOS;
 
   return (
     <section className="oxirreducaoTabPanel">
@@ -207,41 +253,275 @@ function SemirreacoesIodometria({
         </h2>
 
         <div className="reactionDetailsStack">
-        {sistema.semirreacoes.map(
-  (item) => (
-    <div
-      className="reactionWideCard"
-      key={`${item.titulo}-${item.equacao}`}
-    >
-      <span>
-        {item.titulo}
-      </span>
+          {sistema.semirreacoes.map((item) => (
+            <div
+              className="reactionWideCard"
+              key={`${item.titulo}-${item.equacao}`}
+            >
+              <span>{item.titulo}</span>
 
-      <strong>
-        {item.equacao}
-      </strong>
+              <strong>{item.equacao}</strong>
 
-      <small>
-        {item.eletrons} e⁻
-        
-{item.potencialPadraoV !== null
-  ? ` → E° = ${formatarNumero(
-      item.potencialPadraoV,
-      3
-    )} V`
-  : ""}
+              <small>
+                {item.eletrons} e⁻
+                {item.potencialPadraoV !== null
+                  ? ` → E° = ${formatarNumero(
+                      item.potencialPadraoV,
+                      3
+                    )} V`
+                  : ""}
+              </small>
 
-      </small>
-
-      {item.observacao && (
-        <p>
-          {item.observacao}
-        </p>
-      )}
-    </div>
-  )
-)}
+              {item.observacao && <p>{item.observacao}</p>}
+            </div>
+          ))}
         </div>
+      </div>
+
+      {(sistema.id === "hipoclorito" || sistema.id === "iodato") && (
+        <div className="resultsPanel redoxSourceDerivationPanel">
+          <span className="eyebrow">
+            Dedução a partir do Apêndice 5 — Skoog
+          </span>
+
+          {sistema.id === "hipoclorito" ? (
+            <>
+              <h2>Origem do potencial padrão de HClO/Cl⁻</h2>
+              <p className="redoxDerivationIntro">
+                O livro apresenta duas semirreações. Multiplicamos a primeira
+                por 2 para igualar os elétrons; a segunda é mantida. Depois,
+                somamos as equações, cancelamos Cl₂ e simplificamos por 2.
+              </p>
+
+              <div className="redoxSourceReactionGrid">
+                <article className="redoxSourceReactionCard">
+                  <header>
+                    <span>Referência 1 · Skoog A-14</span>
+                    <span className="redoxOperationBadge">×2</span>
+                  </header>
+                  <strong>HClO + H⁺ + e⁻ ⇌ ½ Cl₂ + H₂O</strong>
+                  <small>E°red = +1,630 V · 1 e⁻</small>
+                  <div className="redoxAdjustedReaction">
+                    <span>Após multiplicar por 2 · sentido mantido</span>
+                    <strong>2 HClO + 2 H⁺ + 2 e⁻ → Cl₂ + 2 H₂O</strong>
+                  </div>
+                </article>
+
+                <article className="redoxSourceReactionCard">
+                  <header>
+                    <span>Referência 2 · Skoog A-14</span>
+                    <span className="redoxOperationBadge redoxOperationBadge--neutral">×1</span>
+                  </header>
+                  <strong>Cl₂ + 2 e⁻ ⇌ 2 Cl⁻</strong>
+                  <small>E°red = +1,359 V · 2 e⁻</small>
+                  <div className="redoxAdjustedReaction">
+                    <span>Após ajuste · sentido mantido</span>
+                    <strong>Cl₂ + 2 e⁻ → 2 Cl⁻</strong>
+                  </div>
+                </article>
+              </div>
+
+              <div className="redoxAlgebraPanel">
+                <span>Somatório das equações ajustadas</span>
+                <p>2 HClO + 2 H⁺ + 2 e⁻ + Cl₂ + 2 e⁻</p>
+                <p>→ Cl₂ + 2 H₂O + 2 Cl⁻</p>
+                <div className="redoxAlgebraRule" />
+                <small>Cancelamento do intermediário Cl₂ nos dois lados</small>
+                <strong>2 HClO + 2 H⁺ + 4 e⁻ → 2 Cl⁻ + 2 H₂O</strong>
+                <span className="redoxOperationBadge redoxOperationBadge--neutral">Dividir todos os coeficientes por 2</span>
+                <div className="redoxDerivationResult">
+                  <span>Semirreação global simplificada</span>
+                  <strong>HClO + H⁺ + 2 e⁻ → Cl⁻ + H₂O</strong>
+                </div>
+              </div>
+
+              <div className="redoxPotentialResult">
+                <span>Cálculo do potencial global pela aditividade de ΔG°</span>
+                <strong>
+                  E° = [2 × 1,630 + 2 × 1,359] / 4 = +1,4945 V ≈ +1,495 V
+                </strong>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2>Origem do potencial padrão de IO₃⁻/I⁻</h2>
+              <p className="redoxDerivationIntro">
+                A tabela apresenta a redução do iodato até I₂ e a redução de
+                I₂ até I⁻. Multiplicamos a segunda semirreação por ½ para
+                obter ½ I₂ e 1 elétron; os intermediários I₂ se cancelam.
+              </p>
+
+              <div className="redoxSourceReactionGrid">
+                <article className="redoxSourceReactionCard">
+                  <header>
+                    <span>Referência 1 · Skoog A-13</span>
+                    <span className="redoxOperationBadge redoxOperationBadge--neutral">×1</span>
+                  </header>
+                  <strong>IO₃⁻ + 6 H⁺ + 5 e⁻ ⇌ ½ I₂ + 3 H₂O</strong>
+                  <small>E°red = +1,196 V · 5 e⁻</small>
+                  <div className="redoxAdjustedReaction">
+                    <span>Após ajuste · sentido mantido</span>
+                    <strong>IO₃⁻ + 6 H⁺ + 5 e⁻ → ½ I₂ + 3 H₂O</strong>
+                  </div>
+                </article>
+
+                <article className="redoxSourceReactionCard">
+                  <header>
+                    <span>Referência 2 · Skoog A-13</span>
+                    <span className="redoxOperationBadge">×½</span>
+                  </header>
+                  <strong>I₂ + 2 e⁻ ⇌ 2 I⁻</strong>
+                  <small>E°red = +0,5355 V · 2 e⁻</small>
+                  <div className="redoxAdjustedReaction">
+                    <span>Após multiplicar por ½ · sentido mantido</span>
+                    <strong>½ I₂ + e⁻ → I⁻</strong>
+                  </div>
+                </article>
+              </div>
+
+              <div className="redoxAlgebraPanel">
+                <span>Somatório das equações ajustadas</span>
+                <p>IO₃⁻ + 6 H⁺ + 5 e⁻ + ½ I₂ + e⁻</p>
+                <p>→ ½ I₂ + 3 H₂O + I⁻</p>
+                <div className="redoxAlgebraRule" />
+                <small>Cancelamento do intermediário ½ I₂ nos dois lados</small>
+                <div className="redoxDerivationResult">
+                  <span>Semirreação global simplificada</span>
+                  <strong>IO₃⁻ + 6 H⁺ + 6 e⁻ → I⁻ + 3 H₂O</strong>
+                </div>
+              </div>
+
+              <div className="redoxPotentialResult">
+                <span>Cálculo do potencial global pela aditividade de ΔG°</span>
+                <strong>
+                  E° = [5 × 1,196 + 1 × 0,5355] / 6 = +1,0859167 V ≈ +1,086 V
+                </strong>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="resultsPanel">
+        <span className="eyebrow">
+          Dedução eletroquímica
+        </span>
+
+        <h2>Potencial padrão global — geração de I₃⁻</h2>
+
+        {metodoWinkler ? (
+          <div className="redoxDerivationNotice">
+            <strong>
+              Particularidade do método de Winkler
+            </strong>
+            <p>
+              Não se calcula um potencial global direto entre O₂ e I⁻.
+              No procedimento de Winkler, o oxigênio é inicialmente fixado
+              por espécies de manganês em meio alcalino; após a acidificação,
+              a espécie de manganês oxidada libera o iodo. Portanto, o
+              potencial do par O₂/H₂O é apresentado apenas como referência
+              termodinâmica, e não como uma semirreação diretamente somada
+              à oxidação do iodeto.
+            </p>
+            <span>Equivalência estequiométrica global em KI em excesso</span>
+            <strong>{sistema.reacaoGlobalGeracaoIodo}</strong>
+          </div>
+        ) : (
+          <>
+            <p className="redoxDerivationIntro">
+              Para obter a reação global, mantém-se a semirreação do analito
+              no sentido de redução e inverte-se a semirreação de redução
+              do par I₃⁻/I⁻, fazendo o iodeto atuar como redutor. Os
+              coeficientes são ajustados para igualar o número de elétrons.
+            </p>
+
+            <div className="redoxHalfReactionGrid">
+              <div className="redoxHalfReactionCard">
+                <span>1. Redução — cátodo</span>
+                <strong>
+                  {fatorAnalito > 1
+                    ? `${fatorAnalito} × (${semiAnalito.equacao})`
+                    : semiAnalito.equacao}
+                </strong>
+                <small>
+                  E°red ={" "}
+                  {semiAnalito.potencialPadraoV !== null
+                    ? `${formatarNumero(
+                        semiAnalito.potencialPadraoV,
+                        3
+                      )} V`
+                    : "não informado"}
+                </small>
+                <small>
+                  {fatorAnalito} × {semiAnalito.eletrons} e⁻
+                  {" = "}
+                  {eletronsComuns} e⁻
+                </small>
+              </div>
+
+              <div className="redoxHalfReactionCard">
+                <header className="redoxReactionCardHeader">
+                  <span>2. Oxidação — ânodo</span>
+                  <span className="redoxOperationBadge redoxOperationBadge--inverted">⇌ invertida</span>
+                </header>
+                <strong>
+                  {fatorIodo > 1
+                    ? `${fatorIodo} × (${equacaoOxidacaoIodeto})`
+                    : equacaoOxidacaoIodeto}
+                </strong>
+                <small>
+                  E°ox = −E°red = −
+                  {semiIodo.potencialPadraoV !== null
+                    ? formatarNumero(
+                        semiIodo.potencialPadraoV,
+                        3
+                      )
+                    : "—"}{" "}
+                  V
+                </small>
+                <small>
+                  {fatorIodo} × {semiIodo.eletrons} e⁻
+                  {" = "}
+                  {eletronsComuns} e⁻
+                </small>
+              </div>
+            </div>
+
+            <div className="redoxGlobalReactionCard">
+              <span>3. Soma das semirreações — reação global</span>
+              <strong>{sistema.reacaoGlobalGeracaoIodo}</strong>
+
+              {potencialGlobalGeracao !== null && (
+                <div className="redoxPotentialResult">
+                  <span>Potencial padrão da reação global</span>
+                  <strong>
+                    E°global = E°red(cátodo) − E°red(ânodo)
+                    {" = "}
+                    {formatarNumero(
+                      semiAnalito.potencialPadraoV as number,
+                      3
+                    )}
+                    {" − "}
+                    {formatarNumero(
+                      semiIodo.potencialPadraoV as number,
+                      3
+                    )}
+                    {" = "}
+                    {potencialGlobalGeracao >= 0 ? "+" : ""}
+                    {formatarNumero(potencialGlobalGeracao, 3)} V
+                  </strong>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        <p className="redoxDerivationFootnote">
+          O potencial padrão global expressa a tendência termodinâmica da
+          reação nas condições padrão a 25 °C. Ele não corresponde ao
+          potencial medido no ponto de equivalência, que é calculado pelo
+          equilíbrio e pelas equações de Nernst.
+        </p>
       </div>
 
       <div className="resultsPanel">
@@ -253,13 +533,10 @@ function SemirreacoesIodometria({
 
         <div className="reactionDetailsStack">
           <div className="reactionWideCard">
-            <span>Par I₃⁻/I⁻ (predominante na solução com KI)</span>
+            <span>Par I₃⁻/I⁻ — semirreação de redução</span>
             <strong>{SEMIRREACAO_IODO}</strong>
             <small>
-              
-I₃⁻/I⁻ → E° ≈ {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C
-(referência tabelada ≈ 0,536 V).
-
+              E°red = {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C.
             </small>
           </div>
 
@@ -272,39 +549,106 @@ I₃⁻/I⁻ → E° ≈ {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C
               pelo motor, pois depende da quantidade real de solução de KI adicionada.
             </small>
           </div>
+
           <div className="reactionWideCard">
             <span>Equação de Nernst — par I₃⁻/I⁻</span>
-            <strong>E = E°(I₃⁻/I⁻) − (0,0592/2) log([I⁻]³/[I₃⁻])</strong>
-            <small>E° = {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C.</small>
+            <strong>
+              E = E°(I₃⁻/I⁻) − (0,0592/2) log([I⁻]³/[I₃⁻])
+            </strong>
+            <small>
+              E° = {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C.
+            </small>
           </div>
+
           <div className="reactionWideCard">
             <span>Critério de equilíbrio em cada volume</span>
-            <strong>E(I₃⁻/I⁻) = E(S₄O₆²⁻/S₂O₃²⁻)</strong>
+            <strong>
+              E(I₃⁻/I⁻) = E(S₄O₆²⁻/S₂O₃²⁻)
+            </strong>
             <small>
               O motor resolve numericamente a extensão da reação até que os
               dois pares apresentem o mesmo potencial.
             </small>
           </div>
-          <div className="reactionWideCard">
-            <span>Equação de Nernst — par S₄O₆²⁻/S₂O₃²⁻</span>
-            <strong>E = E°(S₄O₆²⁻/S₂O₃²⁻) − (0,0592/2) log([S₂O₃²⁻]²/[S₄O₆²⁻])</strong>
-            <small>E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V a 25 °C.</small>
-          </div>
 
           <div className="reactionWideCard">
-            <span>Par tetrationato/tiossulfato</span>
-            <strong>{SEMIRREACAO_TIOS}</strong>
+            <span>Equação de Nernst — par S₄O₆²⁻/S₂O₃²⁻</span>
+            <strong>
+              E = E°(S₄O₆²⁻/S₂O₃²⁻) − (0,0592/2) log([S₂O₃²⁻]²/[S₄O₆²⁻])
+            </strong>
             <small>
-              2 e⁻ → E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V
+              E° = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V a 25 °C.
             </small>
           </div>
 
           <div className="reactionWideCard">
-            <span>Reação global da titulação</span>
-            <strong>{REACAO_TIOS}</strong>
-            <small>Transferência global: 2 e⁻</small>
+            <span>Par tetrationato/tiossulfato — redução</span>
+            <strong>{SEMIRREACAO_TIOS}</strong>
+            <small>
+              E°red = {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V a 25 °C.
+            </small>
           </div>
         </div>
+      </div>
+
+      <div className="resultsPanel">
+        <span className="eyebrow">
+          Dedução eletroquímica
+        </span>
+
+        <h2>Potencial padrão global — titulação com tiossulfato</h2>
+
+        <p className="redoxDerivationIntro">
+          O I₃⁻ é reduzido a I⁻. Para completar a reação, inverte-se a
+          semirreação de redução do tetrationato, promovendo a oxidação
+          do tiossulfato. As duas semirreações envolvem 2 elétrons.
+        </p>
+
+        <div className="redoxHalfReactionGrid">
+          <div className="redoxHalfReactionCard">
+            <span>1. Redução — cátodo</span>
+            <strong>{SEMIRREACAO_IODO}</strong>
+            <small>
+              E°red = {formatarNumero(E0_I3_I_25C, 3)} V
+            </small>
+          </div>
+
+          <div className="redoxHalfReactionCard">
+            <header className="redoxReactionCardHeader">
+              <span>2. Oxidação — ânodo</span>
+              <span className="redoxOperationBadge redoxOperationBadge--inverted">⇌ invertida</span>
+            </header>
+            <strong>{equacaoOxidacaoTiossulfato}</strong>
+            <small>
+              E°ox = −E°red = −
+              {formatarNumero(E0_TETRATIONATO_TIOS, 3)} V
+            </small>
+          </div>
+        </div>
+
+        <div className="redoxGlobalReactionCard">
+          <span>3. Soma das semirreações — reação global</span>
+          <strong>{REACAO_TIOS}</strong>
+
+          <div className="redoxPotentialResult">
+            <span>Potencial padrão da reação global</span>
+            <strong>
+              E°global = E°red(cátodo) − E°red(ânodo)
+              {" = "}
+              {formatarNumero(E0_I3_I_25C, 3)}
+              {" − "}
+              {formatarNumero(E0_TETRATIONATO_TIOS, 3)}
+              {" = +"}
+              {formatarNumero(potencialGlobalTitulacao, 3)} V
+            </strong>
+          </div>
+        </div>
+
+        <p className="redoxDerivationFootnote">
+          O valor é o potencial padrão da reação entre I₃⁻ e tiossulfato,
+          a 25 °C. O potencial instantâneo ao longo da titulação continua
+          sendo obtido pelas equações de Nernst e pelos balanços de matéria.
+        </p>
       </div>
     </section>
   );
@@ -2879,18 +3223,54 @@ export default function Iodometria() {
               )}
             </div>
 
-            <div className="resultGrid">
-              <div className="resultCard">
-                <span>Concentração mínima de KI</span>
-                <strong>{formatarNumero(resultado.concentracaoKIMinimaMolL, 4)} mol/L</strong>
-                <small>Limite estequiométrico na mistura inicial</small>
-              </div>
-              <div className="resultCard">
-                <span>Quantidade mínima de KI</span>
-                <strong>{formatarCientifico(resultado.molKIMinimo)} mol</strong>
-                <small>{formatarNumero(resultado.molKIMinimo * 1000, 3)} mmol</small>
-              </div>
-            </div>
+            
+<section className="iodometriaKiSection">
+  <header className="iodometriaKiHeader">
+    <div>
+      <span className="iodometriaKiEyebrow">
+        REAGENTE AUXILIAR
+      </span>
+
+      <h3>Necessidade de iodeto de potássio (KI)</h3>
+
+      <p>
+        Limites estequiométricos calculados automaticamente
+        para garantir a geração de triiodeto.
+      </p>
+    </div>
+
+    <span className="iodometriaKiBadge">
+      Cálculo automático
+    </span>
+  </header>
+
+  <div className="iodometriaKiGrid">
+    <article className="resultCard iodometriaKiCard">
+      <span>Concentração mínima de KI</span>
+
+      <strong>
+        {formatarNumero(resultado.concentracaoKIMinimaMolL, 4)} mol/L
+      </strong>
+
+      <small>
+        Limite estequiométrico na mistura inicial
+      </small>
+    </article>
+
+    <article className="resultCard iodometriaKiCard">
+      <span>Quantidade mínima de KI</span>
+
+      <strong>
+        {formatarCientifico(resultado.molKIMinimo)} mol
+      </strong>
+
+      <small>
+        {formatarNumero(resultado.molKIMinimo * 1000, 3)} mmol
+      </small>
+    </article>
+  </div>
+</section>
+
             <div className="explanationBox">
               <p>
                 {sistema.observacao} Como 1 mol de KI fornece 1 mol de I⁻, o valor exibido é o mínimo estequiométrico para a mistura inicial. Para garantir excesso de iodeto, utilize concentração superior. A concentração da solução-estoque de KI depende do volume efetivamente adicionado.
