@@ -124,7 +124,7 @@ function formatarCientifico(valor: number) {
 }
 
 function renderizarValorComUnidade(valor: string) {
-  const partes = valor.match(/^(.*)\s+(mol\/L|mol)$/);
+  const partes = valor.match(/^(.*)\s+(mol\/L|mol|atm)$/);
 
   if (!partes) {
     return valor;
@@ -1104,6 +1104,10 @@ export default function ConsultaCurvaOxirreducao(
             {
               rotulo: "[Mn²⁺]",
               valor: `${formatarCientifico(ponto.concentracaoMn2MolL)} mol/L`,
+            },
+            {
+              rotulo: "P(CO₂)",
+              valor: `${formatarNumero(props.resultado.atividadeCO2, 2)} atm`,
             },
           ],
         });

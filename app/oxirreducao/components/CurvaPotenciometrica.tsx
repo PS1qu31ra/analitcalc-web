@@ -129,51 +129,6 @@ import type {
         </div>
   
   
-        <div className="oxirreducaoCurveInfo">
-          <div>
-            <span>
-              Pontos calculados
-            </span>
-  
-            <strong>
-              {
-                resultado
-                  .pontosValidos
-                  .length
-              }
-            </strong>
-          </div>
-  
-          <div>
-            <span>
-              Passo geral
-            </span>
-  
-            <strong>
-              {formatarNumero(
-                resultado
-                  .passoBaseMl,
-                3
-              )}{" "}
-              mL
-            </strong>
-          </div>
-  
-          <div>
-            <span>
-              Passo próximo ao PE
-            </span>
-  
-            <strong>
-              {formatarNumero(
-                resultado
-                  .passoProximoPEMl,
-                3
-              )}{" "}
-              mL
-            </strong>
-          </div>
-        </div>
       </section>
     );
   }

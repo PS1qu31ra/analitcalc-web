@@ -1289,49 +1289,6 @@
 
 
 /* =========================================================
-   INFORMAÇÕES DA CURVA
-========================================================= */
-
-.oxirreducaoCurveInfo {
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      3,
-      minmax(0, 1fr)
-    );
-
-  gap: 12px;
-
-  margin-top: 17px;
-}
-
-.oxirreducaoCurveInfo div {
-  padding: 14px;
-
-  border: 1px solid #e4e4e7;
-  border-radius: 14px;
-
-  background: #fafafa;
-}
-
-.oxirreducaoCurveInfo span {
-  display: block;
-
-  margin-bottom: 5px;
-
-  color: #71717a;
-
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
-.oxirreducaoCurveInfo strong {
-  font-size: 0.9rem;
-}
-
-
-/* =========================================================
    RESPONSIVIDADE DAS ABAS
 ========================================================= */
 
@@ -1362,8 +1319,7 @@
   }
 
   .oxirreducaoOverviewGrid,
-  .oxirreducaoOverviewMetrics,
-  .oxirreducaoCurveInfo {
+  .oxirreducaoOverviewMetrics {
     grid-template-columns:
       1fr;
   }

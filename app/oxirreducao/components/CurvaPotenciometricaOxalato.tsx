@@ -29,7 +29,8 @@ export default function CurvaPotenciometricaOxalato({
             Antes do PE, aplica-se Nernst ao par CO₂/H₂C₂O₄.
             No PE, utiliza-se a média ponderada dos potenciais
             dos pares redox. Após o PE, aplica-se Nernst ao par
-            MnO₄⁻/Mn²⁺.
+            MnO₄⁻/Mn²⁺. Para o par CO₂/H₂C₂O₄, considera-se
+            pressão de CO₂ de aproximadamente 1 atm.
           </p>
         </div>
         <div className="oxirreducaoPEBadge">
@@ -67,21 +68,6 @@ export default function CurvaPotenciometricaOxalato({
             o potencial da solução.
           </p>
         </article>
-      </div>
-
-      <div className="oxirreducaoCurveInfo">
-        <div>
-          <span>Pontos calculados</span>
-          <strong>{resultado.pontosValidos.length}</strong>
-        </div>
-        <div>
-          <span>Passo próximo ao PE</span>
-          <strong>{formatarNumero(resultado.passoProximoPEMl, 3)} mL</strong>
-        </div>
-        <div>
-          <span>Pressão de CO₂</span>
-          <strong>≈ 1 atm</strong>
-        </div>
       </div>
 
       <div className="oxirreducaoEducationalNote">
