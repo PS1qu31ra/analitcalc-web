@@ -1385,10 +1385,10 @@ export default function ConsultaCurvaOxirreducao(
                 null
                   ? "-"
                   : `${formatarNumero(
-                      consulta
-                        .potencialV,
-                      4
-                    )} V`}
+    consulta
+      .potencialV,
+    props.modo === "iodometria" ? 3 : 4
+  )} V`}
               </strong>
             </div>
 

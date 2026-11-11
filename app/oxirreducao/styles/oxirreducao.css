@@ -3947,3 +3947,118 @@
     gap: 9px 13px;
   }
 }
+
+
+/* =========================================================
+   COMPARAÇÃO DOS PONTOS DE EQUIVALÊNCIA — IODOMETRIA
+========================================================= */
+
+.oxirreducaoIodometriaPeCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.oxirreducaoIodometriaPeCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 130px;
+  padding: 20px;
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #fcfcfd);
+  box-shadow: 0 8px 22px rgba(24, 24, 27, 0.04);
+}
+
+.oxirreducaoIodometriaPeHeading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 15px;
+  color: #52525b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.oxirreducaoIodometriaPeDot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.oxirreducaoIodometriaPeDot.original {
+  background: #991b1b;
+}
+
+.oxirreducaoIodometriaPeDot.simulado {
+  background: #2563eb;
+}
+
+.oxirreducaoIodometriaPeCard > strong {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: #18181b;
+  font-size: clamp(1.45rem, 2vw, 1.85rem);
+  font-weight: 900;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.oxirreducaoIodometriaPeCard > strong small {
+  color: #71717a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.oxirreducaoIodometriaPeCard > p {
+  margin: 8px 0 0;
+  color: #71717a;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.oxirreducaoIodometriaPeStatus {
+  margin-left: auto;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 0.62rem;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.oxirreducaoIodometriaPeStatus.neutral {
+  background: #f4f4f5;
+  color: #52525b;
+}
+
+.oxirreducaoIodometriaPeStatus.changed {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+@media (max-width: 800px) {
+  .oxirreducaoIodometriaPeCards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .oxirreducaoIodometriaPeCard:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .oxirreducaoIodometriaPeCards {
+    grid-template-columns: 1fr;
+  }
+
+  .oxirreducaoIodometriaPeCard:last-child {
+    grid-column: auto;
+  }
+}

@@ -141,6 +141,7 @@ export default function EfeitoConcentracaoIodometria({ resultadoBase }: Props) {
     entradaSimulada.concentracaoTiossulfatoMolL - entradaBase.concentracaoTiossulfatoMolL;
   const deltaVPE =
     resultadoSimulado.volumeEquivalenciaMl - resultadoBase.volumeEquivalenciaMl;
+    const deltaVPEVisual = Math.abs(deltaVPE) < 0.0005 ? 0 : deltaVPE;
   const deltaEPE =
     resultadoSimulado.potencialEquivalenciaV - resultadoBase.potencialEquivalenciaV;
   const razaoOriginal =
@@ -289,12 +290,12 @@ export default function EfeitoConcentracaoIodometria({ resultadoBase }: Props) {
         </article>
         <article>
           <span>EPE original</span>
-          <strong>{formatarNumero(resultadoBase.potencialEquivalenciaV, 4)} V</strong>
+          <strong>{formatarNumero(resultadoBase.potencialEquivalenciaV, 3)} V</strong>
         </article>
         <article>
           <span>EPE simulado</span>
-          <strong>{formatarNumero(resultadoSimulado.potencialEquivalenciaV, 4)} V</strong>
-          <small>ΔE = {formatarNumero(deltaEPE, 4)} V</small>
+          <strong>{formatarNumero(resultadoSimulado.potencialEquivalenciaV, 3)} V</strong>
+          <small>ΔE = {formatarNumero(deltaEPE, 3)} V</small>
         </article>
       </div>
 
@@ -306,26 +307,56 @@ export default function EfeitoConcentracaoIodometria({ resultadoBase }: Props) {
               A linha contínua representa a condição original e a linha tracejada representa a nova condição. As linhas verticais indicam os respectivos pontos de equivalência.
             </p>
           </header>
-          <div className="oxirreducaoComparacaoLegend">
-            <article className="oxirreducaoComparacaoLegendItem oxirreducaoComparacaoLegendItemOriginal">
-              <div className="oxirreducaoComparacaoLegendHead">
-                <span className="oxirreducaoComparacaoLegendDot oxirreducaoComparacaoLegendDotOriginal" />
-                <div>
-                  <strong>Condição original</strong>
-                  <small>PE = {formatarNumero(resultadoBase.volumeEquivalenciaMl, 3)} mL</small>
-                </div>
-              </div>
-            </article>
-            <article className="oxirreducaoComparacaoLegendItem oxirreducaoComparacaoLegendItemSimulada">
-              <div className="oxirreducaoComparacaoLegendHead">
-                <span className="oxirreducaoComparacaoLegendDot oxirreducaoComparacaoLegendDotSimulada" />
-                <div>
-                  <strong>Condição simulada</strong>
-                  <small>PE = {formatarNumero(resultadoSimulado.volumeEquivalenciaMl, 3)} mL</small>
-                </div>
-              </div>
-            </article>
-          </div>
+          
+<div className="oxirreducaoIodometriaPeCards">
+  <article className="oxirreducaoIodometriaPeCard">
+    <div className="oxirreducaoIodometriaPeHeading">
+      <span className="oxirreducaoIodometriaPeDot original" />
+      Condição original
+    </div>
+    <strong>
+      {formatarNumero(resultadoBase.volumeEquivalenciaMl, 3)}
+      <small>mL</small>
+    </strong>
+    <p>Volume no ponto de equivalência</p>
+  </article>
+
+  <article className="oxirreducaoIodometriaPeCard">
+    <div className="oxirreducaoIodometriaPeHeading">
+      <span className="oxirreducaoIodometriaPeDot simulado" />
+      Condição simulada
+    </div>
+    <strong>
+      {formatarNumero(resultadoSimulado.volumeEquivalenciaMl, 3)}
+      <small>mL</small>
+    </strong>
+    <p>Volume no ponto de equivalência</p>
+  </article>
+
+  <article className="oxirreducaoIodometriaPeCard">
+    <div className="oxirreducaoIodometriaPeHeading">
+      Variação do PE
+      <span
+        className={`oxirreducaoIodometriaPeStatus ${
+          deltaVPEVisual === 0 ? "neutral" : "changed"
+        }`}
+      >
+        {deltaVPEVisual === 0
+          ? "Sem deslocamento"
+          : deltaVPEVisual > 0
+            ? "Aumentou"
+            : "Diminuiu"}
+      </span>
+    </div>
+    <strong>
+      {deltaVPEVisual > 0 ? "+" : ""}
+      {formatarNumero(deltaVPEVisual, 3)}
+      <small>mL</small>
+    </strong>
+    <p>PE simulado − PE original</p>
+  </article>
+</div>
+
           <GraficoComparacaoConcentracaoIodometria
             original={resultadoBase}
             simulado={resultadoSimulado}

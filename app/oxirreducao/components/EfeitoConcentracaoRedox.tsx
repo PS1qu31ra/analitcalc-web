@@ -558,6 +558,11 @@ export default function EfeitoConcentracaoRedox({
     resultadoBase
       .volumeEquivalenciaMl;
 
+  // Evita exibir variações residuais como -0,000 mL após o arredondamento.
+  const deltaVPEVisual =
+    Math.abs(deltaVPE) < 0.0005
+      ? 0
+      : deltaVPE;
 
   const deltaEPE =
     resultadoSimulado
@@ -1083,47 +1088,58 @@ export default function EfeitoConcentracaoRedox({
           </p>
         </header>
 
-        <div className="oxirreducaoComparacaoLegend">
-          <article className="oxirreducaoComparacaoLegendItem oxirreducaoComparacaoLegendItemOriginal">
-            <div className="oxirreducaoComparacaoLegendHead">
-              <span className="oxirreducaoComparacaoLegendDot oxirreducaoComparacaoLegendDotOriginal" />
-
-              <div>
-                <strong>
-                  Condição original
-                </strong>
-
-                <small>
-                  PE ={" "}
-                  {formatarNumero(
-                    resultadoBase.volumeEquivalenciaMl,
-                    3
-                  )}{" "}
-                  mL
-                </small>
-              </div>
+        <div className="oxirreducaoIodometriaPeCards">
+          <article className="oxirreducaoIodometriaPeCard">
+            <div className="oxirreducaoIodometriaPeHeading">
+              <span className="oxirreducaoIodometriaPeDot oxirreducaoIodometriaPeDotOriginal" />
+              Condição original
             </div>
+            <strong>
+              {formatarNumero(
+                resultadoBase.volumeEquivalenciaMl,
+                3
+              )}
+              <small>mL</small>
+            </strong>
+            <p>Volume no ponto de equivalência</p>
           </article>
 
-          <article className="oxirreducaoComparacaoLegendItem oxirreducaoComparacaoLegendItemSimulada">
-            <div className="oxirreducaoComparacaoLegendHead">
-              <span className="oxirreducaoComparacaoLegendDot oxirreducaoComparacaoLegendDotSimulada" />
-
-              <div>
-                <strong>
-                  Condição simulada
-                </strong>
-
-                <small>
-                  PE ={" "}
-                  {formatarNumero(
-                    resultadoSimulado.volumeEquivalenciaMl,
-                    3
-                  )}{" "}
-                  mL
-                </small>
-              </div>
+          <article className="oxirreducaoIodometriaPeCard">
+            <div className="oxirreducaoIodometriaPeHeading">
+              <span className="oxirreducaoIodometriaPeDot oxirreducaoIodometriaPeDotSimulado" />
+              Condição simulada
             </div>
+            <strong>
+              {formatarNumero(
+                resultadoSimulado.volumeEquivalenciaMl,
+                3
+              )}
+              <small>mL</small>
+            </strong>
+            <p>Volume no ponto de equivalência</p>
+          </article>
+
+          <article className="oxirreducaoIodometriaPeCard">
+            <div className="oxirreducaoIodometriaPeHeading">
+              Variação do PE
+              <span
+                className={`oxirreducaoIodometriaPeStatus ${
+                  deltaVPEVisual === 0 ? "neutral" : "changed"
+                }`}
+              >
+                {deltaVPEVisual === 0
+                  ? "Sem deslocamento"
+                  : deltaVPEVisual > 0
+                    ? "Aumentou"
+                    : "Diminuiu"}
+              </span>
+            </div>
+            <strong>
+              {deltaVPEVisual > 0 ? "+" : ""}
+              {formatarNumero(deltaVPEVisual, 3)}
+              <small>mL</small>
+            </strong>
+            <p>PE simulado − PE original</p>
           </article>
         </div>
 

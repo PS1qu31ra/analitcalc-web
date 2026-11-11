@@ -223,12 +223,14 @@ function SemirreacoesIodometria({
 
       <small>
         {item.eletrons} e⁻
-        {item.potencialPadraoV !== null
-          ? ` → E° = ${formatarNumero(
-              item.potencialPadraoV,
-              4
-            )} V`
-          : ""}
+        
+{item.potencialPadraoV !== null
+  ? ` → E° = ${formatarNumero(
+      item.potencialPadraoV,
+      3
+    )} V`
+  : ""}
+
       </small>
 
       {item.observacao && (
@@ -254,8 +256,10 @@ function SemirreacoesIodometria({
             <span>Par I₃⁻/I⁻ (predominante na solução com KI)</span>
             <strong>{SEMIRREACAO_IODO}</strong>
             <small>
-              I₃⁻/I⁻ → E° ≈ {formatarNumero(E0_I3_I_25C, 4)} V a 25 °C
-              (referência tabelada ≈ 0,536 V).
+              
+I₃⁻/I⁻ → E° ≈ {formatarNumero(E0_I3_I_25C, 3)} V a 25 °C
+(referência tabelada ≈ 0,536 V).
+
             </small>
           </div>
 
@@ -502,7 +506,7 @@ function CurvaIodometria({
 
           <div className="resultCard">
             <span>Potencial no PE</span>
-            <strong>{formatarNumero(resultado.potencialEquivalenciaV, 4)} V</strong>
+            <strong>{formatarNumero(resultado.potencialEquivalenciaV, 3)} V</strong>
           </div>
 
           <div className="resultCard">
@@ -726,7 +730,7 @@ function TempoRealIodometria({
           </div>
           <div className="resultCard">
             <span>Potencial E</span>
-            <strong>{pontoAtual ? `${formatarNumero(pontoAtual.potencialV, 4)} V` : "-"}</strong>
+            <strong>{pontoAtual ? `${formatarNumero(pontoAtual.potencialV, 3)} V` : "-"}</strong>
           </div>
           <div className="resultCard">
             <span>[I⁻]</span>
@@ -777,7 +781,7 @@ function TempoRealIodometria({
                   <tr key={`${ponto.volumeAdicionadoMl}-${index}`}>
                     <td>{index + 1}</td>
                     <td>{formatarNumero(ponto.volumeAdicionadoMl, 3)} mL</td>
-                    <td>{formatarNumero(ponto.potencialV, 4)}</td>
+                    <td>{formatarNumero(ponto.potencialV, 3)}</td>
                     <td>{formatarCientifico(ponto.concentracaoIodetoMolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoI3MolL)}</td>
                     <td>{formatarCientifico(ponto.concentracaoTiossulfatoMolL)}</td>
@@ -2859,7 +2863,7 @@ export default function Iodometria() {
 
               <div className="resultCard">
                 <span>Potencial no PE</span>
-                <strong>{formatarNumero(resultado.potencialEquivalenciaV, 4)} V</strong>
+                <strong>{formatarNumero(resultado.potencialEquivalenciaV, 3)} V</strong>
               </div>
 
               <div className="resultCard">
