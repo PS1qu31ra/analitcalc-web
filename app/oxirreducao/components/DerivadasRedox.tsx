@@ -443,6 +443,8 @@ import {
         null &&
       valorDestaque !==
         null &&
+      Number.isFinite(volumeDestaque) &&
+      Number.isFinite(valorDestaque) &&
       volumeDestaque >=
         volumeMinimo &&
       volumeDestaque <=
@@ -698,6 +700,17 @@ import {
           )}
   
   
+          {/* PF obtido pela derivada: linha tracejada na posição calculada. */}
+          {destaqueDentro && (
+            <line
+              x1={x(volumeDestaque)}
+              x2={x(volumeDestaque)}
+              y1={margemSuperior}
+              y2={altura - margemInferior}
+              className="oxirreducaoChartPFLine"
+            />
+          )}
+
           {/* =================================================
               CURVA
           ================================================= */}
@@ -727,35 +740,22 @@ import {
           valorDestaque
         )
       }
-      r="6"
-      className="oxirreducaoChartPEPoint"
+      r="5.5"
+      className="oxirreducaoChartPFPoint"
     />
 
     {rotuloDestaque && (
       <text
-        x={
-          x(
-            volumeDestaque
-          ) -
-          14
-        }
-        y={
-          Math.min(
-            y(
-              valorDestaque
-            ) +
-              28,
-            altura -
-              margemInferior -
-              12
-          )
-        }
-        textAnchor="end"
-        className="oxirreducaoChartDerivativeLabel"
+        x={x(volumeDestaque) > largura - margemDireita - 170
+          ? x(volumeDestaque) - 9
+          : x(volumeDestaque) + 9}
+        y={margemSuperior + 41}
+        textAnchor={x(volumeDestaque) > largura - margemDireita - 170
+          ? "end"
+          : "start"}
+        className="oxirreducaoChartPFLabel"
       >
-        {
-          rotuloDestaque
-        }
+        {rotuloDestaque} = {formatarNumero(volumeDestaque, 3)} mL
       </text>
     )}
   </>
@@ -803,6 +803,15 @@ import {
             }
           </text>
         </svg>
+        <div className="oxirreducaoMarkerLegend" aria-label="Legenda dos marcadores">
+          <span><i className="oxirreducaoMarkerSwatch pe" />PE estequiométrico</span>
+          {destaqueDentro && (
+            <span><i className="oxirreducaoMarkerSwatch pf" />{rotuloDestaque ?? "PF"}: {formatarNumero(volumeDestaque, 3)} mL</span>
+          )}
+          {!destaqueDentro && (
+            <span>PF não localizado neste gráfico</span>
+          )}
+        </div>
       </div>
     );
   }
@@ -1174,8 +1183,9 @@ import {
   </strong>
 
   <p>
-    A linha vertical tracejada representa o PE
-    estequiométrico. O máximo da primeira derivada
+    A linha tracejada laranja representa o PE estequiométrico.
+    A linha tracejada azul e a bolinha identificam o PF do método correspondente,
+    quando localizado. O máximo da primeira derivada
     e o cruzamento
     da segunda derivada são estimativas independentes
     do ponto de inflexão. Elas podem apresentar pequena

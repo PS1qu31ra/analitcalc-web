@@ -5,6 +5,7 @@ import ConsultaCurvaOxirreducao from "./ConsultaCurvaOxirreducao";
 
 type CurvaPotenciometricaOxalatoProps = {
   resultado: ResultadoCurvaRedoxOxalato;
+  pontosPFRefinados?: ResultadoCurvaRedoxOxalato["pontosValidos"];
 };
 
 function formatarNumero(valor: number, casas = 3) {
@@ -16,6 +17,7 @@ function formatarNumero(valor: number, casas = 3) {
 
 export default function CurvaPotenciometricaOxalato({
   resultado,
+  pontosPFRefinados,
 }: CurvaPotenciometricaOxalatoProps) {
   return (
     <section className="oxirreducaoTabPanel">
@@ -39,7 +41,7 @@ export default function CurvaPotenciometricaOxalato({
         </div>
       </header>
 
-      <ConsultaCurvaOxirreducao modo="oxalato" resultado={resultado} />
+      <ConsultaCurvaOxirreducao modo="oxalato" resultado={resultado} pontosPFRefinados={pontosPFRefinados} />
 
       <div className="oxirreducaoRegionGrid">
         <article>

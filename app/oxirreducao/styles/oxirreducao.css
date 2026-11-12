@@ -4175,3 +4175,71 @@
     gap: 14px;
   }
 }
+
+/* =========================================================
+   PF na permanganatometria — curva E × V e derivadas
+   Azul: PF pela derivada; laranja: PE estequiométrico.
+   Apenas apresentação: não interfere no motor redox.
+========================================================= */
+.oxirreducaoChartPFLine {
+  stroke: #2563eb;
+  stroke-width: 2;
+  stroke-dasharray: 4 6;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.oxirreducaoChartPFPoint {
+  fill: #2563eb;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+
+.oxirreducaoChartPFLabel {
+  fill: #1d4ed8;
+  font-size: 12px;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: #fafafa;
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* Legenda junto ao gráfico E × V; sem afetar a iodometria. */
+.oxirreducaoTabPanel .chartLegend .legendLine.pf {
+  width: 27px;
+  height: 0;
+  border-top: 3px dashed #2563eb;
+  border-radius: 0;
+  background: transparent;
+}
+
+.oxirreducaoMarkerLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 2px 12px 12px;
+  color: #52525b;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.oxirreducaoMarkerLegend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oxirreducaoMarkerSwatch {
+  display: inline-block;
+  width: 27px;
+  height: 0;
+  border-top-width: 3px;
+  border-top-style: dashed;
+}
+
+.oxirreducaoMarkerSwatch.pe { border-color: #b45309; }
+.oxirreducaoMarkerSwatch.pf { border-color: #2563eb; }

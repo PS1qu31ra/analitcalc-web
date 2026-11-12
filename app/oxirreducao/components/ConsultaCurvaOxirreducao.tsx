@@ -1,8 +1,10 @@
 "use client";
 import { formatarCientificoPtBr } from "@/lib/oxirreducao/formatacao";
+import { calcularDerivadasRedox } from "@/lib/oxirreducao/derivadas";
 
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -48,6 +50,8 @@ type Props =
   | {
       modo: "oxalato";
       resultado: ResultadoCurvaRedoxOxalato;
+      /** Mesma amostragem refinada usada pela aba Derivadas. */
+      pontosPFRefinados?: ResultadoCurvaRedoxOxalato["pontosValidos"];
     }
   | {
       modo: "iodometria";
@@ -202,6 +206,35 @@ function nomePar(
 }
 
 
+/** Coloca a bolinha do PF exatamente sobre a polilinha que está desenhada. */
+function interpolarPotencialNoTracado(
+  pontos: ResultadoGrafico["pontosValidos"],
+  volumeMl: number
+): number | null {
+  if (!Number.isFinite(volumeMl)) return null;
+  const validos = pontos
+    .filter((ponto): ponto is typeof ponto & { potencialV: number } =>
+      ponto.potencialV !== null &&
+      Number.isFinite(ponto.potencialV) &&
+      Number.isFinite(ponto.volumeAdicionadoMl)
+    )
+    .sort((a, b) => a.volumeAdicionadoMl - b.volumeAdicionadoMl);
+
+  if (!validos.length || volumeMl < validos[0].volumeAdicionadoMl ||
+      volumeMl > validos[validos.length - 1].volumeAdicionadoMl) return null;
+
+  const indice = validos.findIndex((ponto) => ponto.volumeAdicionadoMl >= volumeMl);
+  if (indice === -1) return null;
+  const seguinte = validos[indice];
+  if (indice === 0 || seguinte.volumeAdicionadoMl === volumeMl) return seguinte.potencialV;
+
+  const anterior = validos[indice - 1];
+  const passo = seguinte.volumeAdicionadoMl - anterior.volumeAdicionadoMl;
+  if (passo <= 0) return null;
+  const fracao = (volumeMl - anterior.volumeAdicionadoMl) / passo;
+  return anterior.potencialV + fracao * (seguinte.potencialV - anterior.potencialV);
+}
+
 /* =========================================================
  * GRÁFICO CONSULTÁVEL
  * ======================================================= */
@@ -211,6 +244,7 @@ function GraficoCurvaConsultavel({
   consulta,
   rotuloEixoX,
   modo,
+  volumePFPrimeiraMl,
 }: {
   resultado:
     ResultadoGrafico;
@@ -223,6 +257,8 @@ function GraficoCurvaConsultavel({
 
   modo:
     Props["modo"];
+
+  volumePFPrimeiraMl: number | null;
 }) {
   const largura =
     1000;
@@ -443,6 +479,21 @@ function GraficoCurvaConsultavel({
         .potencialEquivalenciaV
     );
 
+  // O PF vem da 1ª derivada; sua bolinha usa interpolação visual
+  // para ficar sobre o traçado E × V já existente.
+  const potencialPF =
+    modo !== "iodometria" && volumePFPrimeiraMl !== null
+      ? interpolarPotencialNoTracado(pontosLinha, volumePFPrimeiraMl)
+      : null;
+  const mostrarPF =
+    potencialPF !== null &&
+    volumePFPrimeiraMl !== null &&
+    volumePFPrimeiraMl >= 0 &&
+    volumePFPrimeiraMl <= resultado.volumeMaximoMl;
+  const xPF = mostrarPF ? x(volumePFPrimeiraMl) : 0;
+  const yPF = mostrarPF ? y(potencialPF) : 0;
+  const pfProximoMargemDireita = xPF > largura - margemDireita - 152;
+
 
   const consultaValida =
     consulta !== null &&
@@ -602,6 +653,16 @@ function GraficoCurvaConsultavel({
         />
 
 
+        {mostrarPF && (
+          <line
+            x1={xPF}
+            x2={xPF}
+            y1={margemSuperior}
+            y2={altura - margemInferior}
+            className="oxirreducaoChartPFLine"
+          />
+        )}
+
         <polyline
           points={
             polyline
@@ -660,6 +721,22 @@ function GraficoCurvaConsultavel({
           mL{modo === "iodometria" ? " · média ponderada" : ""}
         </text>
 
+
+        {mostrarPF && (
+          <>
+            <circle cx={xPF} cy={yPF} r="5.5" className="oxirreducaoChartPFPoint">
+              <title>PF da 1ª derivada: {formatarNumero(volumePFPrimeiraMl, 3)} mL</title>
+            </circle>
+            <text
+              x={xPF + (pfProximoMargemDireita ? -10 : 10)}
+              y={margemSuperior + 44}
+              textAnchor={pfProximoMargemDireita ? "end" : "start"}
+              className="oxirreducaoChartPFLabel"
+            >
+              PF = {formatarNumero(volumePFPrimeiraMl, 3)} mL
+            </text>
+          </>
+        )}
 
         {consultaValida &&
           consulta && (
@@ -832,6 +909,22 @@ export default function ConsultaCurvaOxirreducao(
     ]
   );
 
+
+  const pontosParaCalcularPF =
+    props.modo === "oxalato"
+      ? props.pontosPFRefinados ?? props.resultado.pontosValidos
+      : props.resultado.pontosValidos;
+
+  const volumePFPrimeiraMl = useMemo(() => {
+    if (props.modo === "iodometria" || pontosParaCalcularPF.length < 4) return null;
+    try {
+      const volume = calcularDerivadasRedox(pontosParaCalcularPF).volumePFPrimeiraDerivadaMl;
+      return Number.isFinite(volume) ? volume : null;
+    } catch {
+      // Sem dados suficientes, não inventamos um marcador de PF.
+      return null;
+    }
+  }, [props.modo, pontosParaCalcularPF]);
 
   const volumeMaximo =
     props
@@ -1277,6 +1370,7 @@ export default function ConsultaCurvaOxirreducao(
         modo={
           props.modo
         }
+        volumePFPrimeiraMl={volumePFPrimeiraMl}
       />
 
 
@@ -1292,6 +1386,13 @@ export default function ConsultaCurvaOxirreducao(
             ? "PE — média formal dos E°"
             : "Ponto de equivalência"}
         </span>
+
+        {props.modo !== "iodometria" && volumePFPrimeiraMl !== null && (
+          <span>
+            <i className="legendLine pf" />
+            PF (1ª derivada) = {formatarNumero(volumePFPrimeiraMl, 3)} mL
+          </span>
+        )}
 
         <span>
           <i className="legendLine consult" />
@@ -1429,17 +1530,11 @@ export default function ConsultaCurvaOxirreducao(
 
             <div className="resultCard">
               <span>
-                {props.modo === "iodometria" &&
-                consulta.regiao === "Ponto de equivalência"
-                  ? "Critério aplicado"
-                  : "Sistema predominante"}
+                Sistema predominante
               </span>
 
               <strong>
-                {props.modo === "iodometria" &&
-                consulta.regiao === "Ponto de equivalência"
-                  ? "Média ponderada dos E°"
-                  : consulta.controlador}
+                {consulta.controlador}
               </strong>
             </div>
 

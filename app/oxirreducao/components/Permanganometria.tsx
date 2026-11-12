@@ -195,6 +195,7 @@ export default function Permanganometria() {
     useMemo(
       () => {
         const abaUsaCurvaRefinada =
+          abaAtiva === "curva" ||
           abaAtiva === "derivadas" ||
           abaAtiva === "tempo-real" ||
           abaAtiva === "erro-experimental";
@@ -995,6 +996,7 @@ export default function Permanganometria() {
       resultado={
         resultadoOxalato
       }
+      pontosPFRefinados={resultadoOxalatoDerivadas?.pontosValidos}
     />
   )}
 
