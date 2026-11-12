@@ -1400,6 +1400,40 @@ export default function ConsultaCurvaOxirreducao(
         </span>
       </div>
 
+      <div
+  style={{
+    margin: "22px 0",
+    padding: "18px 22px",
+    border: "1px solid #EBCBCB",
+    borderRadius: "18px",
+    background: "#FFFAFA",
+  }}
+>
+  <h3
+    style={{
+      color: "#A31616",
+      fontSize: "16px",
+      fontWeight: 700,
+      marginBottom: "8px",
+    }}
+  >
+    Por que PF e PE podem ser diferentes?
+  </h3>
+
+  <p
+    style={{
+      color: "#344054",
+      fontSize: "14px",
+      lineHeight: 1.6,
+      margin: 0,
+    }}
+  >
+    Na permanganatometria, a reação não ocorre em proporção 1:1. 
+    O PE é calculado pela estequiometria, enquanto o PF é
+    estimado pelo máximo da 1ª derivada da curva, podendo
+    apresentar um pequeno deslocamento em relação ao PE teórico.
+  </p>
+</div>
 
       <div className="curveConsultBox acidBaseConsultBox">
         <div className="acidBaseConsultHeader">

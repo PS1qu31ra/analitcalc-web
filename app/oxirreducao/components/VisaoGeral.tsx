@@ -205,6 +205,37 @@ import type {
             controle do potencial.
           </p>
         </div>
+
+        <div
+  style={{
+    marginTop: "24px",
+    padding: "24px 28px",
+    border: "1px solid #EBCBCB",
+    borderRadius: "20px",
+    background: "#FFFAFA",
+  }}
+>
+  <h3
+    style={{
+      color: "#991B1B",
+      fontSize: "20px",
+      fontWeight: 700,
+      marginBottom: "12px",
+    }}
+  >
+    Por que o permanganato é autoindicador?
+  </h3>
+
+  <p
+    style={{
+      color: "#555B66",
+      fontSize: "16px",
+      lineHeight: 1.6,
+      margin: 0,
+    }}
+  >
+    O íon permanganato (MnO₄⁻), na forma oxidada, apresenta coloração violeta intensa, enquanto sua forma reduzida (Mn²⁺) é praticamente incolor em solução diluída. Essa diferença de coloração permite que o KMnO₄ atue como autoindicador: após o consumo do analito, o primeiro excesso de permanganato confere à solução uma coloração rosa-clara persistente, indicando o ponto final da titulação. </p>
+</div>
       </section>
     );
   }
